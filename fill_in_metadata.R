@@ -2,11 +2,11 @@ library(tidyr)
 library(plyr); library(dplyr)
 
 # Load Sample File
-f <- file("160613_McKenney_MF_NJK_06012016_16SRV.TXT", open="r", encoding="UTF-16LE")
+f <- file("notes_and_info/160613_McKenney_MF_NJK_06012016_16SRV.TXT", open="r", encoding="UTF-16LE")
 df <- read.table(f, sep='\t', dec=',', header=TRUE,comment="")
 
 # Load Sample Key
-sample_key <- read.csv("metadata_key.csv", header=TRUE)
+sample_key <- read.csv("notes_and_info/metadata_key.csv", header=TRUE)
 
 
 # Split sample ID

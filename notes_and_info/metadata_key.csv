@@ -1,0 +1,13 @@
+group,antibiotic,apiration,lung,treated_lung
+AINLU,iv,none,left,TRUE
+APNLU,oral,none,left,TRUE
+ASNLU,subq,none,left,TRUE
+ASWLU,subq,whole_gastic,left,TRUE
+ASWRU,subq,whole_gastic,right,FALSE
+ILU,none,irradiated_gastric,left,TRUE
+IRU,none,irradiated_gastric,right,FALSE
+NLU,none,none,left,TRUE
+SLU,none,saline,left,TRUE
+SRU,none,saline,right,FALSE
+WLU,none,whole_gastic,left,TRUE
+WRU,none,whole_gastic,right,FALSE
