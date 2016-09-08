@@ -21,7 +21,11 @@ sep_id = df %>% rename(SampleID=X.SampleID) %>%
 
 map_df = sep_id %>% mutate(antibiotic = mapvalues(group, 
                                          c("NLU",  "ASNLU", "AINLU", "APNLU"), 
-                                         c("none", "subq", "iv", "oral")))
-write.table(map_df,final_sample_map,quote=FALSE,row.names = FALSE)
+                                         c("none", "subq", "iv", "oral"))) %>%
+  select(SampleID, BarcodeSequence, 
+         LinkerPrimerSequence, BarcodePlate, 
+         Well, group, animal, antibiotic, Description)
+write.table(map_df,final_sample_map,quote=FALSE,row.names = FALSE,sep="\t")
                     
 # unique(sep_id$group)
+
