@@ -39,9 +39,9 @@ workdir = file.path(basedir, "workspace")
 
 read1_dir = file.path(workdir,"split_Undetermined_S0_L001_R1_001")
 read2_dir = file.path(workdir,"split_Undetermined_S0_L001_R2_001")
-# taxonomy_dir =file.path(workdir,"taxonomy_refs")
+taxonomy_dir =file.path(workdir,"taxonomy_refs")
 # greengenes_ref = file.path(taxonomy_dir,"ggtrain_97.fa")
-# silva_ref = file.path(taxonomy_dir,"silva.bac.train.fa")
+silva_ref = file.path(taxonomy_dir,"silva_nr_v123_train_set.fa.gz")
 
 results_dir = file.path(workdir,"results")
 
@@ -70,8 +70,8 @@ qual_plot_dir = file.path(workdir, "qual_plots")
 ## print(.libPaths())
 library(dada2)
 library(ShortRead)
-## library(ggplot2)
-## library(phyloseq)
+library(ggplot2)
+library(phyloseq)
 # library(dplyr)
 # library(biom)
 ## sessionInfo()
@@ -258,49 +258,69 @@ processFastqs = function(filtFs,filtRs,for_suffix="_R1_filt.fastq.gz",rev_suffix
   return(seqtab)
 }
 
-## makePhyloseq = function(seqtab,referenceFasta,map_file,random.seed=100){
-##   ##---------------------------------------
-##   # Make "otu_table"
-##   ##---------------------------------------
-##   # seqs <- colnames(seqtab)
-##   otab <- otu_table(seqtab, taxa_are_rows=FALSE)
-##   colnames(otab) <- paste0("Seq", seq(ncol(otab)))
-##   # print(otab)
+makePhyloseq = function(seqtab,referenceFasta,map_file,random.seed=100){
+  # Assign taxonomy to dadatype sequences
+  set.seed(random.seed)
+  print("Assigning taxonomy")
+  seqtab.tax <- assignTaxonomy(seqtab, referenceFasta, minBoot=50)
+  colnames(seqtab.tax) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus","Species")[seq(ncol(seqtab.tax))]
+  unname(head(seqtab.tax))
   
-##   ##---------------------------------------
-##   ## Make taxtable
-##   ##---------------------------------------
-##   # Assign taxonomy to dadatype sequences
-##   set.seed(random.seed)
-##   print("Assigning taxonomy")
-##   seqtab.tax <- assignTaxonomy(colnames(seqtab), referenceFasta, minBoot=50)
+  ## Load Map
+  map.df = read.delim(map_file)
+  samdat = sample_data(map.df)
+  rownames(samdat) = samdat$SampleID
   
-##   seqtab.tax.list = strsplit(seqtab.tax,";") # split to list
+  # Make "otu_table"
+  ##---------------------------------------
+  # seqs <- colnames(seqtab)
+  otab <- otu_table(seqtab, taxa_are_rows=FALSE)
   
-##   # pad sequences that are missing fine scale annotation
-##   max.len <- max(sapply(seqtab.tax.list, length))
-##   seqtab.tax.list.padded <- lapply(seqtab.tax.list, function(x) {c(x, rep("", max.len - length(x)))})
-
-##   # make 
-##   taxtab <- tax_table(do.call(rbind,seqtab.tax.list.padded))
-##   rownames(taxtab) = colnames(otab)
-##   colnames(taxtab) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")[seq(ncol(taxtab))]
   
-##   ##---------------------------------------
-##   ## Make taxtable
-##   ##---------------------------------------
-##   map.df = read.delim(map_file)
-##   samdat = sample_data(map.df)
-##   sample_names(samdat) = paste0("sample_",map.df$SampleID)
-##   ps <- phyloseq(otab, samdat, taxtab)
+  ps <- phyloseq(otab, 
+                 samdat, 
+                 tax_table(seqtab.tax))
   
-##   ##---------------------------------------
-##   ## Make seqID map
-##   ##---------------------------------------
-##   seqid.map.df = data.frame(sequence = colnames(seqtab),
-##                             row.names = paste0("Seq", seq(ncol(otab))))
-##   return(list(ps,seqid.map.df))
-## }
+  # 
+  # # colnames(otab) <- paste0("Seq", seq(ncol(otab)))
+  # # print(otab)
+  # 
+  # ##---------------------------------------
+  # ## Make taxtable
+  # ##---------------------------------------
+  # # Assign taxonomy to dadatype sequences
+  # set.seed(random.seed)
+  # print("Assigning taxonomy")
+  # seqtab.tax <- assignTaxonomy(colnames(seqtab), referenceFasta, minBoot=50)
+  # 
+  # seqtab.tax.list = strsplit(seqtab.tax,";") # split to list
+  # 
+  # # pad sequences that are missing fine scale annotation
+  # max.len <- max(sapply(seqtab.tax.list, length))
+  # seqtab.tax.list.padded <- lapply(seqtab.tax.list, function(x) {c(x, rep("", max.len - length(x)))})
+  # 
+  # # make 
+  # taxtab <- tax_table(do.call(rbind,seqtab.tax.list.padded))
+  # # problem in next line
+  # rownames(taxtab) = colnames(otab)
+  # colnames(taxtab) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus")[seq(ncol(taxtab))]
+  # 
+  # ##---------------------------------------
+  # ## Make taxtable
+  # ##---------------------------------------
+  # map.df = read.delim(map_file)
+  # samdat = sample_data(map.df)
+  # # sample_names(samdat) = paste0("sample_",map.df$SampleID)
+  # ps <- phyloseq(otab, samdat, taxtab)
+  # 
+  # ##---------------------------------------
+  # ## Make seqID map
+  # ##---------------------------------------
+  # seqid.map.df = data.frame(sequence = colnames(seqtab),
+  #                           row.names = paste0("Seq", seq(ncol(otab))))
+  # return(list(ps,seqid.map.df))
+  return(ps)
+}
 
 ## outputPhyloseq = function(ps,seqid.map.df,outfile.prefix){
 ##   otu_table_file = paste0(outfile.prefix,"_otu.csv")
@@ -390,15 +410,21 @@ print(filtFs)
 print(filtRs)
 
 seqtab = processFastqs(filtFs,filtRs)
-## ps_and_seqid = makePhyloseq(seqtab,silva_ref,map_file)
+# Next two lines for stepping through makePhyloseq
+referenceFasta = silva_ref
+random.seed=100
 
-## ps = ps_and_seqid[[1]]
-## seqid.map.df = ps_and_seqid[[2]]
+# ps_and_seqid = makePhyloseq(seqtab,silva_ref,map_file)
+# ps = ps_and_seqid[[1]]
+# seqid.map.df = ps_and_seqid[[2]]
+ps = makePhyloseq(seqtab,silva_ref,map_file)
+plot_richness(ps, x="animal", measures=c("Shannon", "Simpson"), color="antibiotic") + theme_bw()
+plot_bar(ps, x="antibiotic", fill="Family") 
 
-## output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
-## # otu_table_file = output.files[[1]]
-## # sample_data_file = output.files[[2]]
-## # tax_table_file = output.files[[3]]
+# output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
+# # otu_table_file = output.files[[1]]
+# # sample_data_file = output.files[[2]]
+# # tax_table_file = output.files[[3]]
 
 ## # ps.loaded = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
 ## # outputPhyloseq(ps.loaded,paste0(psfile.prefix,"_loaded"))
