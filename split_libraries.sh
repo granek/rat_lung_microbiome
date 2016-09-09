@@ -5,33 +5,42 @@ RAW_DATA_DIR="./raw_data/160614_McKenney_fastqs/"
 READ1_FASTQ="$RAW_DATA_DIR/Undetermined_S0_L001_R1_001.fastq.gz"
 READ2_FASTQ="$RAW_DATA_DIR/Undetermined_S0_L001_R2_001.fastq.gz"
 INDEX_FASTQ="$RAW_DATA_DIR/Undetermined_S0_L001_I1_001.fastq.gz"
+FASTQ_PREFIX="$RAW_DATA_DIR/Undetermined_S0_L001"
+
 
 MAP_FILE="./notes_and_info/rat_lung_map.tsv"
 
-
 WORKSPACE_DIR="./workspace"
-SPLIT_FASTQ_DIR="$WORKSPACE_DIR/split_fastq"
+SPLIT_FASTQ_BASE="$WORKSPACE_DIR/split_fastq"
+LABELED_FASTQ_BASE="$WORKSPACE_DIR/label_fastq"
 
 
 # Generate a MAP file that QIIME will accept
 QIIME_MAP_FILE="$WORKSPACE_DIR/rat_lung_qiime_map.tsv"
 sed  '1s/^/#/' $MAP_FILE > $QIIME_MAP_FILE
+# mkdir -p $SPLIT_FASTQ_BASE
 
-validate_mapping_file.py --mapping_fp $QIIME_MAP_FILE --output_dir $WORKSPACE_DIR
+# validate_mapping_file.py --mapping_fp $QIIME_MAP_FILE --output_dir $WORKSPACE_DIR
 # Split without filtering based on <http://benjjneb.github.io/dada2/faq.html>
-for FASTQ in ${READ1_FASTQ} # ${READ2_FASTQ}
+for READ in R1 R2
 do
     split_libraries_fastq.py -r 999 -n 999 -q 0 -p 0.0001 \
-			     --sequence_read_fps $FASTQ \
-			     --output_dir $SPLIT_FASTQ_DIR \
-			     --barcode_read_fps $INDEX_FASTQ \
+			     --sequence_read_fps ${FASTQ_PREFIX}_${READ}_001.fastq.gz \
+			     --output_dir ${LABELED_FASTQ_BASE}_${READ} \
+			     --barcode_read_fps ${FASTQ_PREFIX}_I1_001.fastq.gz \
 			     --mapping_fps $QIIME_MAP_FILE \
 			     --barcode_type golay_12 \
 			     --rev_comp_mapping_barcodes \
-			     --retain_unassigned_reads 
+			     --store_demultiplexed_fastq \
+			     --retain_unassigned_reads
+    
+    split_sequence_file_on_sample_ids.py -i ${LABEL_FASTQ_BASE}_${READ}/seqs.fastq \
+					 --file_type fastq \
+					 --output_dir ${SPLIT_FASTQ_BASE}_${READ}
 done
 
 # split_sequence_file_on_sample_ids.py
+# split_sequence_file_on_sample_ids.py -i ~/parker_rat_lung/workspace/split_fastq_R1/seqs.fastq --file_type fastq --output_dir ~/parker_rat_lung/workspace/split_by_id_R1
 #--------------------------------------------------------------------------------
 
 # split_libraries_fastq.py OPTIONS
@@ -40,8 +49,6 @@ done
 #     Comma-separated list of samples ids to be applied to all sequences, must be one per input file path (used when data is not multiplexed) [default: None]
 # --store_demultiplexed_fastq
 #     Write demultiplexed fastq files [default: False]
-# --barcode_type
-#     The type of barcode used. This can be an integer, e.g. for length 6 barcodes, or “golay_12” for golay error-correcting barcodes. Error correction will only be applied for “golay_12” barcodes. If data is not barcoded, pass “not-barcoded”. [default: golay_12]
 # --max_barcode_errors
 #     Maximum number of errors in barcode [default: 1.5]
 # --phred_offset
