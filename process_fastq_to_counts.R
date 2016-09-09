@@ -10,11 +10,28 @@ args <- commandArgs(trailingOnly = TRUE)
 # if (interactive()){
 #   basedir<<-"XXXXXX"
 # }
-if (length(args) == 1){
-  basedir<<-args[1]
-} else {
-  basedir<<-"."
-}
+## if (length(args) == 1){
+##   basedir<<-args[1]
+## } else {
+##   basedir<<-"."
+## }
+
+#--------------------------------------------------
+#!/usr/bin/env Rscript
+
+suppressPackageStartupMessages(library("argparse"))
+parser <- ArgumentParser()
+parser$add_argument("-f", "--filter_fastqs", action="store_true", default=FALSE,
+                    help="Run filtering step (default is to assume it was already run)")
+parser$add_argument("-q", "--quality_plots", type="integer", default=0,
+                    help="Number of quality plots generate [default %(default)s]",
+                    metavar="number")
+parser$add_argument("--basedir", default=".",
+                    help="Base directory for analysis [default %(default)s]",
+                    metavar="DIR")
+args <- parser$parse_args()
+#--------------------------------------------------
+basedir = args$basedir
 
 map_file = file.path(basedir, "notes_and_info/rat_lung_map.tsv")
 
@@ -30,10 +47,6 @@ results_dir = file.path(workdir,"results")
 
 filtered_fastq_dir = file.path(workdir, "filtered_fastqs")
 qual_plot_dir = file.path(workdir, "qual_plots")
-
-dir.create(filtered_fastq_dir, showWarnings = FALSE,recursive = TRUE)
-dir.create(results_dir, showWarnings = FALSE,recursive = TRUE)
-dir.create(qual_plot_dir, showWarnings = FALSE,recursive = TRUE)
 
 # psfile.prefix = file.path(results_dir, "mouse_csection_ps")
 
@@ -144,7 +157,9 @@ filterFASTQs = function(fnFs,fnRs,filtered_fastq_dir,
   ## filtRs <- paste0(tmpdir, sapply(strsplit(fnRs, "\\."), `[`, 1), "_filt.fastq.gz")
   for_dir = dirname(fnFs[1])
   rev_dir = dirname(fnRs[1])
-  print(fastq_ext)
+  ## print(fnFs)
+  ## print(fnRs)
+  ## print(fastq_ext)
   for(raw_for in fnFs) {
       read_base = basename(raw_for)
       raw_rev = file.path(rev_dir,read_base)
@@ -342,16 +357,24 @@ fastq_end = ".fastq"
 for_fastqs = findFastqs(read1_dir,fastq_end,remove="Unassigned")
 rev_fastqs = findFastqs(read2_dir,fastq_end,remove="Unassigned")
 
-MakeQualityPlots = FALSE
-FilterFASTQs = FALSE
+# FilterFASTQs = FALSE
 # SampleSubsetString = "sample_2"
 SampleSubsetString = ""
 
-if (MakeQualityPlots) {
-  visualizeQuality(for_fastqs[1:10], rev_fastqs[1:10],qual_plot_dir,fastq_end)
+if (args$quality_plots > 0) {
+  dir.create(qual_plot_dir, showWarnings = FALSE,recursive = TRUE)
+  visualizeQuality(for_fastqs[1:args$quality_plots], 
+                   rev_fastqs[1:args$quality_plots],
+                   qual_plot_dir,fastq_end)
 }
 
-if (FilterFASTQs) {
+## print(paste("FILTER?:", args$filter_fastqs))
+## print(read1_dir)
+## print(for_fastqs)
+
+if (args$filter_fastqs) {
+  print("RUNNING FILTERING!")
+  dir.create(filtered_fastq_dir, showWarnings = FALSE,recursive = TRUE)
   filtered.fastqs = filterFASTQs(for_fastqs,rev_fastqs,filtered_fastq_dir,
                                  fastq_ext=fastq_end,
                                  F_trimLeft=F_trimLeft,R_trimLeft=R_trimLeft,

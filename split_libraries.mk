@@ -74,6 +74,11 @@ $(WORKSPACE_DIR)/split_%/COMPLETION_STAMP : $(TAGGED_FASTQ_DIR)/%_tagged.fastq
 	touch $@
 #--------------------------------------------------
 
+run_rscript : $(SPLIT_FASTQS)
+	# Rscript --no-restore process_fastq_to_counts.R --quality_plots 5 
+	# Rscript --no-restore process_fastq_to_counts.R --filter_fastqs
+	Rscript --no-restore process_fastq_to_counts.R
+
 # mkdir -p $SPLIT_FASTQ_BASE
 
 # validate_mapping_file.py --mapping_fp $QIIME_MAP_FILE --output_dir $WORKSPACE_DIR
