@@ -9,11 +9,15 @@ final_sample_map = file.path(info_dir, "rat_lung_map.tsv")
 
 # need to jump through some hoops to open file with UTF-16LE encoding
 f <- file(raw_sample_map, open="r", encoding="UTF-16LE")
-df <- read.table(f, sep='\t', dec=',', header=TRUE,comment="")
+df <- read.table(f, sep='\t', dec=',', header=TRUE,comment="",
+                 colClasses = c("character","character","numeric",
+                                "character","character","character"))
 close(f)
 
 # Load Sample Key
-sample_key <- read.csv(raw_sample_key, header=TRUE)
+sample_key <- read.csv(raw_sample_key, header=TRUE,
+                       colClasses = c("character","factor","factor","factor",
+                                      "factor","factor","factor"))
 
 # Split sample ID
 sep_id = df %>% rename(SampleID=X.SampleID) %>%
@@ -23,12 +27,13 @@ sep_id$techrep = as.numeric(duplicated(sep_id$SampleID))+1
 
 # sep_id %>% mutate(SampleID = paste(SampleID,techrep,sep="_")) %>% head
 
-map_df = sep_id %>% mutate(antibiotic = mapvalues(group, 
-                                         c("NLU",  "ASNLU", "AINLU", "APNLU"), 
-                                         c("none", "subq", "iv", "oral"))) %>%
+map_df = sep_id %>% 
+  left_join(sample_key,by="group") %>%
   mutate(SampleID = paste(SampleID,techrep,sep=".")) %>%
   select(SampleID, BarcodeSequence, LinkerPrimerSequence, 
-         techrep, group, animal, antibiotic, 
+         techrep, animal,
+         group,antibiotic,
+         left_aspiration,right_aspiration,sample_aspiration,lung,treated_lung,
          BarcodePlate, Well, 
          Description)
 
