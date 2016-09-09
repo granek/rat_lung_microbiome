@@ -19,12 +19,22 @@ sample_key <- read.csv(raw_sample_key, header=TRUE)
 sep_id = df %>% rename(SampleID=X.SampleID) %>%
   extract(col=SampleID,into=c("group","animal"),regex="([[:alpha:]]+)([[:digit:]]+)",remove = FALSE)
 
+sep_id$techrep = as.numeric(duplicated(sep_id$SampleID))+1
+
+# sep_id %>% mutate(SampleID = paste(SampleID,techrep,sep="_")) %>% head
+
 map_df = sep_id %>% mutate(antibiotic = mapvalues(group, 
                                          c("NLU",  "ASNLU", "AINLU", "APNLU"), 
                                          c("none", "subq", "iv", "oral"))) %>%
-  select(SampleID, BarcodeSequence, 
-         LinkerPrimerSequence, BarcodePlate, 
-         Well, group, animal, antibiotic, Description)
+  mutate(SampleID = paste(SampleID,techrep,sep=".")) %>%
+  select(SampleID, BarcodeSequence, LinkerPrimerSequence, 
+         techrep, group, animal, antibiotic, 
+         BarcodePlate, Well, 
+         Description)
+
+
+
+
 write.table(map_df,final_sample_map,quote=FALSE,row.names = FALSE,sep="\t")
                     
 # unique(sep_id$group)
