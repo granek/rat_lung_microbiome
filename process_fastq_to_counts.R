@@ -177,86 +177,86 @@ filterFASTQs = function(fnFs,fnRs,filtered_fastq_dir,
   return(list(fnFs,fnRs))
 }
 
-## processFastqs = function(filtFs,filtRs){
-##   #+Dereplication
-##   # In the dereplication step, all reads with identical sequences are combined
-##   # into “unique sequences” with a corresponding abundance, i.e. the number of
-##   # reads with that unique sequence. Dereplication is a part of most pipelines 
-##   # because it reduces computation time by eliminating repeated comparisons of
-##   # identical sequences.
+processFastqs = function(filtFs,filtRs,for_suffix="_R1_filt.fastq.gz",rev_suffix="_R2_filt.fastq.gz"){
+  #+Dereplication
+  # In the dereplication step, all reads with identical sequences are combined
+  # into “unique sequences” with a corresponding abundance, i.e. the number of
+  # reads with that unique sequence. Dereplication is a part of most pipelines 
+  # because it reduces computation time by eliminating repeated comparisons of
+  # identical sequences.
   
-##   # Dereplication in the DADA2 pipeline has one crucial addition: DADA2 retains 
-##   # a summary of the quality information associated with each unique sequence. 
-##   # DADA2 constructs a “consensus” quality profile for each unique sequence by 
-##   # averaging the positional qualities from the dereplicated reads. These 
-##   # consensus quality profiles inform the error model of the subsequent denoising
-##   # step, significantly increasing DADA2’s accuracy.
+  # Dereplication in the DADA2 pipeline has one crucial addition: DADA2 retains 
+  # a summary of the quality information associated with each unique sequence. 
+  # DADA2 constructs a “consensus” quality profile for each unique sequence by 
+  # averaging the positional qualities from the dereplicated reads. These 
+  # consensus quality profiles inform the error model of the subsequent denoising
+  # step, significantly increasing DADA2’s accuracy.
   
-##   #+ Dereplicate the filtered fastq files:
-##   derepFs <- lapply(filtFs, derepFastq, verbose=TRUE)
-##   derepRs <- lapply(filtRs, derepFastq, verbose=TRUE)
+  #+ Dereplicate the filtered fastq files:
+  filtRs = gsub(for_suffix, rev_suffix, filtFs)
+  derepFs <- lapply(filtFs, derepFastq, verbose=TRUE)
+  derepRs <- lapply(filtRs, derepFastq, verbose=TRUE)
   
-##   # Name the derep-class objects by the sample names
-##   sam_names <- gsub("r1.", "", basename(filtFs))
-##   sam_names = gsub("_filt.fastq.gz", "", sam_names)
-##   print(sam_names)
-##   # stop("check sam_names")
-##   names(derepFs) <- sam_names
-##   names(derepRs) <- sam_names
+  # Name the derep-class objects by the sample names
+  sam_names = gsub(for_suffix, "", basename(filtFs))
+  print(sam_names)
+  # stop("check sam_names")
+  names(derepFs) <- sam_names
+  names(derepRs) <- sam_names
   
-##   # Inspect the derep-class object returned by derepFastq:
-##   derepFs[[1]]
+  # Inspect the derep-class object returned by derepFastq:
+  derepFs[[1]]
   
-##   #+ Sample Inference
+  #+ Sample Inference
   
-##   # We are now ready to apply DADA2’s core sample inference algorithm to the dereplicated sequences.
+  # We are now ready to apply DADA2’s core sample inference algorithm to the dereplicated sequences.
   
-##   # Perform joint sample inference and error rate estimation (takes a few minutes):
-##   dadaFs <- dada(derepFs, err=inflateErr(tperr1,3), errorEstimationFunction=loessErrfun, selfConsist = TRUE)
-##   dadaRs <- dada(derepRs, err=inflateErr(tperr1,3), errorEstimationFunction=loessErrfun, selfConsist = TRUE)
+  # Perform joint sample inference and error rate estimation (takes a few minutes):
+  dadaFs <- dada(derepFs, err=inflateErr(tperr1,3), errorEstimationFunction=loessErrfun, selfConsist = TRUE)
+  dadaRs <- dada(derepRs, err=inflateErr(tperr1,3), errorEstimationFunction=loessErrfun, selfConsist = TRUE)
   
-##   ## # need to make lists of one, since we only have one sample
-##   ## dadaFs = list(dadaFs)
-##   ## dadaRs = list(dadaRs)
+  ## # need to make lists of one, since we only have one sample
+  ## dadaFs = list(dadaFs)
+  ## dadaRs = list(dadaRs)
   
-##   # Inspecting the dada-class object returned by dada:
-##   dadaFs[[1]]
+  # Inspecting the dada-class object returned by dada:
+  dadaFs[[1]]
   
-##   # Visualize estimated error rates:
-##   plotErrors(dadaFs[[1]], "A", nominalQ=TRUE)
+  # Visualize estimated error rates:
+  plotErrors(dadaFs[[1]], "A", nominalQ=TRUE)
   
-##   # Identify chimeras
-##   # Identify chimeric sequences:
-##   bimFs <- sapply(dadaFs, isBimeraDenovo, verbose=TRUE,simplify = FALSE)
-##   bimRs <- sapply(dadaRs, isBimeraDenovo, verbose=TRUE,simplify = FALSE)
-##   print(unname(sapply(bimFs, mean)), digits=2)
-##   print(unname(sapply(bimRs, mean)), digits=2)
+  # Identify chimeras
+  # Identify chimeric sequences:
+  bimFs <- sapply(dadaFs, isBimeraDenovo, verbose=TRUE,simplify = FALSE)
+  bimRs <- sapply(dadaRs, isBimeraDenovo, verbose=TRUE,simplify = FALSE)
+  print(unname(sapply(bimFs, mean)), digits=2)
+  print(unname(sapply(bimRs, mean)), digits=2)
   
-##   # Merge paired reads
-##   # Merge the denoised forward and reverse reads:
-##   mergers <- mapply(mergePairs, dadaFs, derepFs, dadaRs, derepRs, SIMPLIFY=FALSE)
-##   head(mergers[[1]])
+  # Merge paired reads
+  # Merge the denoised forward and reverse reads:
+  mergers <- mapply(mergePairs, dadaFs, derepFs, dadaRs, derepRs, SIMPLIFY=FALSE)
+  head(mergers[[1]])
   
-##   # Remove chimeras:
-##   mergers.nochim <- mapply(function(mm, bF, bR) mm[!bF[mm$forward] & !bR[mm$reverse],], 
-##                            mergers, bimFs, bimRs, SIMPLIFY=FALSE)
+  # Remove chimeras:
+  mergers.nochim <- mapply(function(mm, bF, bR) mm[!bF[mm$forward] & !bR[mm$reverse],], 
+                           mergers, bimFs, bimRs, SIMPLIFY=FALSE)
   
-##   # stop("fix for no chimeras")
+  # stop("fix for no chimeras")
   
-##   head(getUniques(mergers.nochim[[1]]), n=2)
-##   head(mergers.nochim[[1]][,c("sequence", "abundance")], n=2)
+  head(getUniques(mergers.nochim[[1]]), n=2)
+  head(mergers.nochim[[1]][,c("sequence", "abundance")], n=2)
   
-##   #+ Constructing the sequence table
-##   # Construct sequence table:
-##   seqtab <- makeSequenceTable(mergers.nochim)
-##   print("table")
-##   print(table(nchar(colnames(seqtab))))
-##   print("length")
-##   print(length(unique(substr(colnames(seqtab), 1, 230))))
-##   print("dim")
-##   print(dim(seqtab))
-##   return(seqtab)
-## }
+  #+ Constructing the sequence table
+  # Construct sequence table:
+  seqtab <- makeSequenceTable(mergers.nochim)
+  print("table")
+  print(table(nchar(colnames(seqtab))))
+  print("length")
+  print(length(unique(substr(colnames(seqtab), 1, 230))))
+  print("dim")
+  print(dim(seqtab))
+  return(seqtab)
+}
 
 ## makePhyloseq = function(seqtab,referenceFasta,map_file,random.seed=100){
 ##   ##---------------------------------------
@@ -389,7 +389,7 @@ filtRs = findFastqs(filtered_fastq_dir,"_filt.fastq.gz",filter="_R2_")
 print(filtFs)
 print(filtRs)
 
-## seqtab = processFastqs(filtFs,filtRs)
+seqtab = processFastqs(filtFs,filtRs)
 ## ps_and_seqid = makePhyloseq(seqtab,silva_ref,map_file)
 
 ## ps = ps_and_seqid[[1]]
