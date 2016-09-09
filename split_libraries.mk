@@ -73,11 +73,20 @@ $(WORKSPACE_DIR)/split_%/COMPLETION_STAMP : $(TAGGED_FASTQ_DIR)/%_tagged.fastq
 					 --output_dir $(@D)
 	touch $@
 #--------------------------------------------------
+TAXONOMY_DIR := $(WORKSPACE_DIR)/taxonomy_refs
+SILVA_DB := $(TAXONOMY_DIR)/silva_nr_v123_train_set.fa.gz
 
-run_rscript : $(SPLIT_FASTQS)
+run_rscript : $(SPLIT_FASTQS) $(SILVA_DB)
 	# Rscript --no-restore process_fastq_to_counts.R --quality_plots 5 
 	# Rscript --no-restore process_fastq_to_counts.R --filter_fastqs
 	Rscript --no-restore process_fastq_to_counts.R
+
+
+$(SILVA_DB) :
+	$(dir_guard)
+	wget -O $@_tmp "http://benjjneb.github.io/dada2/Training/silva_nr_v123_train_set.fa.gz"
+	mv $@_tmp $@
+
 
 # mkdir -p $SPLIT_FASTQ_BASE
 
