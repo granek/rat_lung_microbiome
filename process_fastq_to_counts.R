@@ -343,7 +343,7 @@ for_fastqs = findFastqs(read1_dir,fastq_end,remove="Unassigned")
 rev_fastqs = findFastqs(read2_dir,fastq_end,remove="Unassigned")
 
 MakeQualityPlots = FALSE
-FilterFASTQs = TRUE
+FilterFASTQs = FALSE
 # SampleSubsetString = "sample_2"
 SampleSubsetString = ""
 
@@ -356,14 +356,15 @@ if (FilterFASTQs) {
                                  fastq_ext=fastq_end,
                                  F_trimLeft=F_trimLeft,R_trimLeft=R_trimLeft,
                                  F_truncLen=F_truncLen,R_truncLen=R_truncLen)
-} else {
-  filtered.fastqs = findFastqs(filtered_fastq_dir,"_filt.fastq.gz",filter=SampleSubsetString)
-}
+} 
+filtFs = findFastqs(filtered_fastq_dir,"_filt.fastq.gz",filter="_R1_")
+filtRs = findFastqs(filtered_fastq_dir,"_filt.fastq.gz",filter="_R2_")
 
 ## filtFs = file.path(filtered_fastq_dir,filtered.fastqs[[1]])
 ## filtRs = file.path(filtered_fastq_dir,filtered.fastqs[[2]])
 
-## print(filtered.fastqs)
+print(filtFs)
+print(filtRs)
 
 ## seqtab = processFastqs(filtFs,filtRs)
 ## ps_and_seqid = makePhyloseq(seqtab,silva_ref,map_file)
