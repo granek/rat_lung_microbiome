@@ -46,6 +46,7 @@ silva_ref = file.path(taxonomy_dir,"silva_nr_v123_train_set.fa.gz")
 results_dir = file.path(workdir,"results")
 
 filtered_fastq_dir = file.path(workdir, "filtered_fastqs")
+filtered_fastqs_stamp = file.path(filtered_fastq_dir,"filtered_fastq_STAMP")
 qual_plot_dir = file.path(workdir, "qual_plots")
 
 # psfile.prefix is the base name to use for naming phyloseq output files
@@ -394,14 +395,17 @@ if (args$quality_plots > 0) {
 ## print(read1_dir)
 ## print(for_fastqs)
 
-if (args$filter_fastqs) {
+if (args$filter_fastqs || !file.exists(filtered_fastqs_stamp)) {
   print("RUNNING FILTERING!")
   dir.create(filtered_fastq_dir, showWarnings = FALSE,recursive = TRUE)
   filtered.fastqs = filterFASTQs(for_fastqs,rev_fastqs,filtered_fastq_dir,
                                  fastq_ext=fastq_end,
                                  F_trimLeft=F_trimLeft,R_trimLeft=R_trimLeft,
                                  F_truncLen=F_truncLen,R_truncLen=R_truncLen)
-} 
+  cat(Sys.time(), file = filtered_fastqs_stamp)
+} else {
+  print("Using existing filtered reads!")
+}
 filtFs = findFastqs(filtered_fastq_dir,"_filt.fastq.gz",filter="_R1_")
 filtRs = findFastqs(filtered_fastq_dir,"_filt.fastq.gz",filter="_R2_")
 
@@ -420,8 +424,8 @@ random.seed=100
 # ps = ps_and_seqid[[1]]
 # seqid.map.df = ps_and_seqid[[2]]
 ps = makePhyloseq(seqtab,silva_ref,map_file)
-plot_richness(ps, x="animal", measures=c("Shannon", "Simpson"), color="antibiotic") + theme_bw()
-plot_bar(ps, x="antibiotic", fill="Family") 
+## plot_richness(ps, x="animal", measures=c("Shannon", "Simpson"), color="antibiotic") + theme_bw()
+## plot_bar(ps, x="antibiotic", fill="Family") 
 
 # output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
 output.files = outputPhyloseq(ps,psfile.prefix)
