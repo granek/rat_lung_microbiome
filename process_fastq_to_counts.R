@@ -48,7 +48,8 @@ results_dir = file.path(workdir,"results")
 filtered_fastq_dir = file.path(workdir, "filtered_fastqs")
 qual_plot_dir = file.path(workdir, "qual_plots")
 
-# psfile.prefix = file.path(results_dir, "mouse_csection_ps")
+# psfile.prefix is the base name to use for naming phyloseq output files
+psfile.prefix = file.path(results_dir, "rat_lung_ps")
 
 ##====================================================================
 ## testFilesAndDirs = function(path){
@@ -322,19 +323,20 @@ makePhyloseq = function(seqtab,referenceFasta,map_file,random.seed=100){
   return(ps)
 }
 
-## outputPhyloseq = function(ps,seqid.map.df,outfile.prefix){
-##   otu_table_file = paste0(outfile.prefix,"_otu.csv")
-##   sample_data_file = paste0(outfile.prefix,"_samdat.csv")
-##   tax_table_file = paste0(outfile.prefix,"_tax.csv")
-##   seqid_map_file = paste0(outfile.prefix,"_seq.csv")
+# outputPhyloseq = function(ps,seqid.map.df,outfile.prefix){
+outputPhyloseq = function(ps,outfile.prefix){
+  otu_table_file = paste0(outfile.prefix,"_otu.csv")
+  sample_data_file = paste0(outfile.prefix,"_samdat.csv")
+  tax_table_file = paste0(outfile.prefix,"_tax.csv")
   
-##   write.csv(otu_table(ps), file=otu_table_file)
-##   write.csv(sample_data(ps), file=sample_data_file)
-##   write.csv(tax_table(ps), file=tax_table_file)
-##   write.csv(seqid.map.df, file=seqid_map_file)
+  write.csv(otu_table(ps), file=otu_table_file)
+  write.csv(sample_data(ps), file=sample_data_file)
+  write.csv(tax_table(ps), file=tax_table_file)
+  ## seqid_map_file = paste0(outfile.prefix,"_seq.csv")
+  ## write.csv(seqid.map.df, file=seqid_map_file)
   
-##   return(list(otu_table_file,sample_data_file,tax_table_file))
-## }
+  return(list(otu_table_file,sample_data_file,tax_table_file))
+}
 
 ## loadPhyloseqFiles = function(otu_table_file,sample_data_file,tax_table_file){
 ##   otab <- otu_table(read.csv(otu_table_file,row.names=1), taxa_are_rows=FALSE)
@@ -422,9 +424,10 @@ plot_richness(ps, x="animal", measures=c("Shannon", "Simpson"), color="antibioti
 plot_bar(ps, x="antibiotic", fill="Family") 
 
 # output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
-# # otu_table_file = output.files[[1]]
-# # sample_data_file = output.files[[2]]
-# # tax_table_file = output.files[[3]]
+output.files = outputPhyloseq(ps,psfile.prefix)
+otu_table_file = output.files[[1]]
+sample_data_file = output.files[[2]]
+tax_table_file = output.files[[3]]
 
 ## # ps.loaded = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
 ## # outputPhyloseq(ps.loaded,paste0(psfile.prefix,"_loaded"))
