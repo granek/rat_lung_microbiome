@@ -338,17 +338,17 @@ outputPhyloseq = function(ps,outfile.prefix){
   return(list(otu_table_file,sample_data_file,tax_table_file))
 }
 
-## loadPhyloseqFiles = function(otu_table_file,sample_data_file,tax_table_file){
-##   otab <- otu_table(read.csv(otu_table_file,row.names=1), taxa_are_rows=FALSE)
-##   taxtab <- tax_table(as.matrix(read.csv(tax_table_file,row.names=1)))
+loadPhyloseqFiles = function(otu_table_file,sample_data_file,tax_table_file){
+  otab <- otu_table(read.csv(otu_table_file,row.names=1), taxa_are_rows=FALSE)
+  taxtab <- tax_table(as.matrix(read.csv(tax_table_file,row.names=1)))
 
-##   sample.df = read.csv(sample_data_file,row.names=1)
-##   sample.df[is.na(sample.df)] <- c("")
-##   samdat = sample_data(sample.df)
+  sample.df = read.csv(sample_data_file,row.names=1)
+  sample.df[is.na(sample.df)] <- c("")
+  samdat = sample_data(sample.df)
 
-##   ps <- phyloseq(otab, samdat, taxtab)
-##   return(ps)
-## }
+  ps <- phyloseq(otab, samdat, taxtab)
+  return(ps)
+}
 
 
 #==============================================================================
@@ -429,10 +429,13 @@ otu_table_file = output.files[[1]]
 sample_data_file = output.files[[2]]
 tax_table_file = output.files[[3]]
 
-## # ps.loaded = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
+ps.loaded = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
 ## # outputPhyloseq(ps.loaded,paste0(psfile.prefix,"_loaded"))
-
-## # identical(ps,ps.loaded)
+if (identical(ps,ps.loaded)) {
+    print("YAY! Saved and reloaded ps is identical to original")
+} else {
+    print("*** ERROR: Saved and reloaded ps is DIFFERENT from original****")
+}
 ## # phyloseqAnalysis(ps)
 ## # loadSampleData(map_file)
 
