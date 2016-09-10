@@ -1,21 +1,5 @@
 # Based on <http://benjjneb.github.io/dada2/R/tutorial.html>
-## [josh@hardac-login ~]$ srun --partition interactive --nodelist hardac-node01-1 Rscript ~/collabs/SeedLab/hartwell/dada/dada_for_simreads.R /data/gems/seed/hartwell/sim_reads_gz > /data/gems/seed/hartwell/sim_reads_gz/dada_results_sim_reads_gz.txt
-
 ##====================================================================
-#+ Setup: Directories, include=FALSE
-# Directories
-
-args <- commandArgs(trailingOnly = TRUE)
-
-# if (interactive()){
-#   basedir<<-"XXXXXX"
-# }
-## if (length(args) == 1){
-##   basedir<<-args[1]
-## } else {
-##   basedir<<-"."
-## }
-
 #--------------------------------------------------
 #!/usr/bin/env Rscript
 
@@ -53,20 +37,6 @@ qual_plot_dir = file.path(workdir, "qual_plots")
 psfile.prefix = file.path(results_dir, "rat_lung_ps")
 
 ##====================================================================
-## testFilesAndDirs = function(path){
-##   if (!file.exists(path)){
-##     stop(paste("Path doesn't exist:", path))
-##     }
-## }
-
-## testFilesAndDirs(basedir)
-## testFilesAndDirs(fastqdir)
-## testFilesAndDirs(greengenes_ref)
-## testFilesAndDirs(silva_ref)
-## testFilesAndDirs(results_dir)
-## testFilesAndDirs(filtered_fastq_dir)
-## testFilesAndDirs(map_file)
-
 ##====================================================================
 #+ Setup: Load Libraries, include=FALSE
 ## print(.libPaths())
@@ -77,10 +47,8 @@ library(phyloseq)
 # library(dplyr)
 # library(biom)
 ## sessionInfo()
+writeLines(capture.output(sessionInfo()), file.path(results_dir,"sessionInfo.txt"))
 ##====================================================================
-
-
-
 #+ Filtering and Trimming, include=FALSE
 # First we read in the file names for all the fastq files and do a little string
 # manipulation to get lists of the forward and reverse fastq files in matched order:
@@ -133,7 +101,6 @@ visualizeQuality = function(forward_fastqs, reverse_fastqs,plot_dir,fastq_ext=".
 
 
 #+ Process And Analyze FASTQs, include=FALSE
-## -HERE-
 filterFASTQs = function(fnFs,fnRs,filtered_fastq_dir,
                         fastq_ext=".fastq",
                         F_trimLeft=10,
@@ -376,7 +343,6 @@ ptm <- proc.time()
 fastq_end = ".fastq"
 
 # fnFs <- fastqs[grepl("r1.sample_", fastqs)]
-## -HERE-
 for_fastqs = findFastqs(read1_dir,fastq_end,remove="Unassigned")
 rev_fastqs = findFastqs(read2_dir,fastq_end,remove="Unassigned")
 
