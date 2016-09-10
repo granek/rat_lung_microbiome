@@ -32,7 +32,7 @@ SPLIT_FASTQS := $(addprefix $(WORKSPACE_DIR)/split_, $(addsuffix /COMPLETION_STA
 
 
 
-all : $(TAGGED_FASTQS) $(SPLIT_FASTQS)
+all : $(TAGGED_FASTQS) $(SPLIT_FASTQS) run_rscript
 
 
 test : 
