@@ -428,6 +428,12 @@ output.files = outputPhyloseq(ps,psfile.prefix)
 otu_table_file = output.files[[1]]
 sample_data_file = output.files[[2]]
 tax_table_file = output.files[[3]]
+write("Phyloseq object saved as following files:",file="")
+write(paste("otu_table_file:\t", otu_table_file),file="")
+write(paste("sample_data_file:\t", sample_data_file),file="")
+write(paste("tax_table_file:\t", tax_table_file), file="")
+
+
 
 ps.loaded = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
 ## # outputPhyloseq(ps.loaded,paste0(psfile.prefix,"_loaded"))
