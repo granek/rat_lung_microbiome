@@ -43,4 +43,14 @@ RUN conda create -n qiime1 python=2.7 qiime matplotlib=1.4.3 mock nose -c biocon
     conda clean -tipsy
 
 USER root
+
+RUN Rscript -e "install.packages(pkgs = c('ggplot2','dplyr'), \
+    repos='https://cran.revolutionanalytics.com/', \
+    dependencies=TRUE)"
+RUN Rscript -e "source('https://bioconductor.org/biocLite.R'); \
+    biocLite(pkgs=c('dada2','ShortRead','phyloseq'))"
+RUN Rscript -e "install.packages(pkgs = c('argparse'), \
+    repos='https://cran.revolutionanalytics.com/', \
+    dependencies=TRUE)"
+
 CMD ["/init"]
