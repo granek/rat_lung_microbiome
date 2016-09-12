@@ -28,6 +28,7 @@ taxonomy_dir =file.path(workdir,"taxonomy_refs")
 silva_ref = file.path(taxonomy_dir,"silva_nr_v123_train_set.fa.gz")
 
 results_dir = file.path(workdir,"results")
+dir.create(results_dir, showWarnings = FALSE,recursive = TRUE)
 
 filtered_fastq_dir = file.path(workdir, "filtered_fastqs")
 filtered_fastqs_stamp = file.path(filtered_fastq_dir,"filtered_fastq_STAMP")
