@@ -8,6 +8,13 @@ MAINTAINER Josh Granek
 
 USER root
 
+RUN echo "deb http://ftp.debian.org/debian jessie-backports main" >  /etc/apt/sources.list.d/backports.list && \
+    apt-get update &&  \
+    apt-get -t jessie-backports install -y --no-install-recommends \
+    libxml2-dev \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Configure environment
 ENV CONDA_DIR /opt/conda
 ENV PATH $CONDA_DIR/bin:$PATH
