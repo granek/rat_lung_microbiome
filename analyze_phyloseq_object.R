@@ -34,7 +34,7 @@ library(ggplot2)
 library(phyloseq)
 # library(dplyr)
 # library(biom)
-writeLines(capture.output(sessionInfo()), file.path(results_dir,"sessionInfo.txt"))
+writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phyloseq_object_sessionInfo.txt"))
 ##====================================================================
 loadPhyloseqFiles = function(otu_table_file,sample_data_file,tax_table_file){
   otab <- otu_table(read.csv(otu_table_file,row.names=1), taxa_are_rows=FALSE)
@@ -48,15 +48,49 @@ loadPhyloseqFiles = function(otu_table_file,sample_data_file,tax_table_file){
   return(ps)
 }
 #==============================================================================
+list.files(results_dir)
+setwd("./parker_rat_lung/")
+# output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
+otu_table_file = paste0(psfile.prefix,"_otu.csv")
+sample_data_file = paste0(psfile.prefix,"_samdat.csv")
+tax_table_file = paste0(psfile.prefix,"_tax.csv")
+
+ps = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
+
 plot_richness(ps, x="animal", measures=c("Shannon", "Simpson"), color="antibiotic") + theme_bw()
 plot_bar(ps, x="antibiotic", fill="Family") 
 
-# output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
-otu_table_file = output.files[[1]]
-sample_data_file = output.files[[2]]
-tax_table_file = output.files[[3]]
-
-ps.loaded = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
-
-print(proc.time() - ptm)
 #==============================================================================
+# Ordination plots
+# Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
+
+## Remove OTUs that do not show appear more than 5 times in more than half the samples
+wh0 = genefilter_sample(ps, filterfun_sample(function(x) x > 5), A=0.5*nsamples(ps))
+ps1 = prune_taxa(wh0, ps)
+
+## Transform to even sampling depth.
+ps1 = transform_sample_counts(ps1, function(x) 1E6 * x/sum(x))
+
+# Keep only the most abundant five phyla.
+phylum.sum = tapply(taxa_sums(ps1), tax_table(ps1)[, "Phylum"], sum, na.rm=TRUE)
+top5phyla = names(sort(phylum.sum, TRUE))[1:5]
+ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
+
+
+# We will want to investigate a major prior among the samples, which is that some are human-associated microbiomes, and some are not. Define a human-associated versus non-human categorical variable:
+  
+# human = get_variable(GP1, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+# sample_data(GP1)$human <- factor(human)
+
+## (2) Just samples
+
+## Next, let’s plot only the samples, and shade the points by “SampleType” while also modifying the shape according to whether they are human-associated. There are a few additional ggplot2 layers added to make the plot even nicer…
+ps1.ord <- ordinate(ps1, "NMDS", "bray")
+p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic") 
+p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
+
+
+
+
+
+
