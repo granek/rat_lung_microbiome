@@ -90,19 +90,26 @@ p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", sh
 p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
 
 #==============================================================================
-# Floating barplot for replicate Min/max 
-# Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
-head(otu_table(ps))
 dim(psmelt(ps))
+## ---------------------------------------------
+## Floating barplot for replicate Min/max 
+##---------------------------------------------
 total_counts = as.data.frame(rowSums(otu_table(ps)))
 colnames(total_counts) = "totals"
-min_max_counts = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
-  select(rowname, Description, totals) %>%
-  group_by(Description) %>% 
-  summarise(min=min(totals),max=max(totals))
 
-ggplot(min_max_counts, aes(x=Description,ymin = `min`, ymax = `max`)) + 
+group_table = sample_data(ps) %>% select(group,Description) %>% unique
+
+min_max_counts = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
+  select(rowname, Description, group, totals) %>%
+  group_by(Description) %>% 
+  summarise(min=min(totals),max=max(totals)) %>% 
+  left_join(group_table)
+
+ggplot(min_max_counts, aes(x=Description,ymin = `min`, ymax = `max`,color=group)) + 
   geom_linerange(stat = 'identity') +
   xlab('Sample') + 
-  ylab('Counts') 
+  ylab('Counts') +
+  theme(axis.ticks.x=element_blank(),
+        axis.text.x=element_blank(),
+        panel.background = element_blank())
 
