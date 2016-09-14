@@ -54,27 +54,46 @@ ps = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
 ## ---------------------------------------------
 ## Floating barplot for replicate Min/max 
 ##---------------------------------------------
-total_counts = as.data.frame(rowSums(otu_table(ps)))
-colnames(total_counts) = "totals"
+MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
+  total_counts = as.data.frame(rowSums(otu_table(ps)))
+  colnames(total_counts) = "totals"
+  
+  group_table = sample_data(ps) %>% select(group,Description) %>% unique
+  
+  min_max_counts = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
+    select(rowname, Description, group, totals) %>%
+    group_by(Description) %>% 
+    summarise(min=min(totals),max=max(totals)) %>% 
+    left_join(group_table)
+  
+  ggplot(min_max_counts, aes(x=Description,ymin = `min`, ymax = `max`,color=group)) + 
+    geom_linerange(stat = 'identity') +
+    xlab('Sample') + 
+    ylab('Counts') +
+    theme(axis.ticks.x=element_blank(),
+          axis.text.x=element_blank(),
+          panel.background = element_blank()) +
+    ggtitle(plot_title)
+  ggsave(file=plot_file)
+  
+  print(paste("Lowest Maximum Value:", min(min_max_counts$max)))
+}
+MinMaxFloatingBarplot(ps,
+                      file.path(figure_dir,"all_min_max_readcounts.pdf"),
+                      "All")
+MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Bacteria"),
+                      file.path(figure_dir,"bacteria_min_max_readcounts.pdf"),
+                      "Bacteria")
+MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Eukaryota"),
+                      file.path(figure_dir,"eukaryota_min_max_readcounts.pdf"),
+                      "Eukaryota")
+MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Archaea"),
+                      file.path(figure_dir,"archaea_min_max_readcounts.pdf"))
+MinMaxFloatingBarplot(subset_taxa(ps,is.na(Kingdom)),
+                      file.path(figure_dir,"na_min_max_readcounts.pdf"))
 
-group_table = sample_data(ps) %>% select(group,Description) %>% unique
 
-min_max_counts = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
-  select(rowname, Description, group, totals) %>%
-  group_by(Description) %>% 
-  summarise(min=min(totals),max=max(totals)) %>% 
-  left_join(group_table)
 
-ggplot(min_max_counts, aes(x=Description,ymin = `min`, ymax = `max`,color=group)) + 
-  geom_linerange(stat = 'identity') +
-  xlab('Sample') + 
-  ylab('Counts') +
-  theme(axis.ticks.x=element_blank(),
-        axis.text.x=element_blank(),
-        panel.background = element_blank())
-ggsave(file=file.path(figure_dir,"min_max_readcounts.pdf"))
-
-print(paste("Lowest Maximum Value:", min(min_max_counts$max)))
 #==============================================================================
 #==============================================================================
 #==============================================================================
@@ -93,7 +112,7 @@ max_rep_ps = subset_samples(ps,SampleID %in% max_replicate$rowname)
 
 #==============================================================================
 ## ---------------------------------------------
-## Make some plots
+## Alpha Diversity Plots
 ##---------------------------------------------
 # plot_richness(max_rep_ps, x = "sample_aspiration", color = "antibiotic") + geom_boxplot()
 plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
@@ -105,7 +124,31 @@ ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
 # plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
 #               measures = c("Shannon")) + geom_boxplot() +
 #   theme(panel.background = element_blank())
-  
+
+#==============================================================================
+## ---------------------------------------------
+## Abundance Plots
+##---------------------------------------------
+tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Eukaryota") %>% head
+tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Archaea") %>% head
+tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(is.na(Kingdom)) %>% select(rowname) %>% head
+
+tax_table(max_rep_ps) %>% as.data.frame %>% group_by(Kingdom) %>% summarise(blah = n())
+
+max_rep_ps.rel  = transform_sample_counts(max_rep_ps, function(x) x / sum(x) )
+max_rep_ps.rel.filt = filter_taxa(max_rep_ps.rel, function(x) var(x) > 1e-6, TRUE)
+
+subset_taxa(ps,Kingdom=="Bacteria")
+
+
+plot_bar(max_rep_ps.rel.filt,fill="Family")
+# plot_bar(max_rep_ps.rel.filt, "group", "Abundance", title=title)
+# plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
+#               measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
+#   geom_boxplot() +
+#   theme(panel.background = element_blank())
+# ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
+
 #==============================================================================
 # Ordination plots
 # Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
