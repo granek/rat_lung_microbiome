@@ -45,6 +45,8 @@ library(dada2)
 library(ShortRead)
 library(ggplot2)
 library(phyloseq)
+library(phangorn)
+library(msa)
 # library(dplyr)
 # library(biom)
 ## sessionInfo()
@@ -244,12 +246,31 @@ makePhyloseq = function(seqtab,referenceFasta,map_file,random.seed=100){
   # Make "otu_table"
   ##---------------------------------------
   # seqs <- colnames(seqtab)
-  otab <- otu_table(seqtab, taxa_are_rows=FALSE)
+  # otab <- otu_table(seqtab, taxa_are_rows=FALSE)
+  ##---------------------------------------------------------------------
+  ## block below derived from http://f1000research.com/articles/5-1492/v1
+  seqs <- getSequences(seqtab)
+  names(seqs) <- seqs # This propagates to the tip labels of the tree
+  mult <- msa(seqs, method="ClustalW", type="dna", order="input")
+
+  ## The phangorn package is then used to construct a phylogenetic tree. Here we first construct a neighbor-joining tree, and then fit a GTR+G+I maximum likelihood tree using the neighbor-joining tree as a starting point.
+
+  phang.align <- as.phyDat(mult, type="DNA", names=getSequence(seqtab))
+  dm <- dist.ml(phang.align)
+  treeNJ <- NJ(dm) # Note, tip order != sequence order
+  fit = pml(treeNJ, data=phang.align)
+  ## negative edges length changed to 0!
+  
+  fitGTR <- update(fit, k=4, inv=0.2)
+  fitGTR <- optim.pml(fitGTR, model="GTR", optInv=TRUE, optGamma=TRUE,
+                      rearrangement = "stochastic", control = pml.control(trace = 0))
+  ##---------------------------------------------------------------------
   
   
-  ps <- phyloseq(otab, 
-                 samdat, 
-                 tax_table(seqtab.tax))
+  ps <- phyloseq(tax_table(seqtab.tax),
+                 samdat,
+                 otu_table(seqtab, taxa_are_rows=FALSE), 
+                 phy_tree(fitGTR$tree))
   
   # 
   # # colnames(otab) <- paste0("Seq", seq(ncol(otab)))
@@ -393,6 +414,8 @@ random.seed=100
 ps = makePhyloseq(seqtab,silva_ref,map_file)
 ## plot_richness(ps, x="animal", measures=c("Shannon", "Simpson"), color="antibiotic") + theme_bw()
 ## plot_bar(ps, x="antibiotic", fill="Family") 
+saveRDS(ps, paste0(psfile.prefix,".rds"))
+
 
 # output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
 output.files = outputPhyloseq(ps,psfile.prefix)
@@ -406,7 +429,9 @@ write(paste("tax_table_file:\t", tax_table_file), file="")
 
 
 
-ps.loaded = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
+## ps.loaded = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
+ps.loaded = readRDS(paste0(psfile.prefix,".rds"))
+
 ## # outputPhyloseq(ps.loaded,paste0(psfile.prefix,"_loaded"))
 if (identical(ps,ps.loaded)) {
     print("YAY! Saved and reloaded ps is identical to original")
