@@ -32,7 +32,7 @@ psfile.prefix = file.path(results_dir, "rat_lung_ps")
 # library(ShortRead)
 library(ggplot2)
 library(phyloseq)
-# library(dplyr)
+library(dplyr)
 # library(biom)
 writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phyloseq_object_sessionInfo.txt"))
 ##====================================================================
@@ -89,8 +89,20 @@ ps1.ord <- ordinate(ps1, "NMDS", "bray")
 p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic") 
 p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
 
+#==============================================================================
+# Floating barplot for replicate Min/max 
+# Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
+head(otu_table(ps))
+dim(psmelt(ps))
+total_counts = as.data.frame(rowSums(otu_table(ps)))
+colnames(total_counts) = "totals"
+min_max_counts = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
+  select(rowname, Description, totals) %>%
+  group_by(Description) %>% 
+  summarise(min=min(totals),max=max(totals))
 
-
-
-
+ggplot(min_max_counts, aes(x=Description,ymin = `min`, ymax = `max`)) + 
+  geom_linerange(stat = 'identity') +
+  xlab('Sample') + 
+  ylab('Counts') 
 
