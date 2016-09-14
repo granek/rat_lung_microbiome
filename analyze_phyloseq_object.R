@@ -13,6 +13,8 @@ basedir = args$basedir
 workdir = file.path(basedir, "workspace")
 results_dir = file.path(workdir,"results")
 psfile.prefix = file.path(results_dir, "rat_lung_ps")
+figure_dir = file.path(workdir,"figures")
+dir.create(figure_dir, showWarnings = TRUE)
 
 ##====================================================================
 ##====================================================================
@@ -35,7 +37,10 @@ loadPhyloseqFiles = function(otu_table_file,sample_data_file,tax_table_file){
   return(ps)
 }
 #==============================================================================
-list.files(results_dir)
+## ---------------------------------------------
+## Load Data into Phyloseq object
+##---------------------------------------------
+# list.files(results_dir)
 # setwd("./parker_rat_lung/")
 # output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
 otu_table_file = paste0(psfile.prefix,"_otu.csv")
@@ -45,40 +50,7 @@ tax_table_file = paste0(psfile.prefix,"_tax.csv")
 ps = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
 # ps = readRDS(paste0(psfile.prefix,".rds"))
 
-plot_richness(ps, x="animal", measures=c("Shannon", "Simpson"), color="antibiotic") + theme_bw()
-plot_bar(ps, x="antibiotic", fill="Family") 
 
-#==============================================================================
-# Ordination plots
-# Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
-
-## Remove OTUs that do not show appear more than 5 times in more than half the samples
-wh0 = genefilter_sample(ps, filterfun_sample(function(x) x > 5), A=0.5*nsamples(ps))
-ps1 = prune_taxa(wh0, ps)
-
-## Transform to even sampling depth.
-ps1 = transform_sample_counts(ps1, function(x) 1E6 * x/sum(x))
-
-# Keep only the most abundant five phyla.
-phylum.sum = tapply(taxa_sums(ps1), tax_table(ps1)[, "Phylum"], sum, na.rm=TRUE)
-top5phyla = names(sort(phylum.sum, TRUE))[1:5]
-ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
-
-
-# We will want to investigate a major prior among the samples, which is that some are human-associated microbiomes, and some are not. Define a human-associated versus non-human categorical variable:
-  
-# human = get_variable(GP1, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
-# sample_data(GP1)$human <- factor(human)
-
-## (2) Just samples
-
-## Next, let’s plot only the samples, and shade the points by “SampleType” while also modifying the shape according to whether they are human-associated. There are a few additional ggplot2 layers added to make the plot even nicer…
-ps1.ord <- ordinate(ps1, "NMDS", "bray")
-p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic") 
-p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
-
-#==============================================================================
-dim(psmelt(ps))
 ## ---------------------------------------------
 ## Floating barplot for replicate Min/max 
 ##---------------------------------------------
@@ -100,5 +72,68 @@ ggplot(min_max_counts, aes(x=Description,ymin = `min`, ymax = `max`,color=group)
   theme(axis.ticks.x=element_blank(),
         axis.text.x=element_blank(),
         panel.background = element_blank())
+ggsave(file=file.path(figure_dir,"min_max_readcounts.pdf"))
 
 print(paste("Lowest Maximum Value:", min(min_max_counts$max)))
+#==============================================================================
+#==============================================================================
+#==============================================================================
+## ---------------------------------------------
+## Extract subset of replicates with most counts in each pair
+##---------------------------------------------
+max_replicate = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
+  select(rowname, Description, group, totals) %>%
+  group_by(Description) %>% 
+  top_n(n=1)
+
+# check to be sure replicates were removed
+max_replicate %>% select(Description) %>% duplicated() %>% any()
+
+max_rep_ps = subset_samples(ps,SampleID %in% max_replicate$rowname)
+
+#==============================================================================
+## ---------------------------------------------
+## Make some plots
+##---------------------------------------------
+# plot_richness(max_rep_ps, x = "sample_aspiration", color = "antibiotic") + geom_boxplot()
+plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
+              measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
+  geom_boxplot() +
+  theme(panel.background = element_blank())
+ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
+
+# plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
+#               measures = c("Shannon")) + geom_boxplot() +
+#   theme(panel.background = element_blank())
+  
+#==============================================================================
+# Ordination plots
+# Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
+
+## Remove OTUs that do not show appear more than 5 times in more than half the samples
+wh0 = genefilter_sample(ps, filterfun_sample(function(x) x > 5), A=0.5*nsamples(ps))
+ps1 = prune_taxa(wh0, ps)
+
+## Transform to even sampling depth.
+ps1 = transform_sample_counts(ps1, function(x) 1E6 * x/sum(x))
+
+# Keep only the most abundant five phyla.
+phylum.sum = tapply(taxa_sums(ps1), tax_table(ps1)[, "Phylum"], sum, na.rm=TRUE)
+top5phyla = names(sort(phylum.sum, TRUE))[1:5]
+ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
+
+
+# We will want to investigate a major prior among the samples, which is that some are human-associated microbiomes, and some are not. Define a human-associated versus non-human categorical variable:
+
+# human = get_variable(GP1, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+# sample_data(GP1)$human <- factor(human)
+
+## (2) Just samples
+
+## Next, let’s plot only the samples, and shade the points by “SampleType” while also modifying the shape according to whether they are human-associated. There are a few additional ggplot2 layers added to make the plot even nicer…
+ps1.ord <- ordinate(ps1, "NMDS", "bray")
+p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic") 
+p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
+
+#==============================================================================
+dim(psmelt(ps))
