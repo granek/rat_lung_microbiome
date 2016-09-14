@@ -25,7 +25,7 @@ RUN Rscript -e "install.packages(pkgs = c('ggplot2','dplyr','argparse','phangorn
     repos='https://cran.revolutionanalytics.com/', \
     dependencies=TRUE)" && \
     Rscript -e "source('https://bioconductor.org/biocLite.R'); \
-    biocLite(pkgs=c('dada2','ShortRead','phyloseq','msa','DESeq2'))"
+    biocLite(pkgs=c('dada2','ShortRead','phyloseq','msa','DESeq2','metagenomeSeq'))"
 
 ##------------------------------------------------------------
 USER $RSTUDIO_USER
