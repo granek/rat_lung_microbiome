@@ -50,7 +50,7 @@ library(msa)
 # library(dplyr)
 # library(biom)
 ## sessionInfo()
-writeLines(capture.output(sessionInfo()), file.path(results_dir,"sessionInfo.txt"))
+writeLines(capture.output(sessionInfo()), file.path(results_dir,"process_fastq_to_counts_sessionInfo.txt"))
 ##====================================================================
 #+ Filtering and Trimming, include=FALSE
 # First we read in the file names for all the fastq files and do a little string
