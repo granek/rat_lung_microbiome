@@ -13,6 +13,8 @@ basedir = args$basedir
 workdir = file.path(basedir, "workspace")
 results_dir = file.path(workdir,"results")
 psfile.prefix = file.path(results_dir, "rat_lung_ps")
+figure_dir = file.path(workdir,"figures")
+dir.create(figure_dir, showWarnings = TRUE)
 
 ##====================================================================
 ##====================================================================
@@ -35,7 +37,10 @@ loadPhyloseqFiles = function(otu_table_file,sample_data_file,tax_table_file){
   return(ps)
 }
 #==============================================================================
-list.files(results_dir)
+## ---------------------------------------------
+## Load Data into Phyloseq object
+##---------------------------------------------
+# list.files(results_dir)
 # setwd("./parker_rat_lung/")
 # output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
 otu_table_file = paste0(psfile.prefix,"_otu.csv")
@@ -45,8 +50,144 @@ tax_table_file = paste0(psfile.prefix,"_tax.csv")
 ps = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
 # ps = readRDS(paste0(psfile.prefix,".rds"))
 
-plot_richness(ps, x="animal", measures=c("Shannon", "Simpson"), color="antibiotic") + theme_bw()
-plot_bar(ps, x="antibiotic", fill="Family") 
+
+## ---------------------------------------------
+## Floating barplot for replicate Min/max 
+##---------------------------------------------
+MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
+  total_counts = as.data.frame(rowSums(otu_table(ps)))
+  colnames(total_counts) = "totals"
+  
+  group_table = sample_data(ps) %>% select(group,Description) %>% unique
+  
+  min_max_counts = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
+    select(rowname, Description, group, totals) %>%
+    group_by(Description) %>% 
+    summarise(min=min(totals),max=max(totals)) %>% 
+    left_join(group_table)
+  
+  ggplot(min_max_counts, aes(x=Description,ymin = `min`, ymax = `max`,color=group)) + 
+    geom_linerange(stat = 'identity') +
+    xlab('Sample') + 
+    ylab('Counts') +
+    theme(axis.ticks.x=element_blank(),
+          axis.text.x=element_blank(),
+          panel.background = element_blank()) +
+    ggtitle(plot_title)
+  ggsave(file=plot_file)
+  
+  print(paste("Lowest Maximum Value:", min(min_max_counts$max)))
+}
+MinMaxFloatingBarplot(ps,
+                      file.path(figure_dir,"all_min_max_readcounts.pdf"),
+                      "All")
+MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Bacteria"),
+                      file.path(figure_dir,"bacteria_min_max_readcounts.pdf"),
+                      "Bacteria")
+MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Eukaryota"),
+                      file.path(figure_dir,"eukaryota_min_max_readcounts.pdf"),
+                      "Eukaryota")
+MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Archaea"),
+                      file.path(figure_dir,"archaea_min_max_readcounts.pdf"))
+MinMaxFloatingBarplot(subset_taxa(ps,is.na(Kingdom)),
+                      file.path(figure_dir,"na_min_max_readcounts.pdf"))
+
+
+
+#==============================================================================
+#==============================================================================
+#==============================================================================
+## ---------------------------------------------
+## Extract subset of replicates with most counts in each pair
+##---------------------------------------------
+bacteria_ps = subset_taxa(ps,Kingdom=="Bacteria")
+max_replicate = left_join(add_rownames(sample_data(bacteria_ps)), add_rownames(total_counts)) %>% 
+  select(rowname, Description, group, totals) %>%
+  group_by(Description) %>% 
+  top_n(n=1)
+
+# check to be sure replicates were removed
+max_replicate %>% select(Description) %>% duplicated() %>% any()
+
+max_rep_bacteria_ps = subset_samples(bacteria_ps,SampleID %in% max_replicate$rowname)
+
+#==============================================================================
+## ---------------------------------------------
+## Alpha Diversity Plots
+##---------------------------------------------
+# plot_richness(max_rep_ps, x = "sample_aspiration", color = "antibiotic") + geom_boxplot()
+plot_richness(max_rep_bacteria_ps, x = "antibiotic", color = "sample_aspiration", 
+              measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
+  geom_boxplot() +
+  theme(panel.background = element_blank())
+ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
+
+# plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
+#               measures = c("Shannon")) + geom_boxplot() +
+#   theme(panel.background = element_blank())
+
+#==============================================================================
+## ---------------------------------------------
+## Abundance Plots
+##---------------------------------------------
+# 
+# What fraction of taxa are from each kingdom?
+tax_table(max_rep_ps) %>% as.data.frame %>% group_by(Kingdom) %>% summarise(blah = n())
+
+
+tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Eukaryota") %>% head
+tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Archaea") %>% head
+tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(is.na(Kingdom)) %>% select(rowname) %>% head
+
+
+
+max_rep_bacteria_ps.rel  = transform_sample_counts(max_rep_bacteria_ps, function(x) x / sum(x) )
+max_rep_bacteria_ps.rel.filt = filter_taxa(max_rep_bacteria_ps.rel, function(x) var(x) > 1e-3, TRUE)
+
+
+plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
+plot_bar(max_rep_bacteria_ps.rel.filt, facet_grid=~antibiotic, fill="Genus")
+plot_bar(max_rep_bacteria_ps.rel.filt, facet_grid=antibiotic~sample_aspiration, fill="Genus")
+
+
+# max_rep_bacteria_ps.rel.filt.left = subset_samples(bacteria_ps,lung=="left")
+# mdf = psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left"))
+
+# Plot relative abundances in Left Lung Samples
+p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left")), 
+           aes_string(x = "animal", y = "Abundance", fill = "Genus"))
+p = p + geom_bar(stat = "identity", position = "stack")
+p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
+p <- p + facet_grid(antibiotic~sample_aspiration)
+p = p + ggtitle("Left Lungs")
+print(p)
+ggsave(file=file.path(figure_dir,"left_lung_abundance.png"))
+
+# Plot relative abundances in Right Lung Samples
+p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="right")), 
+           aes_string(x = "animal", y = "Abundance", fill = "Genus"))
+p = p + geom_bar(stat = "identity", position = "stack")
+p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
+p <- p + facet_grid(antibiotic~left_aspiration)
+p = p + ggtitle("Right Lungs (untreated)")
+print(p)
+ggsave(file=file.path(figure_dir,"right_lung_abundance.png"))
+
+
+# ggplot(psmelt(max_rep_bacteria_ps.rel.filt), aes(x="antibiotic", y=Abundance, fill="Genus")) + 
+#   geom_bar(stat="identity") + 
+#   facet_grid(antibiotic~sample_aspiration)
+
+
+
+
+# plot_bar(max_rep_bacteria_ps.rel.filt,x="sample_aspiration", facet_grid="antibiotic", fill="Genus")
+# plot_bar(max_rep_ps.rel.filt, "group", "Abundance", title=title)
+# plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
+#               measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
+#   geom_boxplot() +
+#   theme(panel.background = element_blank())
+# ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
 
 #==============================================================================
 # Ordination plots
@@ -66,7 +207,7 @@ ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
 
 
 # We will want to investigate a major prior among the samples, which is that some are human-associated microbiomes, and some are not. Define a human-associated versus non-human categorical variable:
-  
+
 # human = get_variable(GP1, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
 # sample_data(GP1)$human <- factor(human)
 
@@ -79,26 +220,3 @@ p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples"
 
 #==============================================================================
 dim(psmelt(ps))
-## ---------------------------------------------
-## Floating barplot for replicate Min/max 
-##---------------------------------------------
-total_counts = as.data.frame(rowSums(otu_table(ps)))
-colnames(total_counts) = "totals"
-
-group_table = sample_data(ps) %>% select(group,Description) %>% unique
-
-min_max_counts = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
-  select(rowname, Description, group, totals) %>%
-  group_by(Description) %>% 
-  summarise(min=min(totals),max=max(totals)) %>% 
-  left_join(group_table)
-
-ggplot(min_max_counts, aes(x=Description,ymin = `min`, ymax = `max`,color=group)) + 
-  geom_linerange(stat = 'identity') +
-  xlab('Sample') + 
-  ylab('Counts') +
-  theme(axis.ticks.x=element_blank(),
-        axis.text.x=element_blank(),
-        panel.background = element_blank())
-
-print(paste("Lowest Maximum Value:", min(min_max_counts$max)))
