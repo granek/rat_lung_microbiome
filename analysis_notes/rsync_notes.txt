@@ -1,0 +1,13 @@
+##--------------------------------------------------
+## NGS to AZURE
+rsync -a  --exclude=.DS_Store --exclude OLD --exclude OLDER --exclude split_Undetermined_S0_L001_R1_001 --exclude split_Undetermined_S0_L001_R2_001 --exclude tagged_fastq --verbose --progress --stats bitnami@colab-sbx-201.oit.duke.edu:/mnt/hts_scratch/Members/josh/parker/rat_lung /mnt/parker_data_and_work/parker/rat_lung
+##--------------------------------------------------
+# AZURE to ngs
+rsync --omit-dir-times --temp-dir /home/bitnami/   -a  --exclude=.DS_Store --exclude OLD --exclude OLDER --exclude split_Undetermined_S0_L001_R1_001 --exclude split_Undetermined_S0_L001_R2_001 --exclude tagged_fastq --verbose --progress --stats /mnt/parker_data_and_work/parker/rat_lung/workspace/results  bitnami@colab-sbx-201.oit.duke.edu:/mnt/hts_scratch/Members/josh/parker/rat_lung/workspace
+##--------------------------------------------------
+
+rsync  --omit-dir-times --temp-dir /home/bitnami/ -a  --exclude=.DS_Store --verbose --progress --stats /nfs/gems_sata/parker bitnami@colab-sbx-201.oit.duke.edu:/mnt/hts_scratch/Members/josh/
+
+
+rsync --dry-run  -a  --exclude=.DS_Store --exclude OLD --exclude OLDER --exclude split_Undetermined_S0_L001_R1_001 --exclude split_Undetermined_S0_L001_R2_001 --exclude tagged_fastq --verbose --progress --stats bitnami@colab-sbx-201.oit.duke.edu:/mnt/hts_scratch/Members/josh/parker ~/parker_data_and_work
+

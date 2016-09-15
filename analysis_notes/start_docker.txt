@@ -1,0 +1,69 @@
+RUSER=rs3871
+docker run -d -p 8787:8787 \
+       -e USER=$RUSER \
+       -e PASSWORD="i_183VVYv___tocMZCim8bK" \
+       --name rstudio  \
+       -v /home/bitnami/parker_rat_lung:/home/$RUSER/parker_rat_lung \
+       -v /mnt/hts_scratch/Members/josh/parker/rat_lung/workspace:/home/$RUSER/parker_rat_lung/workspace \
+       -v /mnt/hts_scratch/Members/josh/parker/rat_lung/raw_data:/home/$RUSER/parker_rat_lung/raw_data \
+       rocker/rstudio
+
+# -e USE_HTTPS=yes
+
+# web interface with qiime container
+RUSER=rstudio
+docker run -d -p 8787:8787 \
+       -e USER=$RUSER \
+       -e PASSWORD="i_183VVYv___tocMZCim8bK" \
+       --name rstudio_qiime_web  \
+       -v /home/bitnami/parker_rat_lung:/home/$RUSER/parker_rat_lung \
+       -v /mnt/hts_scratch/Members/josh/parker/rat_lung/workspace:/home/$RUSER/parker_rat_lung/workspace \
+       -v /mnt/hts_scratch/Members/josh/parker/rat_lung/raw_data:/home/$RUSER/parker_rat_lung/raw_data \
+       granek/rstudio_qiime:v4
+
+# shell into container, mount the FULL data scratch space
+RUSER=rstudio
+docker run --rm -it --user $RUSER \
+       -v /home/bitnami/parker_rat_lung:/home/$RUSER/parker_rat_lung \
+       -v /mnt/hts_scratch/Members/josh/parker/rat_lung/workspace:/home/$RUSER/parker_rat_lung/workspace \
+       -v /mnt/hts_scratch/Members/josh/parker/rat_lung/raw_data:/home/$RUSER/parker_rat_lung/raw_data \
+       --name rstudio_qiime_full_bash \
+       rstudio_qiime_1 \
+       /bin/bash
+
+# shell into container, mount the "parker_test" scratch space
+RUSER=rstudio
+docker run --rm -it --user $RUSER \
+       -v /home/bitnami/parker_rat_lung:/home/$RUSER/parker_rat_lung \
+       -v /mnt/hts_scratch/Members/josh/parker_test/rat_lung/workspace:/home/$RUSER/parker_rat_lung/workspace \
+       -v /mnt/hts_scratch/Members/josh/parker_test/rat_lung/raw_data:/home/$RUSER/parker_rat_lung/raw_data \
+       --name rstudio_qiime_test_bash \
+       rstudio_qiime_4  \
+       /bin/bash
+
+# web interface, mount the "parker_test" scratch space                                                                                   RUSER=rs3871
+docker run -d -p 8787:8787 \
+       -e USER=$RUSER \
+       -e PASSWORD="i_183VVYv___tocMZCim8bK" \
+       -v /home/bitnami/parker_rat_lung:/home/$RUSER/parker_rat_lung \
+       -v /mnt/hts_scratch/Members/josh/parker_test/rat_lung/workspace:/home/$RUSER/parker_rat_lung/workspace \
+       -v /mnt/hts_scratch/Members/josh/parker_test/rat_lung/raw_data:/home/$RUSER/parker_rat_lung/raw_data \
+       --name rstudio_qiime_test_web  \
+       rstudio_qiime_1
+
+# FOR AZURE shell into container, mount the "parker" scratch space
+RUSER=rstudio
+
+docker run --rm -it --user rstudio \
+       -v /home/granek/parker_rat_lung:/home/rstudio/parker_rat_lung \
+       -v /mnt/parker_data_and_work/parker/rat_lung/workspace:/home/rstudio/parker_rat_lung/workspace \
+       -v /mnt/parker_data_and_work/parker/rat_lung/raw_data:/home/rstudio/parker_rat_lung/raw_data \
+       --name rstudio_qiime_test_bash \
+       granek/rstudio_qiime:v4 \
+       /bin/bash
+
+
+##--------------------------------------------------
+cd /home/rstudio/parker_rat_lung/
+make -f split_libraries.mk --dry-run
+##--------------------------------------------------
