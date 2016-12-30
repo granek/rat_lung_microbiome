@@ -103,6 +103,8 @@ MinMaxFloatingBarplot(subset_taxa(ps,is.na(Kingdom)),
 ## Extract subset of replicates with most counts in each pair
 ##---------------------------------------------
 bacteria_ps = subset_taxa(ps,Kingdom=="Bacteria")
+total_counts = as.data.frame(rowSums(otu_table(ps)))
+colnames(total_counts) = "totals"
 max_replicate = left_join(add_rownames(sample_data(bacteria_ps)), add_rownames(total_counts)) %>% 
   select(rowname, Description, group, totals) %>%
   group_by(Description) %>% 
@@ -134,9 +136,8 @@ ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
 ##---------------------------------------------
 # 
 # What fraction of taxa are from each kingdom?
+max_rep_ps = subset_samples(ps,SampleID %in% max_replicate$rowname)
 tax_table(max_rep_ps) %>% as.data.frame %>% group_by(Kingdom) %>% summarise(blah = n())
-
-
 tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Eukaryota") %>% head
 tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Archaea") %>% head
 tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(is.na(Kingdom)) %>% select(rowname) %>% head
