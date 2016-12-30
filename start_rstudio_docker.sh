@@ -7,8 +7,8 @@
 
 PASS="8_juggleD_albiNo_12_eleVens_cRush"
 DOCKER_MNTPOINT="/home/rstudio/parker_rat_lung"
-WORKSPACE_MNTPOINT="$DOCKER_MNTPOINT/parker_rat_lung/workspace"
-DATA_MNTPOINT="$DOCKER_MNTPOINTparker_rat_lung/raw_data"
+WORKSPACE_MNTPOINT="$DOCKER_MNTPOINT/workspace"
+DATA_MNTPOINT="$DOCKER_MNTPOINT/raw_data"
 HOST_BASE="$HOME/parker_rat_lung"
 HOST_SCRATCH="/mnt/hts_scratch/Members/josh/parker_rat_lung"
 WORKSPACE="$HOST_SCRATCH/workspace"
