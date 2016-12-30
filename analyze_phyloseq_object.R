@@ -24,45 +24,11 @@ library(phyloseq)
 library(dplyr)
 library(DESeq2)
 writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phyloseq_object_sessionInfo.txt"))
-# # ##====================================================================
-# loadPhyloseqFiles = function(otu_table_file,sample_data_file,tax_table_file){
-#   otab <- otu_table(read.csv(otu_table_file,row.names=1), taxa_are_rows=FALSE)
-#   taxtab <- tax_table(as.matrix(read.csv(tax_table_file,row.names=1)))
-# 
-#   sample.df = read.csv(sample_data_file,row.names=1)
-#   sample.df[is.na(sample.df)] <- c("")
-#   samdat = sample_data(sample.df)
-# 
-#   ps <- phyloseq(otab, samdat, taxtab)
-#   return(ps)
-# }
-# #==============================================================================
-## ---------------------------------------------
-## Load Data into Phyloseq object
-##---------------------------------------------
-# list.files(results_dir)
-# setwd("./parker_rat_lung/")
-# output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
-# otu_table_file = paste0(psfile.prefix,"_otu.csv")
-# sample_data_file = paste0(psfile.prefix,"_samdat.csv")
-# tax_table_file = paste0(psfile.prefix,"_tax.csv")
-# 
-# ps = loadPhyloseqFiles(otu_table_file,sample_data_file,tax_table_file)
 
 ## ---------------------------------------------
-## Compare to RDS
+## Load Phyloseq object from RDS
 ##---------------------------------------------
 ps = readRDS(file.path("results", "rat_lung_ps.rds"))
-test_rds_dir = "workspace/test_rds"
-prefix = file.path(test_rds_dir,"rat_lung_ps")
-otu_table_file = paste0(prefix,"_otu.csv")
-sample_data_file = paste0(prefix,"_samdat.csv")
-tax_table_file = paste0(prefix,"_tax.csv")
-dir.create(test_rds_dir, showWarnings = TRUE)
-
-write.csv(otu_table(ps), file=otu_table_file)
-write.csv(sample_data(ps), file=sample_data_file)
-write.csv(tax_table(ps), file=tax_table_file)
 
 ## ---------------------------------------------
 ## Floating barplot for replicate Min/max 
