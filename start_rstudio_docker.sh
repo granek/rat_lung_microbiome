@@ -6,19 +6,24 @@
 # https://www.digitalocean.com/community/tutorials/how-to-configure-nginx-with-ssl-as-a-reverse-proxy-for-jenkins
 
 PASS="8_juggleD_albiNo_12_eleVens_cRush"
-DOCKER_MNTPOINT="/home/rstudio/hartwell"
-WORKSPACE_MNTPOINT="$DOCKER_MNTPOINT/mouse_csection/workspace"
-DATA_MNTPOINT="$DOCKER_MNTPOINT/mouse_csection/raw_data"
-HOST_BASE="$HOME/hartwell"
-HOST_SCRATCH="/mnt/hts_scratch/Members/josh/mouse_csection"
+DOCKER_MNTPOINT="/home/rstudio/parker_rat_lung"
+WORKSPACE_MNTPOINT="$DOCKER_MNTPOINT/parker_rat_lung/workspace"
+DATA_MNTPOINT="$DOCKER_MNTPOINTparker_rat_lung/raw_data"
+HOST_BASE="$HOME/parker_rat_lung"
+HOST_SCRATCH="/mnt/hts_scratch/Members/josh/parker_rat_lung"
 WORKSPACE="$HOST_SCRATCH/workspace"
 RAW_DATA="$HOST_SCRATCH/raw_data"
-DOCKER_IMAGE_TAG="v5rc3"
+DOCKER_IMAGE_TAG="v4"
 DOCKER_IMAGE_NAME="granek/rstudio_qiime"
 DOCKER_IMAGE="${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-# DOCKER_IMAGE="granek/rstudio_qiime:v5rc2"
-# DOCKER_IMAGE="granek/rstudio_qiime:v5rc1"
-# DOCKER_IMAGE="granek/rstudio_qiime:v4"
+
+PORT_NUMBER=8787
+if [[ -z $3 ]] ; then
+    echo "Using default PORT: $PORT_NUMBER"
+else				
+    PORT_NUMBER=$3
+    echo "Using PORT from command line: '$PORT_NUMBER'"
+fi
 
 if [ "$1" == "shell" ]; then
     DOCKER_COMMAND="/bin/bash"
@@ -36,22 +41,20 @@ elif [ "$1" == "root" ]; then
 elif [ "$1" == "rstudio" ]; then
     DOCKER_COMMAND=""
     CONTAINER_NAME="rstudio_web_${DOCKER_IMAGE_TAG}"
-    DOCKER_ARGS="--detach --publish 8787:8787 -e PASSWORD=$PASS"
+    DOCKER_ARGS="--detach --publish $PORT_NUMBER:8787 -e PASSWORD=$PASS"
 else
    echo "Must supply command line argument! Should be run as one of the following commands:"
-   echo "'$0 shell'"
-   echo "'$0 root'"
-   echo "'$0 rstudio'"
+   echo "'$0 [shell|root|rstudio] (CONTAINER_NAME|default) (PORT_NUMBER)'"
+   echo "The first argument (in []) is required, the second and third are optional"
    exit 1
 fi
 
-if [ -n "${2+1}" ]; then
-    CONTAINER_NAME=$2
-    echo "Using CONTAINER_NAME from command line: $CONTAINER_NAME"
-else
+if [[ -z $2 ||  "$2" == "default" ]] ; then
     echo "Using default CONTAINER_NAME: $CONTAINER_NAME"
+else				
+    CONTAINER_NAME=$2
+    echo "Using CONTAINER_NAME from command line: '$CONTAINER_NAME'"
 fi
-
 
 
 
@@ -82,12 +85,3 @@ docker run $DOCKER_ARGS \
 # -e GIT_COMMITTER_NAME="Josh Granek" \
 # -e GIT_COMMITTER_EMAIL="josh@duke.edu" \
 #--------------------------------------------------
-# OLD pydna Docker command
-# docker run -d -p 8888:8888  -e USE_HTTPS=yes  \
-#      -e PASSWORD="5___3OLM__jknJH_7x" \
-#      -e USE_HTTPS=yes \
-#        -v $HOME/hartwell:/home/jovyan/work \
-#        -v /mnt/hts_scratch/Members/josh/mouse_csection/workspace:/home/jovyan/work/mouse_csection/workspace \
-#        -v /mnt/hts_scratch/Members/josh/mouse_csection/raw_data:/home/jovyan/work/mouse_csection/raw_data \
-#        --name pydna \
-#        mini_jupyter_pydna:v1rc2
