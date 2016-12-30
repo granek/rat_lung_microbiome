@@ -12,10 +12,10 @@ basedir = args$basedir
 
 workdir = file.path(basedir, "workspace")
 results_dir = file.path(workdir,"results")
-psfile.prefix = file.path(results_dir, "rat_lung_ps")
 figure_dir = file.path(workdir,"figures")
 dir.create(figure_dir, showWarnings = TRUE)
 
+phyloseq.rds = file.path("results", "rat_lung_ps.rds")
 ##====================================================================
 ##====================================================================
 #+ Setup: Load Libraries, include=FALSE
@@ -28,7 +28,7 @@ writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phylose
 ## ---------------------------------------------
 ## Load Phyloseq object from RDS
 ##---------------------------------------------
-ps = readRDS(file.path("results", "rat_lung_ps.rds"))
+ps = readRDS(phyloseq.rds)
 
 ## ---------------------------------------------
 ## Floating barplot for replicate Min/max 
@@ -73,8 +73,6 @@ MinMaxFloatingBarplot(subset_taxa(ps,is.na(Kingdom)),
                       file.path(figure_dir,"na_min_max_readcounts.pdf"),
                       "NA")
 
-
-
 #==============================================================================
 #==============================================================================
 #==============================================================================
@@ -111,31 +109,30 @@ ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
 
 #==============================================================================
 ## ---------------------------------------------
+## What fraction of taxa are from each kingdom?
+## ---------------------------------------------
+max_rep_ps = subset_samples(ps,SampleID %in% max_replicate$rowname)
+tax_table(max_rep_ps) %>% as.data.frame %>% group_by(Kingdom) %>% summarise(total_taxa = n())
+
+## ---------------------------------------------
 ## Abundance Plots
 ##---------------------------------------------
-# 
-# What fraction of taxa are from each kingdom?
-max_rep_ps = subset_samples(ps,SampleID %in% max_replicate$rowname)
-tax_table(max_rep_ps) %>% as.data.frame %>% group_by(Kingdom) %>% summarise(blah = n())
-tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Eukaryota") %>% head
-tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Archaea") %>% head
-tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(is.na(Kingdom)) %>% select(rowname) %>% head
-
-
+# tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Eukaryota") %>% head
+# tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Archaea") %>% head
+# tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(is.na(Kingdom)) %>% select(rowname) %>% head
 
 max_rep_bacteria_ps.rel  = transform_sample_counts(max_rep_bacteria_ps, function(x) x / sum(x) )
 max_rep_bacteria_ps.rel.filt = filter_taxa(max_rep_bacteria_ps.rel, function(x) var(x) > 1e-3, TRUE)
 
 
-plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
-plot_bar(max_rep_bacteria_ps.rel.filt, facet_grid=~antibiotic, fill="Genus")
-plot_bar(max_rep_bacteria_ps.rel.filt, facet_grid=antibiotic~sample_aspiration, fill="Genus")
-
-
+# plot_bar(max_rep_bacteria_ps.rel.filt, facet_grid=~antibiotic, fill="Genus")
+# plot_bar(max_rep_bacteria_ps.rel.filt, facet_grid=antibiotic~sample_aspiration, fill="Genus")
 # max_rep_bacteria_ps.rel.filt.left = subset_samples(bacteria_ps,lung=="left")
 # mdf = psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left"))
 
-# Plot relative abundances in Left Lung Samples
+## ---------------------------------------------
+## Plot relative abundances in Left Lung Samples
+## ---------------------------------------------
 p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left")), 
            aes_string(x = "animal", y = "Abundance", fill = "Genus"))
 p = p + geom_bar(stat = "identity", position = "stack")
@@ -145,7 +142,9 @@ p = p + ggtitle("Left Lungs")
 print(p)
 ggsave(file=file.path(figure_dir,"left_lung_abundance.png"))
 
-# Plot relative abundances in Right Lung Samples
+## ---------------------------------------------
+## Plot relative abundances in Right Lung Samples
+## ---------------------------------------------
 p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="right")), 
            aes_string(x = "animal", y = "Abundance", fill = "Genus"))
 p = p + geom_bar(stat = "identity", position = "stack")
@@ -154,6 +153,16 @@ p <- p + facet_grid(antibiotic~left_aspiration)
 p = p + ggtitle("Right Lungs (untreated)")
 print(p)
 ggsave(file=file.path(figure_dir,"right_lung_abundance.png"))
+
+
+##^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+## Everything above here seems to be working
+##^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+## ---------------------------------------------
+## Plot relative abundances between antibiotic
+## ---------------------------------------------
+plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
 
 
 # ggplot(psmelt(max_rep_bacteria_ps.rel.filt), aes(x="antibiotic", y=Abundance, fill="Genus")) + 
