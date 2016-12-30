@@ -88,9 +88,11 @@ MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Eukaryota"),
                       file.path(figure_dir,"eukaryota_min_max_readcounts.pdf"),
                       "Eukaryota")
 MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Archaea"),
-                      file.path(figure_dir,"archaea_min_max_readcounts.pdf"))
+                      file.path(figure_dir,"archaea_min_max_readcounts.pdf"),
+                      "Archaea")
 MinMaxFloatingBarplot(subset_taxa(ps,is.na(Kingdom)),
-                      file.path(figure_dir,"na_min_max_readcounts.pdf"))
+                      file.path(figure_dir,"na_min_max_readcounts.pdf"),
+                      "NA")
 
 
 
