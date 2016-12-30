@@ -13,7 +13,7 @@ HOST_BASE="$HOME/parker_rat_lung"
 HOST_SCRATCH="/mnt/hts_scratch/Members/josh/parker_rat_lung"
 WORKSPACE="$HOST_SCRATCH/workspace"
 RAW_DATA="$HOST_SCRATCH/raw_data"
-DOCKER_IMAGE_TAG="v4"
+DOCKER_IMAGE_TAG="v5rc3"
 DOCKER_IMAGE_NAME="granek/rstudio_qiime"
 DOCKER_IMAGE="${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
 
@@ -78,10 +78,10 @@ docker run $DOCKER_ARGS \
        $DOCKER_IMAGE \
        $DOCKER_COMMAND
 
-#--------------------------------------------------
+# --------------------------------------------------
 # GIT ENV variables (not sure if they are working)
 # -e GIT_AUTHOR_NAME="Josh Granek" \
 # -e GIT_AUTHOR_EMAIL="josh@duke.edu" \
 # -e GIT_COMMITTER_NAME="Josh Granek" \
 # -e GIT_COMMITTER_EMAIL="josh@duke.edu" \
-#--------------------------------------------------
+# --------------------------------------------------
