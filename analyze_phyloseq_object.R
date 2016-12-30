@@ -154,6 +154,15 @@ p = p + ggtitle("Right Lungs (untreated)")
 print(p)
 ggsave(file=file.path(figure_dir,"right_lung_abundance.png"))
 
+#' ## Observations from relative abundance plots
+#' I am surprised by the Rlung-whole_gastric-subq samples.
+#' I would have expected that they would look like the Llung-none-subq,
+#' but they look more like the Rlung-noantibiotic samples.
+#' 
+#' Is there cross-talk between the left and right lungs?
+#' 
+#' It is reasuring that the Llung-antibiotic samples look so similar despite 
+#' antibiotic mode-of-delivery 
 
 ##^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ## Everything above here seems to be working
