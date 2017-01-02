@@ -1,6 +1,8 @@
-#--------------------------------------------------
 #!/usr/bin/env Rscript
 
+#--------------------------------------------------
+#+ Setup: Parse Commandline, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser()
 parser$add_argument("--basedir", default=".",
@@ -8,6 +10,8 @@ parser$add_argument("--basedir", default=".",
                     metavar="DIR")
 args <- parser$parse_args()
 #--------------------------------------------------
+#+ Setup: Setup Paths, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 basedir = args$basedir
 
 workdir = file.path(basedir, "workspace")
@@ -16,30 +20,34 @@ figure_dir = file.path(workdir,"figures")
 dir.create(figure_dir, showWarnings = TRUE)
 
 phyloseq.rds = file.path("results", "rat_lung_ps.rds")
-##====================================================================
-##====================================================================
+
+#--------------------------------------------------
 #+ Setup: Load Libraries, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(ggplot2)
 library(phyloseq)
 library(dplyr)
 library(DESeq2)
-writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phyloseq_object_sessionInfo.txt"))
 
-## ---------------------------------------------
-## Load Phyloseq object from RDS
-##---------------------------------------------
+#--------------------------------------------------
+#+ Setup: Load Phyloseq object from RDS, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 full_ps = readRDS(phyloseq.rds)
 
-## ---------------------------------------------
-## How many taxa are from each kingdom?
-## ---------------------------------------------
+#==============================================================================
+#==============================================================================
+#' # How many taxa are from each kingdom?
+#--------------------------------------------------
+#+ How many taxa are from each kingdom?, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 tax_table(full_ps) %>% as.data.frame %>% 
   group_by(Kingdom) %>% 
   summarise(total_taxa = n()) 
 
-## ---------------------------------------------
-## Floating barplot for replicate Min/max 
-##---------------------------------------------
+#' # Examine the Number of Counts per Sample
+#--------------------------------------------------
+#+ MinMaxFloatingBarplot, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
   total_counts = as.data.frame(rowSums(otu_table(ps)))
   colnames(total_counts) = "totals"
@@ -66,21 +74,25 @@ MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
   print(paste("Lowest Maximum Value:", min(min_max_counts$max)))
   return(max_min_plot)
 }
+
+#--------------------------------------------------
+#+ MinMax Barplots by Kingdom, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 MinMaxFloatingBarplot(full_ps,
                       file.path(figure_dir,"all_min_max_readcounts.pdf"),
-                      "All")
-MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Bacteria"),
-                      file.path(figure_dir,"bacteria_min_max_readcounts.pdf"),
-                      "Bacteria")
+                      "All Counts")
 MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Eukaryota"),
                       file.path(figure_dir,"eukaryota_min_max_readcounts.pdf"),
-                      "Eukaryota")
+                      "Eukaryota Counts")
+MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Bacteria"),
+                      file.path(figure_dir,"bacteria_min_max_readcounts.pdf"),
+                      "Bacteria Counts")
 MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Archaea"),
                       file.path(figure_dir,"archaea_min_max_readcounts.pdf"),
-                      "Archaea")
+                      "Archaea Counts")
 MinMaxFloatingBarplot(subset_taxa(full_ps,is.na(Kingdom)),
                       file.path(figure_dir,"na_min_max_readcounts.pdf"),
-                      "NA")
+                      "NA (Undetermined) Counts")
 
 #==============================================================================
 #==============================================================================
@@ -228,5 +240,13 @@ p2 + geom_point(size=3)
 #==============================================================================
 
 
+#==============================================================================
+#==============================================================================
+#' # Session Info
+#--------------------------------------------------
+#+ Session Info?, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 sessionInfo()
+writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phyloseq_object_sessionInfo.txt"))
+
 
