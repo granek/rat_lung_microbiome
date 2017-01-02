@@ -45,17 +45,19 @@ MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
     summarise(min=min(totals),max=max(totals)) %>% 
     left_join(group_table)
   
-  ggplot(min_max_counts, aes(x=Description,ymin = `min`, ymax = `max`,color=group)) + 
-    geom_linerange(stat = 'identity') +
+  max_min_plot = ggplot(min_max_counts, 
+                      aes(x=Description,ymin = `min`, ymax = `max`,color=group)) + 
+    geom_linerange(stat = 'identity') + 
     xlab('Sample') + 
-    ylab('Counts') +
-    theme(axis.ticks.x=element_blank(),
-          axis.text.x=element_blank(),
-          panel.background = element_blank()) +
+    ylab('Counts') + 
+    theme(axis.ticks.x=element_blank(),           
+          axis.text.x=element_blank(),           
+          panel.background = element_blank()) + 
     ggtitle(plot_title)
-  ggsave(file=plot_file)
+  ggsave(file=plot_file, max_min_plot)
   
   print(paste("Lowest Maximum Value:", min(min_max_counts$max)))
+  return(max_min_plot)
 }
 MinMaxFloatingBarplot(ps,
                       file.path(figure_dir,"all_min_max_readcounts.pdf"),
@@ -219,3 +221,8 @@ p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", sh
 print(p2)
 #==============================================================================
 dim(psmelt(ps))
+#==============================================================================
+
+
+sessionInfo()
+
