@@ -197,8 +197,14 @@ plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
 wh0 = genefilter_sample(ps, filterfun_sample(function(x) x > 5), A=0.5*nsamples(ps))
 ps1 = prune_taxa(wh0, ps)
 
+## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
+## which (apply(otu_table(ps1), 1, function(row) all(row ==0 )))
+
 ## Transform to even sampling depth.
 ps1 = transform_sample_counts(ps1, function(x) 1E6 * x/sum(x))
+
+## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
+ps1 = prune_samples(complete.cases(otu_table(ps1)),ps1)
 
 # Keep only the most abundant five phyla.
 phylum.sum = tapply(taxa_sums(ps1), tax_table(ps1)[, "Phylum"], sum, na.rm=TRUE)
@@ -206,17 +212,10 @@ top5phyla = names(sort(phylum.sum, TRUE))[1:5]
 ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
 
 
-# We will want to investigate a major prior among the samples, which is that some are human-associated microbiomes, and some are not. Define a human-associated versus non-human categorical variable:
-
-# human = get_variable(GP1, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
-# sample_data(GP1)$human <- factor(human)
-
-## (2) Just samples
-
-## Next, let’s plot only the samples, and shade the points by “SampleType” while also modifying the shape according to whether they are human-associated. There are a few additional ggplot2 layers added to make the plot even nicer…
+#' NMDS Plot by Aspiration and Antibiotic
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
-p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic") 
-p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
-
+p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic")
+# p2 + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
+print(p2)
 #==============================================================================
 dim(psmelt(ps))
