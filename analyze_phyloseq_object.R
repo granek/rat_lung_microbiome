@@ -196,8 +196,8 @@ plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
 # Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
 
 ## Remove OTUs that do not show appear more than 5 times in more than half the samples
-wh0 = genefilter_sample(ps, filterfun_sample(function(x) x > 5), A=0.5*nsamples(ps))
-ps1 = prune_taxa(wh0, ps)
+wh0 = genefilter_sample(max_rep_bacteria_ps, filterfun_sample(function(x) x > 5), A=0.5*nsamples(max_rep_bacteria_ps))
+ps1 = prune_taxa(wh0, max_rep_bacteria_ps)
 
 ## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
 ## which (apply(otu_table(ps1), 1, function(row) all(row ==0 )))
@@ -217,10 +217,9 @@ ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
 #' NMDS Plot by Aspiration and Antibiotic
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
 p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic")
+p2 + geom_point(size=3)
 # p2 + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
 print(p2)
-#==============================================================================
-dim(psmelt(ps))
 #==============================================================================
 
 
