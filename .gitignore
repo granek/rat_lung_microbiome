@@ -3,7 +3,7 @@ packrat/lib*/
 packrat/src/
 .Rhistory
 .RData
-
 # ignore directories mounted into rstudio docker
 raw_data/
 workspace/
+test_knitr_spin.R
