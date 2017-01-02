@@ -28,7 +28,14 @@ writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phylose
 ## ---------------------------------------------
 ## Load Phyloseq object from RDS
 ##---------------------------------------------
-ps = readRDS(phyloseq.rds)
+full_ps = readRDS(phyloseq.rds)
+
+## ---------------------------------------------
+## How many taxa are from each kingdom?
+## ---------------------------------------------
+tax_table(full_ps) %>% as.data.frame %>% 
+  group_by(Kingdom) %>% 
+  summarise(total_taxa = n()) 
 
 ## ---------------------------------------------
 ## Floating barplot for replicate Min/max 
@@ -59,19 +66,19 @@ MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
   print(paste("Lowest Maximum Value:", min(min_max_counts$max)))
   return(max_min_plot)
 }
-MinMaxFloatingBarplot(ps,
+MinMaxFloatingBarplot(full_ps,
                       file.path(figure_dir,"all_min_max_readcounts.pdf"),
                       "All")
-MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Bacteria"),
+MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Bacteria"),
                       file.path(figure_dir,"bacteria_min_max_readcounts.pdf"),
                       "Bacteria")
-MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Eukaryota"),
+MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Eukaryota"),
                       file.path(figure_dir,"eukaryota_min_max_readcounts.pdf"),
                       "Eukaryota")
-MinMaxFloatingBarplot(subset_taxa(ps,Kingdom=="Archaea"),
+MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Archaea"),
                       file.path(figure_dir,"archaea_min_max_readcounts.pdf"),
                       "Archaea")
-MinMaxFloatingBarplot(subset_taxa(ps,is.na(Kingdom)),
+MinMaxFloatingBarplot(subset_taxa(full_ps,is.na(Kingdom)),
                       file.path(figure_dir,"na_min_max_readcounts.pdf"),
                       "NA")
 
@@ -81,13 +88,16 @@ MinMaxFloatingBarplot(subset_taxa(ps,is.na(Kingdom)),
 ## ---------------------------------------------
 ## Extract subset of replicates with most counts in each pair
 ##---------------------------------------------
-bacteria_ps = subset_taxa(ps,Kingdom=="Bacteria")
-total_counts = as.data.frame(rowSums(otu_table(ps)))
+bacteria_ps = subset_taxa(full_ps,Kingdom=="Bacteria") # Drop non-bacteria taxa
+total_counts = as.data.frame(rowSums(otu_table(full_ps)))
 colnames(total_counts) = "totals"
 max_replicate = left_join(add_rownames(sample_data(bacteria_ps)), add_rownames(total_counts)) %>% 
   select(rowname, Description, group, totals) %>%
   group_by(Description) %>% 
   top_n(n=1)
+
+# Get rid of full_ps to be sure it isn't accidentally used
+rm(full_ps)
 
 # check to be sure replicates were removed
 max_replicate %>% select(Description) %>% duplicated() %>% any()
@@ -110,11 +120,6 @@ ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
 #   theme(panel.background = element_blank())
 
 #==============================================================================
-## ---------------------------------------------
-## What fraction of taxa are from each kingdom?
-## ---------------------------------------------
-max_rep_ps = subset_samples(ps,SampleID %in% max_replicate$rowname)
-tax_table(max_rep_ps) %>% as.data.frame %>% group_by(Kingdom) %>% summarise(total_taxa = n())
 
 ## ---------------------------------------------
 ## Abundance Plots
@@ -219,7 +224,7 @@ ps1.ord <- ordinate(ps1, "NMDS", "bray")
 p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic")
 p2 + geom_point(size=3)
 # p2 + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
-print(p2)
+# print(p2)
 #==============================================================================
 
 
