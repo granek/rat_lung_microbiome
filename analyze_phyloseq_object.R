@@ -124,38 +124,23 @@ rm(full_ps) # Get rid of full_ps to be sure it isn't accidentally used
 #' # Alpha Diversity Plots
 #+ Alpha Diversity Plots, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# plot_richness(max_rep_ps, x = "sample_aspiration", color = "antibiotic") + geom_boxplot()
 alpha_plot = plot_richness(max_rep_bacteria_ps, x = "antibiotic", 
                            color = "sample_aspiration", 
                            measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
   geom_boxplot() + theme(panel.background = element_blank())
 ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Alpha Diversity Plot Print, echo=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print(alpha_plot)
-
-# plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
-#               measures = c("Shannon")) + geom_boxplot() +
-#   theme(panel.background = element_blank())
 
 #==============================================================================
 #==============================================================================
 #' # Relative Abundance Plots
 #+ Relative Abundance Plots, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Eukaryota") %>% head
-# tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Archaea") %>% head
-# tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(is.na(Kingdom)) %>% select(rowname) %>% head
-
 max_rep_bacteria_ps.rel  = transform_sample_counts(max_rep_bacteria_ps, function(x) x / sum(x) )
 max_rep_bacteria_ps.rel.filt = filter_taxa(max_rep_bacteria_ps.rel, function(x) var(x) > 1e-3, TRUE)
-
-
-# plot_bar(max_rep_bacteria_ps.rel.filt, facet_grid=~antibiotic, fill="Genus")
-# plot_bar(max_rep_bacteria_ps.rel.filt, facet_grid=antibiotic~sample_aspiration, fill="Genus")
-# max_rep_bacteria_ps.rel.filt.left = subset_samples(bacteria_ps,lung=="left")
-# mdf = psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left"))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Relative Abundance Plots: Left Lung Samples, include=FALSE
@@ -204,21 +189,6 @@ print(p)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
 
-
-# ggplot(psmelt(max_rep_bacteria_ps.rel.filt), aes(x="antibiotic", y=Abundance, fill="Genus")) + 
-#   geom_bar(stat="identity") + 
-#   facet_grid(antibiotic~sample_aspiration)
-
-
-
-
-# plot_bar(max_rep_bacteria_ps.rel.filt,x="sample_aspiration", facet_grid="antibiotic", fill="Genus")
-# plot_bar(max_rep_ps.rel.filt, "group", "Abundance", title=title)
-# plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
-#               measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
-#   geom_boxplot() +
-#   theme(panel.background = element_blank())
-# ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
 
 #==============================================================================
 #' # Ordination plots
