@@ -1,17 +1,18 @@
 #!/usr/bin/env Rscript
 
-#--------------------------------------------------
+#' ****************************************************************************
 #+ Setup: Parse Commandline, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser()
 parser$add_argument("--basedir", default=".",
                     help="Base directory for analysis [default %(default)s]",
                     metavar="DIR")
 args <- parser$parse_args()
-#--------------------------------------------------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Setup Paths, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 basedir = args$basedir
 
 workdir = file.path(basedir, "workspace")
@@ -21,33 +22,31 @@ dir.create(figure_dir, showWarnings = TRUE)
 
 phyloseq.rds = file.path("results", "rat_lung_ps.rds")
 
-#--------------------------------------------------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Libraries, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(ggplot2)
 library(phyloseq)
 library(dplyr)
 library(DESeq2)
 
-#--------------------------------------------------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Phyloseq object from RDS, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 full_ps = readRDS(phyloseq.rds)
 
-#==============================================================================
-#==============================================================================
+#' ****************************************************************************
 #' # How many taxa are from each kingdom?
-#--------------------------------------------------
 #+ How many taxa are from each kingdom?, echo=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 tax_table(full_ps) %>% as.data.frame %>% 
   group_by(Kingdom) %>% 
   summarise(total_taxa = n()) 
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' # Examine the Number of Counts per Sample
-#--------------------------------------------------
 #+ MinMaxFloatingBarplot, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
   total_counts = as.data.frame(rowSums(otu_table(ps)))
   colnames(total_counts) = "totals"
@@ -75,9 +74,9 @@ MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
   return(max_min_plot)
 }
 
-#--------------------------------------------------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ MinMax Barplots by Kingdom, echo=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 MinMaxFloatingBarplot(full_ps,
                       file.path(figure_dir,"all_min_max_readcounts.pdf"),
                       "All Counts")
@@ -96,10 +95,9 @@ MinMaxFloatingBarplot(subset_taxa(full_ps,is.na(Kingdom)),
 
 #==============================================================================
 #==============================================================================
-#==============================================================================
-## ---------------------------------------------
-## Extract subset of replicates with most counts in each pair
-##---------------------------------------------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Extract subset of replicates with most counts in each pair, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bacteria_ps = subset_taxa(full_ps,Kingdom=="Bacteria") # Drop non-bacteria taxa
 total_counts = as.data.frame(rowSums(otu_table(full_ps)))
 colnames(total_counts) = "totals"
@@ -108,18 +106,16 @@ max_replicate = left_join(add_rownames(sample_data(bacteria_ps)), add_rownames(t
   group_by(Description) %>% 
   top_n(n=1)
 
-# Get rid of full_ps to be sure it isn't accidentally used
-rm(full_ps)
-
 # check to be sure replicates were removed
 max_replicate %>% select(Description) %>% duplicated() %>% any()
 
 max_rep_bacteria_ps = subset_samples(bacteria_ps,SampleID %in% max_replicate$rowname)
 
+rm(full_ps) # Get rid of full_ps to be sure it isn't accidentally used
 #==============================================================================
-## ---------------------------------------------
-## Alpha Diversity Plots
-##---------------------------------------------
+#' # Alpha Diversity Plots
+#+ Alpha Diversity Plots, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # plot_richness(max_rep_ps, x = "sample_aspiration", color = "antibiotic") + geom_boxplot()
 plot_richness(max_rep_bacteria_ps, x = "antibiotic", color = "sample_aspiration", 
               measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
@@ -132,10 +128,10 @@ ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
 #   theme(panel.background = element_blank())
 
 #==============================================================================
-
-## ---------------------------------------------
-## Abundance Plots
-##---------------------------------------------
+#==============================================================================
+#' # Relative Abundance Plots
+#+ Relative Abundance Plots, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Eukaryota") %>% head
 # tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(Kingdom == "Archaea") %>% head
 # tax_table(max_rep_ps) %>% as.data.frame %>% add_rownames() %>% filter(is.na(Kingdom)) %>% select(rowname) %>% head
@@ -149,9 +145,9 @@ max_rep_bacteria_ps.rel.filt = filter_taxa(max_rep_bacteria_ps.rel, function(x) 
 # max_rep_bacteria_ps.rel.filt.left = subset_samples(bacteria_ps,lung=="left")
 # mdf = psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left"))
 
-## ---------------------------------------------
-## Plot relative abundances in Left Lung Samples
-## ---------------------------------------------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Relative Abundance Plots: Left Lung Samples, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left")), 
            aes_string(x = "animal", y = "Abundance", fill = "Genus"))
 p = p + geom_bar(stat = "identity", position = "stack")
@@ -161,9 +157,9 @@ p = p + ggtitle("Left Lungs")
 print(p)
 ggsave(file=file.path(figure_dir,"left_lung_abundance.png"))
 
-## ---------------------------------------------
-## Plot relative abundances in Right Lung Samples
-## ---------------------------------------------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Relative Abundance Plots: Right Lung Samples, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="right")), 
            aes_string(x = "animal", y = "Abundance", fill = "Genus"))
 p = p + geom_bar(stat = "identity", position = "stack")
@@ -173,7 +169,7 @@ p = p + ggtitle("Right Lungs (untreated)")
 print(p)
 ggsave(file=file.path(figure_dir,"right_lung_abundance.png"))
 
-#' ## Observations from relative abundance plots
+#' ### Observations from relative abundance plots
 #' I am surprised by the Rlung-whole_gastric-subq samples.
 #' I would have expected that they would look like the Llung-none-subq,
 #' but they look more like the Rlung-noantibiotic samples.
@@ -183,13 +179,11 @@ ggsave(file=file.path(figure_dir,"right_lung_abundance.png"))
 #' It is reasuring that the Llung-antibiotic samples look so similar despite 
 #' antibiotic mode-of-delivery 
 
-##^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-## Everything above here seems to be working
-##^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-## ---------------------------------------------
-## Plot relative abundances between antibiotic
-## ---------------------------------------------
+#---------------------------------------------------------------
+#' # BROKEN
+#' ## relative abundances between antibiotic treatments
+#+ Relative Abundance: Antibiotic Treatments, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
 
 
@@ -209,7 +203,9 @@ plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
 # ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
 
 #==============================================================================
-# Ordination plots
+#' # Ordination plots
+#+ Ordination plots, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
 
 ## Remove OTUs that do not show appear more than 5 times in more than half the samples
@@ -240,12 +236,12 @@ p2 + geom_point(size=3)
 #==============================================================================
 
 
-#==============================================================================
-#==============================================================================
+#' ****************************************************************************
+#' ****************************************************************************
 #' # Session Info
 #--------------------------------------------------
-#+ Session Info?, echo=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Session Info, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 sessionInfo()
 writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phyloseq_object_sessionInfo.txt"))
 
