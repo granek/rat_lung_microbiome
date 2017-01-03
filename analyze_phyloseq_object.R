@@ -75,23 +75,31 @@ MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
 }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#+ MinMax Barplots by Kingdom, echo=FALSE
+#+ MinMax Barplots by Kingdom, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-MinMaxFloatingBarplot(full_ps,
-                      file.path(figure_dir,"all_min_max_readcounts.pdf"),
-                      "All Counts")
-MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Eukaryota"),
-                      file.path(figure_dir,"eukaryota_min_max_readcounts.pdf"),
-                      "Eukaryota Counts")
-MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Bacteria"),
-                      file.path(figure_dir,"bacteria_min_max_readcounts.pdf"),
-                      "Bacteria Counts")
-MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Archaea"),
-                      file.path(figure_dir,"archaea_min_max_readcounts.pdf"),
-                      "Archaea Counts")
-MinMaxFloatingBarplot(subset_taxa(full_ps,is.na(Kingdom)),
-                      file.path(figure_dir,"na_min_max_readcounts.pdf"),
-                      "NA (Undetermined) Counts")
+all_barplot = MinMaxFloatingBarplot(full_ps,
+                                    file.path(figure_dir,"all_min_max_readcounts.pdf"),
+                                    "All Counts")
+eukaryota_barplot = MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Eukaryota"),
+                                          file.path(figure_dir,"eukaryota_min_max_readcounts.pdf"),
+                                          "Eukaryota Counts")
+bacteria_barplot = MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Bacteria"),
+                                         file.path(figure_dir,"bacteria_min_max_readcounts.pdf"),
+                                         "Bacteria Counts")
+archaea_barplot = MinMaxFloatingBarplot(subset_taxa(full_ps,Kingdom=="Archaea"),
+                                        file.path(figure_dir,"archaea_min_max_readcounts.pdf"),
+                                        "Archaea Counts")
+na_barplot = MinMaxFloatingBarplot(subset_taxa(full_ps,is.na(Kingdom)),
+                                   file.path(figure_dir,"na_min_max_readcounts.pdf"),
+                                   "NA (Undetermined) Counts")
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ MinMax Barplots by Kingdom Print, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+print(all_barplot)
+print(eukaryota_barplot)
+print(bacteria_barplot)
+print(archaea_barplot)
+print(na_barplot)
 
 #==============================================================================
 #==============================================================================
@@ -114,14 +122,18 @@ max_rep_bacteria_ps = subset_samples(bacteria_ps,SampleID %in% max_replicate$row
 rm(full_ps) # Get rid of full_ps to be sure it isn't accidentally used
 #==============================================================================
 #' # Alpha Diversity Plots
-#+ Alpha Diversity Plots, echo=FALSE
+#+ Alpha Diversity Plots, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # plot_richness(max_rep_ps, x = "sample_aspiration", color = "antibiotic") + geom_boxplot()
-plot_richness(max_rep_bacteria_ps, x = "antibiotic", color = "sample_aspiration", 
-              measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
-  geom_boxplot() +
-  theme(panel.background = element_blank())
+alpha_plot = plot_richness(max_rep_bacteria_ps, x = "antibiotic", 
+                           color = "sample_aspiration", 
+                           measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
+  geom_boxplot() + theme(panel.background = element_blank())
 ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Alpha Diversity Plot Print, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+print(alpha_plot)
 
 # plot_richness(max_rep_ps, x = "antibiotic", color = "sample_aspiration", 
 #               measures = c("Shannon")) + geom_boxplot() +
@@ -146,7 +158,7 @@ max_rep_bacteria_ps.rel.filt = filter_taxa(max_rep_bacteria_ps.rel, function(x) 
 # mdf = psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left"))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#+ Relative Abundance Plots: Left Lung Samples, echo=FALSE
+#+ Relative Abundance Plots: Left Lung Samples, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left")), 
            aes_string(x = "animal", y = "Abundance", fill = "Genus"))
@@ -154,11 +166,14 @@ p = p + geom_bar(stat = "identity", position = "stack")
 p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
 p <- p + facet_grid(antibiotic~sample_aspiration)
 p = p + ggtitle("Left Lungs")
-print(p)
 ggsave(file=file.path(figure_dir,"left_lung_abundance.png"))
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Relative Abundance Plots Print: Left Lung Samples, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+print(p)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#+ Relative Abundance Plots: Right Lung Samples, echo=FALSE
+#+ Relative Abundance Plots Setup: Right Lung Samples, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="right")), 
            aes_string(x = "animal", y = "Abundance", fill = "Genus"))
@@ -166,8 +181,11 @@ p = p + geom_bar(stat = "identity", position = "stack")
 p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
 p <- p + facet_grid(antibiotic~left_aspiration)
 p = p + ggtitle("Right Lungs (untreated)")
-print(p)
 ggsave(file=file.path(figure_dir,"right_lung_abundance.png"))
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Relative Abundance Plots Print: Right Lung Samples, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+print(p)
 
 #' ### Observations from relative abundance plots
 #' I am surprised by the Rlung-whole_gastric-subq samples.
@@ -226,15 +244,13 @@ phylum.sum = tapply(taxa_sums(ps1), tax_table(ps1)[, "Phylum"], sum, na.rm=TRUE)
 top5phyla = names(sort(phylum.sum, TRUE))[1:5]
 ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
 
-
-#' NMDS Plot by Aspiration and Antibiotic
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
 p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic")
-p2 + geom_point(size=3)
+p2 = p2 + geom_point(size=3)
 # p2 + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
-# print(p2)
-#==============================================================================
-
+#' #### NMDS Plot by Aspiration and Antibiotic
+#+ NMDS plots, echo=FALSE
+print(p2)
 
 #' ****************************************************************************
 #' ****************************************************************************
