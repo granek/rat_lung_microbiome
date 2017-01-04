@@ -192,13 +192,22 @@ plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
 
 #==============================================================================
 #' # Ordination plots
-#+ Ordination plots, include=FALSE
+#+ Ordination plots: Pruning, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
 
 ## Remove OTUs that do not show appear more than 5 times in more than half the samples
-wh0 = genefilter_sample(max_rep_bacteria_ps, filterfun_sample(function(x) x > 5), A=0.5*nsamples(max_rep_bacteria_ps))
+min_counts = 2
+sample_proportion = 0.01
+min_samples = ceiling(sample_proportion*nsamples(max_rep_bacteria_ps))
+wh0 = genefilter_sample(max_rep_bacteria_ps, 
+                        filterfun_sample(function(x) x >= min_counts), 
+                        A=min_samples)
+
 ps1 = prune_taxa(wh0, max_rep_bacteria_ps)
+ntaxa(max_rep_bacteria_ps)
+ntaxa(ps1)
+
 
 ## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
 ## which (apply(otu_table(ps1), 1, function(row) all(row ==0 )))
