@@ -218,10 +218,10 @@ ps1 = transform_sample_counts(ps1, function(x) 1E6 * x/sum(x))
 ## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
 ps1 = prune_samples(complete.cases(otu_table(ps1)),ps1)
 
-# Keep only the most abundant five phyla.
-phylum.sum = tapply(taxa_sums(ps1), tax_table(ps1)[, "Phylum"], sum, na.rm=TRUE)
-top5phyla = names(sort(phylum.sum, TRUE))[1:5]
-ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
+# # Keep only the most abundant five phyla.
+# phylum.sum = tapply(taxa_sums(ps1), tax_table(ps1)[, "Phylum"], sum, na.rm=TRUE)
+# top5phyla = names(sort(phylum.sum, TRUE))[1:5]
+# ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
 
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
 sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration")
