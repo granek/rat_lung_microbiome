@@ -208,7 +208,18 @@ ps1 = prune_taxa(wh0, max_rep_bacteria_ps)
 ntaxa(max_rep_bacteria_ps)
 ntaxa(ps1)
 
+#' ## Pruning Taxa
+#' The data was pruned before ordination to remove rare taxa
+#' To be included in the pruned dataset, a taxon must occur at least 
+#' `r min_counts` times in at least `r sample_proportion*100`% of samples 
+#' (`r min_samples` samples).
+#' Before pruning there are `r ntaxa(max_rep_bacteria_ps)` bacterial taxa 
+#' (all non-bacterial taxa have already been removed). After pruning there are 
+#' `r ntaxa(ps1)` bacterial taxa remaining.
 
+#--------------------------------------------------
+#+ Ordination plots: Transform counts, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
 ## which (apply(otu_table(ps1), 1, function(row) all(row ==0 )))
 
