@@ -276,11 +276,26 @@ ggsave(file=file.path(figure_dir,"antibiotc_nmds_bray.png"), plot=antibiotic.ord
 #' ### NMDS Plot by Antibiotic
 #+ NMDS plot: Antibiotic, echo=FALSE
 print(antibiotic.ord.plot)
+
+#'******************************************************************************
+#' # Further Analyses
+#+ Todo List, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' 1. Separate ordination plots for L and R lungs
+#' 1. Summary relative abundance plots (i.e. abundance across all samples in a group)
+#'     + treatment group
+#'     + antibiotic treatment
+#'     + lung treatment
+#' 1. Identify OTUs that distinguish groups (e.g. antibiotic vs no antibiotic)
+#' 1. Compare duplicates from each sample to determine how well min sample replicates max 
+#' 1. Anything else?
+
+#--------------------------------------------------
+#'****************************************************************************
 #' # Session Info
 #--------------------------------------------------
 #+ Session Info, echo=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 sessionInfo()
 writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phyloseq_object_sessionInfo.txt"))
-
 
