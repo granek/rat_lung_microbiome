@@ -215,17 +215,22 @@ top5phyla = names(sort(phylum.sum, TRUE))[1:5]
 ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
 
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
-p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic")
-p2 = p2 + geom_point(size=2)
-ggsave(file=file.path(figure_dir,"sample_nmds_bray.png"), plot=p2)
+sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration")
+sample.ord.plot = sample.ord.plot + geom_point(size=2)
+ggsave(file=file.path(figure_dir,"sample_nmds_bray.png"), plot=sample.ord.plot)
 
-# p2 + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
-#' #### NMDS Plot by Aspiration and Antibiotic
-#+ NMDS plots, echo=FALSE
-print(p2)
+# sample.ord.plot + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
+#' ### NMDS Plot by Aspiration
+#+ NMDS plot: Aspiration, echo=FALSE
+print(sample.ord.plot)
 
-#' ****************************************************************************
-#' ****************************************************************************
+antibiotic.ord.plot = plot_ordination(ps1, ps1.ord, color="antibiotic")
+antibiotic.ord.plot = antibiotic.ord.plot + geom_point(size=2)
+ggsave(file=file.path(figure_dir,"antibiotc_nmds_bray.png"), plot=antibiotic.ord.plot)
+
+#' ### NMDS Plot by Antibiotic
+#+ NMDS plot: Antibiotic, echo=FALSE
+print(antibiotic.ord.plot)
 #' # Session Info
 #--------------------------------------------------
 #+ Session Info, echo=FALSE
