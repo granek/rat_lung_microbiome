@@ -216,7 +216,9 @@ ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
 
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
 p2 = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration", shape="antibiotic")
-p2 = p2 + geom_point(size=3)
+p2 = p2 + geom_point(size=2)
+ggsave(file=file.path(figure_dir,"sample_nmds_bray.png"), plot=p2)
+
 # p2 + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
 #' #### NMDS Plot by Aspiration and Antibiotic
 #+ NMDS plots, echo=FALSE
