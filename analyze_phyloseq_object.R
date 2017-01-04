@@ -93,6 +93,18 @@ na_barplot = MinMaxFloatingBarplot(subset_taxa(full_ps,is.na(Kingdom)),
                                    file.path(figure_dir,"na_min_max_readcounts.pdf"),
                                    "NA (Undetermined) Counts")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Eukaryote contamination note
+#' A careful analysis of the phylogenetic makeup of data indicates that a large
+#' portion of the reads are of Eukarytoic origin.  Most of these appear to be 
+#' derived from the host (rat mitochondrian 16s rRNA).  These floating barplots
+#' show the range of counts in each sample for: total counts, Eukaryote only, 
+#' Bacteria only, Archea only, and Undetermined. The bar represents the read 
+#' count range for each sample.  Since each sample was sequenced twice, the bar 
+#' top gives the number of reads for the replicate with the most counts, and
+#' bar bottom the counts for the replicate with the least counts.
+
+#------------------------------------------------------------------------------
 #+ MinMax Barplots by Kingdom Print, echo=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print(all_barplot)
@@ -101,9 +113,22 @@ print(bacteria_barplot)
 print(archaea_barplot)
 print(na_barplot)
 
-#==============================================================================
-#==============================================================================
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#'*****************************************************************************
+#+ Low count sample note
+#' It is a common rule of thumb that for amplicon sequence analysis,
+#' each sample must have a minimum of 5,000-10,000 reads.
+#' However an analysis by 
+#' [Kuczynski, et al](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2898070/)
+#' indicates that this strict requirement is generally not necessary. They point out
+#' that, as with any statistical analysis, the amount of data required to 
+#' observe an effect is inversely proportional to the expected effect size.
+#' This means that we should still be able to see large scale community changes,
+#' despite the limited number of bacterial reads available for most samples.
+#' 
+#' The sample replicate from the duplicate pair with the most reads was used for
+#' all further  analyses.
+
+#------------------------------------------------------------------------------
 #+ Extract subset of replicates with most counts in each pair, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bacteria_ps = subset_taxa(full_ps,Kingdom=="Bacteria") # Drop non-bacteria taxa
