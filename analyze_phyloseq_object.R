@@ -214,12 +214,12 @@ print(p)
 #' It is reasuring that the Llung-antibiotic samples look so similar despite 
 #' antibiotic mode-of-delivery 
 
-#---------------------------------------------------------------
-#' # BROKEN
-#' ## relative abundances between antibiotic treatments
-#+ Relative Abundance: Antibiotic Treatments, echo=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
+# #---------------------------------------------------------------
+# #' # BROKEN
+# #' ## relative abundances between antibiotic treatments
+# #+ Relative Abundance: Antibiotic Treatments, echo=FALSE
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
 
 
 #==============================================================================
