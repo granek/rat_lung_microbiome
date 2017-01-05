@@ -275,8 +275,26 @@ ps1.ord <- ordinate(ps1, "NMDS", "bray")
 ord.plot = plot_ordination(ps1, ps1.ord, type="samples")
 ps1.ord.data = ord.plot$data
 
-
+#' ## NMDS Plots
+#' The goal of NMDS plots is to visualize relationships betwen datapoints.
+#' In the NMDS plots below, each point represents a sample. The distance between
+#' two points indicates how similar the two samples are in terms of bacterial 
+#' community composition.
+#---------------------------------------------------
 #' ### NMDS Plot by Antibiotic
+#' In this plot, points are colored by antibiotic treatment.
+#' All datapoints are shown in each quadrant, but
+#' in each quadrant only the points of interest are colored, other points are
+#' shown in gray. The left quadrants highlight **Left Lung** samples, 
+#' right quadrants **Right Lung** 
+#' (right lungs never received aspiration treatments).  
+#' The bottom quadrants highlight samples from lungs that were **aspirated**,
+#' top quadrants highlight lungs that were **not aspirated**.
+#' 
+#' We can see that coordinate 1 (along the x-axis) does a reasonably good job of 
+#' distinguishing aspirated lungs from unaspirated lungs, indicating that 
+#' aspiration has a large effect on the bacterial community. However, 
+#' differences in antibiotic treatment does not seem to have a large effect.
 #+ NMDS plot: Antibiotic All Points, echo=FALSE
 ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
   theme_bw() +
@@ -290,7 +308,33 @@ ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
 #+ NMDS plot: Antibiotic All Points SAVE, include=FALSE
 ggsave(file=file.path(figure_dir,"antibiotic_nmds_bray.png"))
 
+
 #' ### NMDS Plot by Aspiration
+#' In this plot, points are colored by the aspiration treatment to the **left lung**.
+#' As with the above plot, all datapoints are shown in each quadrant, 
+#' but only a subset is highlighted with color, the rest are gray. 
+#' Again, the left and right quadrants highlight left and right lungs, respectively.
+#' The top quadrants highlight rats that **recevied antibiotics**,
+#' the bottom quadrants highlight rats did **not** receive antibiotics.
+#' 
+#' We can agains see that coordinate 1 (along the x-axis) does a reasonably good job of 
+#' distinguishing aspirated lungs from unaspirated lungs. While the saline 
+#' treated lungs are close to the other aspirated lungs, they form a tight cluster, 
+#' which seems to indicate that they have distinict communities from the other 
+#' aspirated lungs. Furthermore, the saline cluster is closest to the untreated
+#' lungs, indicating that, of the aspiration treatments, the saline treatment
+#' produces the smallest perturbation.
+#' 
+#' It also seems that the antibiotic treatment results in a larger difference 
+#' between the unaspirated and whole gastric aspirated lungs, although this could
+#' be an artifact of the larger number of antibiotic treated, unaspirated lungs.
+#' 
+#' Finally, it appears that left lung aspiration treatment does not affect right 
+#' (unaspirated) lung community structure. All points are colored by the **left lung**
+#' aspiration treatment, and there does not appear to be clustering in the right
+#' lung samples based on the treatment to the left lung.  It is possible that there
+#' are small effects that are swamped out by the much larger effects in the left lung.
+#' A more careful analysis might be able to tease out finer effects.
 #+ NMDS plot: Aspiration All Points, echo=FALSE
 ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
   theme_bw() +
