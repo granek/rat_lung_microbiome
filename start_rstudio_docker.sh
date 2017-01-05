@@ -13,8 +13,9 @@ HOST_BASE="$HOME/parker_rat_lung"
 HOST_SCRATCH="/mnt/hts_scratch/Members/josh/parker_rat_lung"
 WORKSPACE="$HOST_SCRATCH/workspace"
 RAW_DATA="$HOST_SCRATCH/raw_data"
-DOCKER_IMAGE_TAG="v5rc3"
-DOCKER_IMAGE_NAME="granek/rstudio_qiime"
+DOCKER_IMAGE_TAG="DIv1rc0"
+DOCKER_IMAGE_NAME="granek/parker_rat_lung"
+
 DOCKER_IMAGE="${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
 TIME_ZONE="-e TZ=America/New_York"
 
