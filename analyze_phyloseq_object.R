@@ -262,6 +262,7 @@ ps1 = prune_samples(complete.cases(otu_table(ps1)),ps1)
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
 sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration")
 sample.ord.plot = sample.ord.plot + geom_point(size=2)
+sample.ord.plot = sample.ord.plot + facet_wrap(~lung)
 ggsave(file=file.path(figure_dir,"sample_nmds_bray.png"), plot=sample.ord.plot)
 
 # sample.ord.plot + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
@@ -271,6 +272,7 @@ print(sample.ord.plot)
 
 antibiotic.ord.plot = plot_ordination(ps1, ps1.ord, color="antibiotic")
 antibiotic.ord.plot = antibiotic.ord.plot + geom_point(size=2)
+antibiotic.ord.plot = antibiotic.ord.plot + facet_wrap(~lung)
 ggsave(file=file.path(figure_dir,"antibiotc_nmds_bray.png"), plot=antibiotic.ord.plot)
 
 #' ### NMDS Plot by Antibiotic
