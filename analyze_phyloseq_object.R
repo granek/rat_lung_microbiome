@@ -358,9 +358,10 @@ ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 #'     + treatment group
 #'     + antibiotic treatment
 #'     + lung treatment
-#' 1. Identify OTUs that distinguish groups (e.g. antibiotic vs no antibiotic)
+#' 1. Identify taxa that distinguish groups (e.g. unaspirated vs gastric)
 #' 1. Compare duplicates from each sample to determine how well min sample replicates max 
-#' 1. Anything else?
+#' 1. Paired analysis of L and R lungs from same animal
+#- 1. Anything else?
 
 #--------------------------------------------------
 #'****************************************************************************
