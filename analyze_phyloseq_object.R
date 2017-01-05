@@ -259,10 +259,24 @@ ps1 = prune_samples(complete.cases(otu_table(ps1)),ps1)
 # top5phyla = names(sort(phylum.sum, TRUE))[1:5]
 # ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
 
+antibiotic_bool = get_variable(ps1, "antibiotic") != "none"
+sample_data(ps1)$antibiotic_bool <- factor(antibiotic_bool)
+aspiration_bool = get_variable(ps1, "sample_aspiration") != "none"
+sample_data(ps1)$aspiration_bool <- factor(aspiration_bool)
+
+
+
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
-sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration")
-sample.ord.plot = sample.ord.plot + geom_point(size=2)
-sample.ord.plot = sample.ord.plot + facet_wrap(~lung)
+# sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration") + 
+#   geom_point(size=2) +
+#   facet_wrap(~lung+antibiotic_bool,labeller = "label_both")
+sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration") +
+  geom_point(size=2) +
+  facet_grid(lung~antibiotic_bool,labeller = "label_both")
+# sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", 
+#                                   color="sample_aspiration",shape = "antibiotic_bool") + 
+#   geom_point(size=2) +
+#   facet_grid(~lung,labeller = "label_both")
 ggsave(file=file.path(figure_dir,"sample_nmds_bray.png"), plot=sample.ord.plot)
 
 # sample.ord.plot + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
@@ -270,9 +284,10 @@ ggsave(file=file.path(figure_dir,"sample_nmds_bray.png"), plot=sample.ord.plot)
 #+ NMDS plot: Aspiration, echo=FALSE
 print(sample.ord.plot)
 
-antibiotic.ord.plot = plot_ordination(ps1, ps1.ord, color="antibiotic")
-antibiotic.ord.plot = antibiotic.ord.plot + geom_point(size=2)
-antibiotic.ord.plot = antibiotic.ord.plot + facet_wrap(~lung)
+antibiotic.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", 
+                                      color="antibiotic") +
+  geom_point(size=2) +
+  facet_grid(lung~aspiration_bool,labeller = "label_both")
 ggsave(file=file.path(figure_dir,"antibiotc_nmds_bray.png"), plot=antibiotic.ord.plot)
 
 #' ### NMDS Plot by Antibiotic
