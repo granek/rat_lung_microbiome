@@ -275,6 +275,7 @@ ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
   geom_point(data = transform(ps1.ord.data, aspiration_bool = NULL, lung = NULL), 
              color = "grey85") +
   geom_point(aes(color = antibiotic)) + 
+  scale_colour_brewer(palette="Set1") +
   facet_grid(lung~aspiration_bool,labeller = "label_both")
 #+ NMDS plot: Antibiotic All Points SAVE, include=FALSE
 ggsave(file=file.path(figure_dir,"antibiotic_nmds_bray.png"))
@@ -285,6 +286,7 @@ ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
   geom_point(data = transform(ps1.ord.data, antibiotic_bool = NULL, lung = NULL), 
              color = "grey85") +
   geom_point(aes(color = sample_aspiration)) + 
+  scale_colour_brewer("Aspiration", palette="Dark2") +
   facet_grid(lung~antibiotic_bool,labeller = "label_both")
 #+ NMDS plot: Aspiration All Points SAVE, include=FALSE
 ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
