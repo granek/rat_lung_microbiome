@@ -16,6 +16,7 @@ RAW_DATA="$HOST_SCRATCH/raw_data"
 DOCKER_IMAGE_TAG="v5rc3"
 DOCKER_IMAGE_NAME="granek/rstudio_qiime"
 DOCKER_IMAGE="${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+TIME_ZONE="-e TZ=America/New_York"
 
 PORT_NUMBER=8787
 if [[ -z $3 ]] ; then
@@ -70,7 +71,7 @@ if [ ! -d "$RAW_DATA" ]; then
     exit 1
 fi
 
-docker run $DOCKER_ARGS \
+docker run $DOCKER_ARGS $TIME_ZONE \
        --name $CONTAINER_NAME \
        -v $HOST_BASE:$DOCKER_MNTPOINT \
        -v $WORKSPACE:$WORKSPACE_MNTPOINT \
