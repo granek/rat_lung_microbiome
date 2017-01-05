@@ -28,7 +28,6 @@ phyloseq.rds = file.path("results", "rat_lung_ps.rds")
 library(ggplot2)
 library(phyloseq)
 library(dplyr)
-library(DESeq2)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Phyloseq object from RDS, include=FALSE
