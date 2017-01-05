@@ -279,11 +279,14 @@ ps1.ord.data = ord.plot$data
 #' ### NMDS Plot by Antibiotic
 #+ NMDS plot: Antibiotic All Points, echo=FALSE
 ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
+  theme_bw() +
+  theme(plot.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
   geom_point(data = transform(ps1.ord.data, aspiration_bool = NULL, lung = NULL), 
-             color = "grey85") +
+             color = "grey90") +
   geom_point(aes(color = antibiotic)) + 
-  scale_colour_brewer(palette="Set1") +
-  facet_grid(lung~aspiration_bool,labeller = "label_both")
+  facet_grid(aspiration_bool~lung,labeller = "label_both")
 #+ NMDS plot: Antibiotic All Points SAVE, include=FALSE
 ggsave(file=file.path(figure_dir,"antibiotic_nmds_bray.png"))
 
