@@ -2,7 +2,7 @@
 
 # Distributed under the terms of the Modified BSD License.
 
-FROM rocker/rstudio
+FROM rocker/rstudio:3.3.2
 
 MAINTAINER Josh Granek
 
@@ -12,6 +12,13 @@ RUN echo "deb http://ftp.debian.org/debian jessie-backports main" >  /etc/apt/so
     apt-get update &&  \
     apt-get -t jessie-backports install -y --no-install-recommends \
     libxml2-dev \
+    wget \
+    bzip2 \
+    ca-certificates \
+    sudo \
+    locales \
+    less \    
+    make \    
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -28,7 +35,7 @@ ENV RSTUDIO_USER rstudio
 RUN mkdir -p $CONDA_DIR && \
     chown $RSTUDIO_USER $CONDA_DIR
 
-RUN Rscript -e "install.packages(pkgs = c('ggplot2','dplyr','argparse','phangorn'), \
+RUN Rscript -e "install.packages(pkgs = c('ggplot2','dplyr','argparse','phangorn','tidyr','formatR'), \
     repos='https://cran.revolutionanalytics.com/', \
     dependencies=TRUE)" && \
     Rscript -e "source('https://bioconductor.org/biocLite.R'); \
