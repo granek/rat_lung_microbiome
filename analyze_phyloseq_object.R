@@ -44,7 +44,7 @@ tax_table(full_ps) %>% as.data.frame %>%
   summarise(total_taxa = n()) 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' # Examine the Number of Counts per Sample
+#' # Number of Counts per Sample
 #+ MinMaxFloatingBarplot, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
@@ -199,20 +199,22 @@ p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
 p <- p + facet_grid(antibiotic~left_aspiration)
 p = p + ggtitle("Right Lungs (untreated)")
 ggsave(file=file.path(figure_dir,"right_lung_abundance.png"))
+
+# ### Observations from relative abundance plots
+# I am surprised by the Rlung-whole_gastric-subq samples.
+# I would have expected that they would look like the Llung-none-subq,
+# but they look more like the Rlung-noantibiotic samples.
+# 
+# Is there cross-talk between the left and right lungs?
+# 
+# It is reasuring that the Llung-antibiotic samples look so similar despite 
+# antibiotic mode-of-delivery 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Relative Abundance Plots Print: Right Lung Samples, echo=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print(p)
 
-#' ### Observations from relative abundance plots
-#' I am surprised by the Rlung-whole_gastric-subq samples.
-#' I would have expected that they would look like the Llung-none-subq,
-#' but they look more like the Rlung-noantibiotic samples.
-#' 
-#' Is there cross-talk between the left and right lungs?
-#' 
-#' It is reasuring that the Llung-antibiotic samples look so similar despite 
-#' antibiotic mode-of-delivery 
+
 
 # #---------------------------------------------------------------
 # #' # BROKEN
@@ -360,7 +362,7 @@ ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 #'     + lung treatment
 #' 1. Identify taxa that distinguish groups (e.g. unaspirated vs gastric)
 #' 1. Compare duplicates from each sample to determine how well min sample replicates max 
-#' 1. Paired analysis of L and R lungs from same animal
+#' 1. Paired analysis of L and R lungs from same animal to look for communication
 #- 1. Anything else?
 
 #--------------------------------------------------
