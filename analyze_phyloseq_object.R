@@ -145,8 +145,15 @@ max_replicate %>% select(Description) %>% duplicated() %>% any()
 max_rep_bacteria_ps = subset_samples(bacteria_ps,SampleID %in% max_replicate$rowname)
 
 rm(full_ps) # Get rid of full_ps to be sure it isn't accidentally used
+
+
 #==============================================================================
 #' # Alpha Diversity Plots
+#' There does not seem to be a large treatment effect on measures of alpha 
+#' diversity.  The unaspirated, no-antibiotic lungs seem to have a number of higher
+#' diversity outliers, as might be expected for unperturbed communities.  However, 
+#' this could be an artifact due to the fact that untreated lungs make up more 
+#' samples than any other treatment group.
 #+ Alpha Diversity Plots, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 alpha_plot = plot_richness(max_rep_bacteria_ps, x = "antibiotic", 
