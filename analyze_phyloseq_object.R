@@ -234,7 +234,7 @@ ntaxa(max_rep_bacteria_ps)
 ntaxa(ps1)
 
 #' ## Pruning Taxa
-#' The data was pruned before ordination to remove rare taxa
+#' The data was pruned before ordination to remove rare taxa.
 #' To be included in the pruned dataset, a taxon must occur at least 
 #' `r min_counts` times in at least `r sample_proportion*100`% of samples 
 #' (`r min_samples` samples).
@@ -264,58 +264,36 @@ sample_data(ps1)$antibiotic_bool <- factor(antibiotic_bool)
 aspiration_bool = get_variable(ps1, "sample_aspiration") != "none"
 sample_data(ps1)$aspiration_bool <- factor(aspiration_bool)
 
-
-
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
-# sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration") + 
-#   geom_point(size=2) +
-#   facet_wrap(~lung+antibiotic_bool,labeller = "label_both")
-sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", color="sample_aspiration") +
-  geom_point(size=2) +
-  facet_grid(lung~antibiotic_bool,labeller = "label_both")
-# sample.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", 
-#                                   color="sample_aspiration",shape = "antibiotic_bool") + 
-#   geom_point(size=2) +
-#   facet_grid(~lung,labeller = "label_both")
-ggsave(file=file.path(figure_dir,"sample_nmds_bray.png"), plot=sample.ord.plot)
+ord.plot = plot_ordination(ps1, ps1.ord, type="samples")
+ps1.ord.data = ord.plot$data
 
-# sample.ord.plot + geom_polygon(aes(fill=sample_aspiration)) + geom_point(size=5) + ggtitle("samples")
-#' ### NMDS Plot by Aspiration
-#+ NMDS plot: Aspiration, echo=FALSE
-print(sample.ord.plot)
-
-antibiotic.ord.plot = plot_ordination(ps1, ps1.ord, type="samples", 
-                                      color="antibiotic") +
-  geom_point(size=2) +
-  facet_grid(lung~aspiration_bool,labeller = "label_both")
-ggsave(file=file.path(figure_dir,"antibiotc_nmds_bray.png"), plot=antibiotic.ord.plot)
 
 #' ### NMDS Plot by Antibiotic
-#+ NMDS plot: Antibiotic, echo=FALSE
-print(antibiotic.ord.plot)
-
-#----------------------------
-
-ps1.ord.data = antibiotic.ord.plot$data
-
+#+ NMDS plot: Antibiotic All Points, echo=FALSE
 ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
   geom_point(data = transform(ps1.ord.data, aspiration_bool = NULL, lung = NULL), 
              color = "grey85") +
   geom_point(aes(color = antibiotic)) + 
   facet_grid(lung~aspiration_bool,labeller = "label_both")
+#+ NMDS plot: Antibiotic All Points SAVE, include=FALSE
+ggsave(file=file.path(figure_dir,"antibiotic_nmds_bray.png"))
 
+#' ### NMDS Plot by Aspiration
+#+ NMDS plot: Aspiration All Points, echo=FALSE
 ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
   geom_point(data = transform(ps1.ord.data, antibiotic_bool = NULL, lung = NULL), 
              color = "grey85") +
   geom_point(aes(color = sample_aspiration)) + 
   facet_grid(lung~antibiotic_bool,labeller = "label_both")
+#+ NMDS plot: Aspiration All Points SAVE, include=FALSE
+ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 
 
 #'******************************************************************************
 #' # Further Analyses
 #+ Todo List, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' 1. Separate ordination plots for L and R lungs
 #' 1. Summary relative abundance plots (i.e. abundance across all samples in a group)
 #'     + treatment group
 #'     + antibiotic treatment
