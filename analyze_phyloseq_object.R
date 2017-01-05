@@ -294,6 +294,23 @@ ggsave(file=file.path(figure_dir,"antibiotc_nmds_bray.png"), plot=antibiotic.ord
 #+ NMDS plot: Antibiotic, echo=FALSE
 print(antibiotic.ord.plot)
 
+#----------------------------
+
+ps1.ord.data = antibiotic.ord.plot$data
+
+ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
+  geom_point(data = transform(ps1.ord.data, aspiration_bool = NULL, lung = NULL), 
+             color = "grey85") +
+  geom_point(aes(color = antibiotic)) + 
+  facet_grid(lung~aspiration_bool,labeller = "label_both")
+
+ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
+  geom_point(data = transform(ps1.ord.data, antibiotic_bool = NULL, lung = NULL), 
+             color = "grey85") +
+  geom_point(aes(color = sample_aspiration)) + 
+  facet_grid(lung~antibiotic_bool,labeller = "label_both")
+
+
 #'******************************************************************************
 #' # Further Analyses
 #+ Todo List, include=FALSE
