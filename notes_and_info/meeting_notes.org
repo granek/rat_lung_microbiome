@@ -1,0 +1,26 @@
+* Meeting 1/13/2017
+** Milestones
+   - April 3rd for analysis finished
+   - June 9th to finish manuscripts
+** Further analyses
+    - [ ] lefSE or other analysis to identify changes (ANOSIM, ADONIS, PERMANOVA, MRPP)
+    - [ ] Separate analyses of antibiotic data and aspiration data for
+      separate papers
+** Notes
+   - Send metadata to Sade for review and annotation
+   - possibly split 
+
+
+
+Look at antibiotic treatments in isolation to investigate whether differences in mode of treatment has an effect
+
+
+Be sure to include 
+
+
+
+
+Separate papers: antibiotic and aspiration
+
+
+
