@@ -19,7 +19,7 @@ DOCKER_IMAGE_NAME="granek/parker_rat_lung"
 DOCKER_IMAGE="${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
 TIME_ZONE="-e TZ=America/New_York -v /etc/timezone:/etc/timezone"
 
-PORT_NUMBER=8787
+PORT_NUMBER=8786
 if [[ -z $3 ]] ; then
     echo "Using default PORT: $PORT_NUMBER"
 else				
