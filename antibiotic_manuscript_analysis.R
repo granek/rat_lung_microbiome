@@ -88,7 +88,7 @@ antibiotic_only_ps = subset_samples(max_rep_bacteria_ps,group %in% c("ASNLU", "A
 #' # Ordination plots
 #+ Ordination plots: Pruning, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-OrdintationPrep = function(in_ps){
+OrdintationPrep = function(in_ps, ...){
   # Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
   ## Remove OTUs that do not show appear more than 5 times in more than half the samples
   min_counts = 2
@@ -127,7 +127,8 @@ OrdintationPrep = function(in_ps){
   # ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
   
   
-  ps1.ord <- ordinate(ps1, "NMDS", "bray")
+  # ps1.ord <- ordinate(ps1, "NMDS", "bray", trace=2, sratmax=0.99999999999999, maxit = 300, sfgrmin = 1e-10)
+  ps1.ord <- ordinate(ps1, "NMDS", "bray", trace=2, ...)
   ord.plot = plot_ordination(ps1, ps1.ord, type="samples")
   ps1.ord.data = ord.plot$data
   return(ps1.ord.data)
@@ -164,7 +165,8 @@ nsamples(antibiotic_only_ps)
 
 
 #' ## NMDS Plot For "Antibiotic" Samples with no antibiotic control
-antibiotic_wcontrol_ord = OrdintationPrep(antibiotic_wcontrol_ps)
+antibiotic_wcontrol_ord = OrdintationPrep(antibiotic_wcontrol_ps, 
+                                          sratmax=0.99999999999999999, maxit = 300, sfgrmin = 1e-12)
 
 ggplot(antibiotic_wcontrol_ord, aes(NMDS1, NMDS2)) +
   theme_bw() +
@@ -175,7 +177,9 @@ ggplot(antibiotic_wcontrol_ord, aes(NMDS1, NMDS2)) +
 
 
 #' ## NMDS Plot For "Antibiotic" Samples without control
-antibiotic_only_ord = OrdintationPrep(antibiotic_only_ps)
+antibiotic_only_ord = OrdintationPrep(antibiotic_only_ps, 
+                                      sratmax=0.99999999999999999, maxit = 300, sfgrmin = 1e-12)
+# antibiotic_only_ord = OrdintationPrep(antibiotic_only_ps)
 
 ggplot(antibiotic_only_ord, aes(NMDS1, NMDS2)) +
   theme_bw() +
