@@ -1,0 +1,15 @@
+# This file needs to be named "local_docker_setup.sh" to be functional
+
+PASS="MY_VERY_$3CRET_PAssWORD_19437"
+
+HOST_BASE="$HOME/Documents/BioinfCollabs/SeedLab/qiime_vs_dada"
+HOST_SCRATCH="/tmp/qiime_vs_dada"
+# HOST_BASE="$HOME/qiime_vs_dada"
+# HOST_SCRATCH="/mnt/test_rapid_scratch/qiime_vs_dada"
+
+
+WORKSPACE="$HOST_SCRATCH/workspace"
+RAW_DATA="$HOST_SCRATCH/raw_data"
+TIME_ZONE="-e TZ=America/New_York"
+
+mkdir -p $WORKSPACE $RAW_DATA

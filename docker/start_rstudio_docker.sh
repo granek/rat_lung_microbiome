@@ -5,21 +5,26 @@
 # https://support.rstudio.com/hc/en-us/community/posts/202827628-Using-HTTPS-instead-of-HTTP
 # https://www.digitalocean.com/community/tutorials/how-to-configure-nginx-with-ssl-as-a-reverse-proxy-for-jenkins
 
-PASS="8_juggleD_albiNo_12_eleVens_cRush"
-DOCKER_MNTPOINT="/home/rstudio/parker_rat_lung"
-WORKSPACE_MNTPOINT="$DOCKER_MNTPOINT/workspace"
-DATA_MNTPOINT="$DOCKER_MNTPOINT/raw_data"
-HOST_BASE="$HOME/parker_rat_lung"
-HOST_SCRATCH="/mnt/hts_scratch/Members/josh/parker_rat_lung"
-WORKSPACE="$HOST_SCRATCH/workspace"
-RAW_DATA="$HOST_SCRATCH/raw_data"
-DOCKER_IMAGE_TAG="DIv1rc0"
-DOCKER_IMAGE_NAME="granek/parker_rat_lung"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DEFINITION_FILE="${DIR}/docker_setup.sh"
+PASS_FILE="${DIR}/local_docker_setup.sh"
+echo $DEFINITION_FILE
+echo $PASS_FILE
 
-DOCKER_IMAGE="${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-TIME_ZONE="-e TZ=America/New_York -v /etc/timezone:/etc/timezone"
+source $DEFINITION_FILE
 
-PORT_NUMBER=8786
+if [ -e  $PASS_FILE ] ; then
+    source $PASS_FILE
+    # $PASS_FILE should contain only the following definition, replacing "MYpassword" with a high quality password
+    # PASS="MYpassword"
+
+else
+    PASS="albiNo_juggleD__cRu_12_eleVens_8_sh"
+fi
+
+echo $PASS
+
+
 if [[ -z $3 ]] ; then
     echo "Using default PORT: $PORT_NUMBER"
 else				
@@ -30,11 +35,12 @@ fi
 if [ "$1" == "shell" ]; then
     DOCKER_COMMAND="/bin/bash"
     CONTAINER_NAME="rstudio_shell_${DOCKER_IMAGE_TAG}"
-    DOCKER_ARGS="--rm --interactive --tty --user rstudio"
+    DOCKER_ARGS="--rm --interactive --tty --user $USER"
     echo "------------------------------"
     echo "In docker run the following:"
     echo "cd $DOCKER_MNTPOINT"
-    echo "make --dry-run fastqs -j4 -f analyze_culture_sequences.mk --warn-undefined-variables NUMTHREADS=4 RAW_DATA_DIR=$DOCKER_MNTPOINT/raw_data"
+    echo "make --dry-run --warn-undefined-variables"
+    # echo "make --dry-run fastqs -j4 -f analyze_culture_sequences.mk --warn-undefined-variables NUMTHREADS=4 RAW_DATA_DIR=$DOCKER_MNTPOINT/raw_data"
     echo "------------------------------"
 elif [ "$1" == "root" ]; then
     DOCKER_COMMAND="/bin/bash"
@@ -74,16 +80,10 @@ fi
 
 docker run $DOCKER_ARGS $TIME_ZONE \
        --name $CONTAINER_NAME \
+       -e USERID=$UID \
        -v $HOST_BASE:$DOCKER_MNTPOINT \
        -v $WORKSPACE:$WORKSPACE_MNTPOINT \
        -v $RAW_DATA:$DATA_MNTPOINT \
        $DOCKER_IMAGE \
        $DOCKER_COMMAND
 
-# --------------------------------------------------
-# GIT ENV variables (not sure if they are working)
-# -e GIT_AUTHOR_NAME="Josh Granek" \
-# -e GIT_AUTHOR_EMAIL="josh@duke.edu" \
-# -e GIT_COMMITTER_NAME="Josh Granek" \
-# -e GIT_COMMITTER_EMAIL="josh@duke.edu" \
-# --------------------------------------------------
