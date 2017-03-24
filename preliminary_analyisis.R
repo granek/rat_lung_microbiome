@@ -354,37 +354,22 @@ ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 
 
 #--------------------------------------------------
-#+ Check that read counts are independent of sample type, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' # Check that read counts are independent of Treatment
-# x = sample_data(max_rep_bacteria_ps)
-# y  = sample_sums(max_rep_bacteria_ps)
-# #get the sequencing depth of samples
-# max_rep_bacteria.depth = data.frame(sample_sums(max_rep_bacteria_ps))
-
+#+ Check that read counts are independent of sample type, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 max_rep_bacteria.depth = max_rep_bacteria_ps %>% 
   sample_sums %>% 
   as_tibble() %>%
   tibble::rownames_to_column("SampleID") %>%
   dplyr::rename(depth=value) %<>% 
-  left_join(sample_data(max_rep_bacteria_ps))
+  left_join(sample_data(max_rep_bacteria_ps),by="SampleID")
 
-# p <- ggplot(max_rep_bacteria.depth, aes(antibiotic, depth,group=antibiotic)) + 
-#   geom_boxplot()
-# print(p)
-# 
-# p <- ggplot(max_rep_bacteria.depth, aes(sample_aspiration, depth,group=sample_aspiration)) + 
-#   geom_boxplot() +
-#   facet_grid(~antibiotic_bool)
-# print(p)
-
-p <- ggplot(max_rep_bacteria.depth, aes(antibiotic_bool, depth,group=antibiotic_bool)) + 
+read_count.plot <- ggplot(max_rep_bacteria.depth, aes(antibiotic_bool, depth,group=antibiotic_bool)) + 
   geom_boxplot() +
   facet_grid(~sample_aspiration) +
   xlab("Antibiotic") +
   ylab("Bacterial Read Counts")
-print(p)
-
+print(read_count.plot)
 
 #'******************************************************************************
 #' # Further Analyses
