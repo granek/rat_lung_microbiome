@@ -239,7 +239,12 @@ makePhyloseq = function(seqtab,referenceFasta,map_file,random.seed=100){
   unname(head(seqtab.tax))
   
   ## Load Map
-  map.df = read.delim(map_file)
+  map.df = read.delim(map_file,
+                      stringsAsFactors=FALSE,
+                      colClasses = c("character","character","character",
+                                     "factor","factor","factor","factor",
+                                     "factor","factor","factor","factor",
+                                     "logical","factor","character","character"))
   samdat = sample_data(map.df)
   rownames(samdat) = samdat$SampleID
   
