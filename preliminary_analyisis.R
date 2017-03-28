@@ -451,16 +451,62 @@ bacteria.rlog.ds.rld.counts <- as.matrix(assay(bacteria.rlog.ds.rld))
 #exchange the otu tables 
 otu_table(bacteria.rlog) <- otu_table(bacteria.rlog.ds.rld.counts, taxa_are_rows = TRUE)
 
-#look to see if we've equalized depth by site just like we did before
-#indeed it looks much better, but not perfect; may also need to use relative abundance standardization
-
-rlog.plots = plotCounts(bacteria.rlog)
 #' ## Regularized Log Transformation 
+rlog.plots = plotCounts(bacteria.rlog)
 #' ### Distribution by Treatment
 print(rlog.plots["grouped_boxplot"])
 #' ### Per Sample Read Depth, Organized by Treatment Group
 print(rlog.plots["sample_barplot"])
 
+##------------------------------------------------------
+# Try standardizing to relative abundance
+# min_counts = 2
+# sample_proportion = 0.01
+# min_samples = ceiling(sample_proportion*nsamples(max_rep_bacteria_ps))
+# wh0 = genefilter_sample(max_rep_bacteria_ps, 
+#                         filterfun_sample(function(x) x >= min_counts), 
+#                         A=min_samples)
+# 
+# ps1 = prune_taxa(wh0, max_rep_bacteria_ps)
+# ntaxa(max_rep_bacteria_ps)
+# ntaxa(ps1)
+
+#' ## Pruning Taxa
+#' The data was pruned before ordination to remove rare taxa.
+#' To be included in the pruned dataset, a taxon must occur at least 
+#' `r min_counts` times in at least `r sample_proportion*100`% of samples 
+#' (`r min_samples` samples).
+#' Before pruning there are `r ntaxa(max_rep_bacteria_ps)` bacterial taxa 
+#' (all non-bacterial taxa have already been removed). After pruning there are 
+#' `r ntaxa(ps1)` bacterial taxa remaining.
+
+#--------------------------------------------------
+#+ Ordination plots: Transform counts, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
+## which (apply(otu_table(ps1), 1, function(row) all(row ==0 )))
+
+# ## Transform to even sampling depth.
+# bacteria.rlog.even = transform_sample_counts(bacteria.rlog, function(x) 1E6 * x/sum(x))
+# 
+# ## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
+# bacteria.rlog.even = prune_samples(complete.cases(otu_table(bacteria.rlog.even)),bacteria.rlog.even)
+
+#+ Relative Abundance Plots, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bacteria.rlog.rel  = transform_sample_counts(bacteria.rlog, function(x) x / sum(x) )
+# bacteria.rlog.rel.filt = filter_taxa(bacteria.rlog.rel, function(x) var(x) > 1e-3, TRUE)
+# x = taxa_sums(bacteria.rlog.rel)
+
+
+#' # Check Raw Count Sample Read Depth
+#' ## Relative Abundance of Regularized Log Transformed
+
+rel.plots = plotCounts(bacteria.rlog.rel)
+#' ## Distribution by Treatment
+print(rel.plots["grouped_boxplot"])
+#' ## Per Sample Read Depth, Organized by Treatment Group
+print(rel.plots["sample_barplot"])
 
 #'******************************************************************************
 #' # Further Analyses
