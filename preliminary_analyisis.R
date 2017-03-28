@@ -411,25 +411,36 @@ otu_table(bacteria_pseudo) <- otu_table(bacteria_pseudo_ds.rld.counts, taxa_are_
 
 #look to see if we've equalized depth by site just like we did before
 #indeed it looks much better, but not perfect; may also need to use relative abundance standardization
-rlog.sum.df <- data.frame(sample_data(bacteria_pseudo), sample_sums(bacteria_pseudo))
-colnames(rlog.sum.df)[length(colnames(rlog.sum.df))] <- "depth"
+checkCounts = function(physeq){
+  sum.df <- data.frame(sample_data(physeq), sample_sums(physeq))
+  colnames(sum.df)[length(colnames(sum.df))] <- "depth"
+  
+  grouped_boxplot = ggplot(sum.df, aes(antibiotic_bool, depth,group=antibiotic_bool)) + 
+    geom_boxplot() +
+    facet_grid(~sample_aspiration) +
+    xlab("Antibiotic") +
+    ylab("Bacterial Read Counts")
+  
+  sample_barplot = ggplot(sum.df, aes(animal, depth)) + 
+    geom_bar(stat="identity") + 
+    facet_wrap(~group)
+  return(list(grouped_boxplot=grouped_boxplot, sample_barplot=sample_barplot))
+}
 
-ggplot(rlog.sum.df, aes(antibiotic_bool, depth,group=antibiotic_bool)) + 
-  geom_boxplot() +
-  facet_grid(~sample_aspiration) +
-  xlab("Antibiotic") +
-  ylab("Bacterial Read Counts")
+#' # Examine Sample Read Depth
+raw.plots = checkCounts(max_rep_bacteria_ps)
+#' ## Raw Count Sample Read Depth
+#' ### Distribution by Treatment
+print(raw.plots["grouped_boxplot"])
+#' ### Per Sample Read Depth, Organized by Treatment Group
+print(raw.plots["sample_barplot"])
 
-print(read_count.plot)
-
-ggplot(rlog.sum.df, aes(animal, depth, group=group)) + 
-  geom_bar(stat="identity") + 
-  facet_wrap(antibiotic~sample_aspiration)
-
-ggplot(rlog.sum.df, aes(animal, depth)) + 
-  geom_bar(stat="identity") + 
-  facet_wrap(~group)
-
+rlog.plots = checkCounts(bacteria_pseudo)
+#' ## Regularized Log Transformation 
+#' ### Distribution by Treatment
+print(rlog.plots["grouped_boxplot"])
+#' ### Per Sample Read Depth, Organized by Treatment Group
+print(rlog.plots["sample_barplot"])
 
 
 #'******************************************************************************
