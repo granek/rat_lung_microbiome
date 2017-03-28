@@ -366,28 +366,33 @@ ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
 ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 
 
+checkCounts = function(physeq){
+  sum.df <- data.frame(sample_data(physeq), sample_sums(physeq))
+  colnames(sum.df)[length(colnames(sum.df))] <- "depth"
+  
+  grouped_boxplot = ggplot(sum.df, aes(antibiotic_bool, depth,group=antibiotic_bool)) + 
+    geom_boxplot() +
+    facet_grid(~sample_aspiration) +
+    xlab("Antibiotic") +
+    ylab("Bacterial Read Counts")
+  
+  sample_barplot = ggplot(sum.df, aes(animal, depth)) + 
+    geom_bar(stat="identity") + 
+    facet_wrap(~group)
+  return(list(grouped_boxplot=grouped_boxplot, sample_barplot=sample_barplot))
+}
+
+#' # Check Raw Count Sample Read Depth
+raw.plots = checkCounts(max_rep_bacteria_ps)
+#' ## Distribution by Treatment
+print(raw.plots["grouped_boxplot"])
+#' ## Per Sample Read Depth, Organized by Treatment Group
+print(raw.plots["sample_barplot"])
+
+
 #--------------------------------------------------
-#' # Check that read counts are independent of Treatment
-#+ Check that read counts are independent of sample type, echo=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-max_rep_bacteria.depth = max_rep_bacteria_ps %>% 
-  sample_sums %>% 
-  as_tibble() %>%
-  tibble::rownames_to_column("SampleID") %>%
-  dplyr::rename(depth=value) %<>% 
-  left_join(sample_data(max_rep_bacteria_ps),by="SampleID")
-
-read_count.plot <- ggplot(max_rep_bacteria.depth, aes(antibiotic_bool, depth,group=antibiotic_bool)) + 
-  geom_boxplot() +
-  facet_grid(~sample_aspiration) +
-  xlab("Antibiotic") +
-  ylab("Bacterial Read Counts")
-print(read_count.plot)
-
-
-#--------------------------------------------------
-#' # Try other methods of transformation
-#+ Try other methods of transformation, echo=FALSE
+#' # Try Regularized Log Transformation
+#+ rlog_transformation, echo=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Based on http://statweb.stanford.edu/~susan/papers/oralRR.html
 #make a new object that we will transform
@@ -411,29 +416,6 @@ otu_table(bacteria_pseudo) <- otu_table(bacteria_pseudo_ds.rld.counts, taxa_are_
 
 #look to see if we've equalized depth by site just like we did before
 #indeed it looks much better, but not perfect; may also need to use relative abundance standardization
-checkCounts = function(physeq){
-  sum.df <- data.frame(sample_data(physeq), sample_sums(physeq))
-  colnames(sum.df)[length(colnames(sum.df))] <- "depth"
-  
-  grouped_boxplot = ggplot(sum.df, aes(antibiotic_bool, depth,group=antibiotic_bool)) + 
-    geom_boxplot() +
-    facet_grid(~sample_aspiration) +
-    xlab("Antibiotic") +
-    ylab("Bacterial Read Counts")
-  
-  sample_barplot = ggplot(sum.df, aes(animal, depth)) + 
-    geom_bar(stat="identity") + 
-    facet_wrap(~group)
-  return(list(grouped_boxplot=grouped_boxplot, sample_barplot=sample_barplot))
-}
-
-#' # Examine Sample Read Depth
-raw.plots = checkCounts(max_rep_bacteria_ps)
-#' ## Raw Count Sample Read Depth
-#' ### Distribution by Treatment
-print(raw.plots["grouped_boxplot"])
-#' ### Per Sample Read Depth, Organized by Treatment Group
-print(raw.plots["sample_barplot"])
 
 rlog.plots = checkCounts(bacteria_pseudo)
 #' ## Regularized Log Transformation 
