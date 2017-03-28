@@ -30,11 +30,24 @@ suppressPackageStartupMessages(library(phyloseq))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(magrittr))
 suppressPackageStartupMessages(library("tibble"))
+suppressPackageStartupMessages(library(DESeq2))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Phyloseq object from RDS, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 full_ps = readRDS(phyloseq.rds)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Setup: Relevel so "none" treatment is first, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sample_data(full_ps)$antibiotic = relevel(sample_data(full_ps)$antibiotic, "none")
+sample_data(full_ps)$left_aspiration = relevel(sample_data(full_ps)$left_aspiration, "none")
+sample_data(full_ps)$right_aspiration = relevel(sample_data(full_ps)$right_aspiration, "none")
+sample_data(full_ps)$sample_aspiration = relevel(sample_data(full_ps)$sample_aspiration, "none")
+levels(sample_data(full_ps)$antibiotic)
+levels(sample_data(full_ps)$left_aspiration)
+levels(sample_data(full_ps)$right_aspiration)
+levels(sample_data(full_ps)$sample_aspiration)
 
 #' ****************************************************************************
 #' # How many taxa are from each kingdom?
@@ -371,6 +384,54 @@ read_count.plot <- ggplot(max_rep_bacteria.depth, aes(antibiotic_bool, depth,gro
   ylab("Bacterial Read Counts")
 print(read_count.plot)
 
+
+#--------------------------------------------------
+#' # Try other methods of transformation
+#+ Try other methods of transformation, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Based on http://statweb.stanford.edu/~susan/papers/oralRR.html
+#make a new object that we will transform
+bacteria_pseudo <- max_rep_bacteria_ps
+
+#add 1 to each sample count prior to transforming
+otu_table(bacteria_pseudo) <- otu_table(max_rep_bacteria_ps) + 1
+# colnames(sample_data(max_rep_bacteria_ps))
+
+#convert the phyloseq object to a DESeq object
+bacteria_pseudo_ds = phyloseq_to_deseq2(bacteria_pseudo, ~antibiotic+sample_aspiration)
+
+#do a regularized log transformation 
+bacteria_pseudo_ds.rld  <- rlog(bacteria_pseudo_ds , blind=FALSE, fitType="local") 
+
+#extract the otu counts from the R-log transformed object
+bacteria_pseudo_ds.rld.counts <- as.matrix(assay(bacteria_pseudo_ds.rld))
+
+#exchange the otu tables 
+otu_table(bacteria_pseudo) <- otu_table(bacteria_pseudo_ds.rld.counts, taxa_are_rows = TRUE)
+
+#look to see if we've equalized depth by site just like we did before
+#indeed it looks much better, but not perfect; may also need to use relative abundance standardization
+rlog.sum.df <- data.frame(sample_data(bacteria_pseudo), sample_sums(bacteria_pseudo))
+colnames(rlog.sum.df)[length(colnames(rlog.sum.df))] <- "depth"
+
+ggplot(rlog.sum.df, aes(antibiotic_bool, depth,group=antibiotic_bool)) + 
+  geom_boxplot() +
+  facet_grid(~sample_aspiration) +
+  xlab("Antibiotic") +
+  ylab("Bacterial Read Counts")
+
+print(read_count.plot)
+
+ggplot(rlog.sum.df, aes(animal, depth, group=group)) + 
+  geom_bar(stat="identity") + 
+  facet_wrap(antibiotic~sample_aspiration)
+
+ggplot(rlog.sum.df, aes(animal, depth)) + 
+  geom_bar(stat="identity") + 
+  facet_wrap(~group)
+
+
+
 #'******************************************************************************
 #' # Further Analyses
 #+ Todo List, include=FALSE
@@ -382,6 +443,7 @@ print(read_count.plot)
 #' 1. Identify taxa that distinguish groups (e.g. unaspirated vs gastric)
 #' 1. Compare duplicates from each sample to determine how well min sample replicates max 
 #' 1. Paired analysis of L and R lungs from same animal to look for communication
+#' 1. Switch to using 
 #- 1. Anything else?
 
 #--------------------------------------------------
