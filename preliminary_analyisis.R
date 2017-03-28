@@ -508,6 +508,41 @@ print(rel.plots["grouped_boxplot"])
 #' ## Per Sample Read Depth, Organized by Treatment Group
 print(rel.plots["sample_barplot"])
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Do an ordination on Bray Curtis
+# Use the regularized log transformed data frame
+# Also use the relative abundance standardized data frame
+#relative abundances
+rel.pcoa <- ordinate(bacteria.rlog.rel, method="PCoA", distance="bray")
+rel.pcoa.p1 <- plot_ordination(bacteria.rlog.rel, rel.pcoa, "samples", color="group") + ggtitle("Relative Abundance")
+
+#log transformed
+rlog.pcoa <- ordinate(bacteria.rlog, method="PCoA", distance="bray")
+rlog.pcoa.p2 <- plot_ordination(bacteria.rlog, rlog.pcoa, "samples", color="group") + ggtitle("Rlog-transformed")
+
+#plot them side by side
+require(gridExtra)
+## Loading required package: gridExtra
+grid.arrange(rel.pcoa.p1, rlog.pcoa.p2, ncol=2)
+
+
+#-----------------------------------------------------------------
+
+rel.nmds <- ordinate(bacteria.rlog.rel, method="NMDS", distance="bray")
+rel.nmds.p1 <- plot_ordination(bacteria.rlog.rel, rel.nmds, "samples") + ggtitle("Relative Abundance")
+
+#log transformed
+rlog.nmds <- ordinate(bacteria.rlog, method="NMDS", distance="bray")
+rlog.nmds.p2 <- plot_ordination(bacteria.rlog, rlog.nmds, "samples", color="group") + ggtitle("Rlog-transformed")
+
+#plot them side by side
+require(gridExtra)
+## Loading required package: gridExtra
+grid.arrange(rel.nmds.p1, rlog.nmds.p2, ncol=2)
+
+
 #'******************************************************************************
 #' # Further Analyses
 #+ Todo List, include=FALSE
