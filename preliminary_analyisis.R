@@ -244,7 +244,6 @@ print(p)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Derived from https://joey711.github.io/phyloseq/plot_ordination-examples.html
 
-## Remove OTUs that do not show appear more than 5 times in more than half the samples
 min_counts = 2
 sample_proportion = 0.01
 min_samples = ceiling(sample_proportion*nsamples(max_rep_bacteria_ps))
@@ -365,6 +364,44 @@ ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
 #+ NMDS plot: Aspiration All Points SAVE, include=FALSE
 ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 
+
+
+#----------------------------------------------------------------
+#' # Permanova
+
+# Let’s see if Bray Curtis varied significantly by tooth class
+library(vegan)
+# otus <- t(otu_table(psb_ab))
+# psb_ab.bray <- vegdist(otus, method="bray")
+# psb_ab.aov <- adonis(psb_ab.bray~sample_data(psb_ab)$Class)
+# psb_ab.aov 
+
+
+# otus <- t(otu_table(ps1))
+otus <- otu_table(ps1)
+ps1.bray <- vegdist(otus, method="bray")
+
+adonis(ps1.bray ~ sample_data(ps1)$antibiotic_bool + sample_data(ps1)$aspiration_bool)
+
+adonis(ps1.bray ~ sample_data(ps1)$antibiotic + sample_data(ps1)$sample_aspiration)
+
+adonis(ps1.bray ~ sample_data(ps1)$aspiration + sample_data(ps1)$antibiotic)
+
+ps1.aov <- adonis(ps1.bray ~ sample_data(ps1)$antibiotic)
+# ps1.aov <- adonis(ps1.bray ~antibiotic_bool, data=sample_data(ps1))
+ps1.aov 
+
+
+#' # Check Raw Count Sample Read Depth
+ps1.plots = plotCounts(ps1)
+#' ## Distribution by Treatment
+print(ps1.plots["grouped_boxplot"])
+#' ## Per Sample Read Depth, Organized by Treatment Group
+print(ps1.plots["sample_barplot"])
+
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+#' # Check Sample Read Depth
 
 plotCounts = function(physeq){
   sum.df <- data.frame(sample_data(physeq), sample_sums(physeq))
