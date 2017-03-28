@@ -366,7 +366,7 @@ ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
 ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 
 
-checkCounts = function(physeq){
+plotCounts = function(physeq){
   sum.df <- data.frame(sample_data(physeq), sample_sums(physeq))
   colnames(sum.df)[length(colnames(sum.df))] <- "depth"
   
@@ -383,7 +383,7 @@ checkCounts = function(physeq){
 }
 
 #' # Check Raw Count Sample Read Depth
-raw.plots = checkCounts(max_rep_bacteria_ps)
+raw.plots = plotCounts(max_rep_bacteria_ps)
 #' ## Distribution by Treatment
 print(raw.plots["grouped_boxplot"])
 #' ## Per Sample Read Depth, Organized by Treatment Group
@@ -417,7 +417,7 @@ otu_table(bacteria_pseudo) <- otu_table(bacteria_pseudo_ds.rld.counts, taxa_are_
 #look to see if we've equalized depth by site just like we did before
 #indeed it looks much better, but not perfect; may also need to use relative abundance standardization
 
-rlog.plots = checkCounts(bacteria_pseudo)
+rlog.plots = plotCounts(bacteria_pseudo)
 #' ## Regularized Log Transformation 
 #' ### Distribution by Treatment
 print(rlog.plots["grouped_boxplot"])
