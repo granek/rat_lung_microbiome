@@ -396,28 +396,28 @@ print(raw.plots["sample_barplot"])
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Based on http://statweb.stanford.edu/~susan/papers/oralRR.html
 #make a new object that we will transform
-bacteria_pseudo <- max_rep_bacteria_ps
+bacteria.rlog <- max_rep_bacteria_ps
 
 #add 1 to each sample count prior to transforming
-otu_table(bacteria_pseudo) <- otu_table(max_rep_bacteria_ps) + 1
+otu_table(bacteria.rlog) <- otu_table(max_rep_bacteria_ps) + 1
 # colnames(sample_data(max_rep_bacteria_ps))
 
 #convert the phyloseq object to a DESeq object
-bacteria_pseudo_ds = phyloseq_to_deseq2(bacteria_pseudo, ~antibiotic+sample_aspiration)
+bacteria.rlog.ds = phyloseq_to_deseq2(bacteria.rlog, ~antibiotic+sample_aspiration)
 
 #do a regularized log transformation 
-bacteria_pseudo_ds.rld  <- rlog(bacteria_pseudo_ds , blind=FALSE, fitType="local") 
+bacteria.rlog.ds.rld  <- rlog(bacteria.rlog.ds , blind=FALSE, fitType="local") 
 
 #extract the otu counts from the R-log transformed object
-bacteria_pseudo_ds.rld.counts <- as.matrix(assay(bacteria_pseudo_ds.rld))
+bacteria.rlog.ds.rld.counts <- as.matrix(assay(bacteria.rlog.ds.rld))
 
 #exchange the otu tables 
-otu_table(bacteria_pseudo) <- otu_table(bacteria_pseudo_ds.rld.counts, taxa_are_rows = TRUE)
+otu_table(bacteria.rlog) <- otu_table(bacteria.rlog.ds.rld.counts, taxa_are_rows = TRUE)
 
 #look to see if we've equalized depth by site just like we did before
 #indeed it looks much better, but not perfect; may also need to use relative abundance standardization
 
-rlog.plots = plotCounts(bacteria_pseudo)
+rlog.plots = plotCounts(bacteria.rlog)
 #' ## Regularized Log Transformation 
 #' ### Distribution by Treatment
 print(rlog.plots["grouped_boxplot"])
