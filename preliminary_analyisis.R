@@ -31,6 +31,7 @@ suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(magrittr))
 suppressPackageStartupMessages(library("tibble"))
 suppressPackageStartupMessages(library(DESeq2))
+suppressPackageStartupMessages(library(vegan))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Phyloseq object from RDS, include=FALSE
@@ -175,7 +176,7 @@ max_replicate = total_count.df %>%
 # check to be sure replicates were removed
 max_replicate %>% select(Description) %>% duplicated() %>% any()
 
-bacteria_ps = subset_samples(bacteria_ps_both_reps,SampleID %in% max_replicate$SampleID)
+bacteria.ps = subset_samples(bacteria_ps_both_reps,SampleID %in% max_replicate$SampleID)
 
 rm(full_ps, bacteria_ps_both_reps) # Clean up to be sure these aren't used
 
@@ -189,7 +190,7 @@ rm(full_ps, bacteria_ps_both_reps) # Clean up to be sure these aren't used
 #' samples than any other treatment group.
 #+ Alpha Diversity Plots, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-alpha_plot = plot_richness(bacteria_ps, x = "antibiotic", 
+alpha_plot = plot_richness(bacteria.ps, x = "antibiotic", 
                            color = "sample_aspiration", 
                            measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
   geom_boxplot() + theme(panel.background = element_blank())
@@ -204,7 +205,7 @@ print(alpha_plot)
 #' # Relative Abundance Plots
 #+ Relative Abundance Plots, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bacteria_ps.rel  = transform_sample_counts(bacteria_ps, function(x) x / sum(x) )
+bacteria_ps.rel  = transform_sample_counts(bacteria.ps, function(x) x / sum(x) )
 bacteria_ps.rel.filt = filter_taxa(bacteria_ps.rel, function(x) var(x) > 1e-3, TRUE)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -265,45 +266,45 @@ print(p)
 
 min_counts = 2
 sample_proportion = 0.01
-min_samples = ceiling(sample_proportion*nsamples(bacteria_ps))
-wh0 = genefilter_sample(bacteria_ps, 
+min_samples = ceiling(sample_proportion*nsamples(bacteria.ps))
+wh0 = genefilter_sample(bacteria.ps, 
                         filterfun_sample(function(x) x >= min_counts), 
                         A=min_samples)
 
-ps1 = prune_taxa(wh0, bacteria_ps)
-ntaxa(bacteria_ps)
-ntaxa(ps1)
+bacteria.pruned.ps = prune_taxa(wh0, bacteria.ps)
+ntaxa(bacteria.ps)
+ntaxa(bacteria.pruned.ps)
 
 #' ## Pruning Taxa
 #' The data was pruned before ordination to remove rare taxa.
 #' To be included in the pruned dataset, a taxon must occur at least 
 #' `r min_counts` times in at least `r sample_proportion*100`% of samples 
 #' (`r min_samples` samples).
-#' Before pruning there are `r ntaxa(bacteria_ps)` bacterial taxa 
+#' Before pruning there are `r ntaxa(bacteria.ps)` bacterial taxa 
 #' (all non-bacterial taxa have already been removed). After pruning there are 
-#' `r ntaxa(ps1)` bacterial taxa remaining.
+#' `r ntaxa(bacteria.pruned.ps)` bacterial taxa remaining.
 
 #--------------------------------------------------
 #+ Ordination plots: Transform counts, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
-## which (apply(otu_table(ps1), 1, function(row) all(row ==0 )))
+## which (apply(otu_table(bacteria.pruned.ps), 1, function(row) all(row ==0 )))
 
 ## Transform to even sampling depth.
-ps1 = transform_sample_counts(ps1, function(x) 1E6 * x/sum(x))
+bacteria.even.ps = transform_sample_counts(bacteria.pruned.ps, function(x) 1E6 * x/sum(x))
 
 ## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
-ps1 = prune_samples(complete.cases(otu_table(ps1)),ps1)
+bacteria.even.ps = prune_samples(complete.cases(otu_table(bacteria.even.ps)),bacteria.even.ps)
 
 # # Keep only the most abundant five phyla.
-# phylum.sum = tapply(taxa_sums(ps1), tax_table(ps1)[, "Phylum"], sum, na.rm=TRUE)
+# phylum.sum = tapply(taxa_sums(bacteria.even.ps), tax_table(bacteria.even.ps)[, "Phylum"], sum, na.rm=TRUE)
 # top5phyla = names(sort(phylum.sum, TRUE))[1:5]
-# ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
+# bacteria.even.ps = prune_taxa((tax_table(bacteria.even.ps)[, "Phylum"] %in% top5phyla), bacteria.even.ps)
 
 
-ps1.ord <- ordinate(ps1, "NMDS", "bray")
-ord.plot = plot_ordination(ps1, ps1.ord, type="samples")
-ps1.ord.data = ord.plot$data
+bacteria.even.ord <- ordinate(bacteria.even.ps, "NMDS", "bray")
+ord.plot = plot_ordination(bacteria.even.ps, bacteria.even.ord, type="samples")
+bacteria.even.ord.data = ord.plot$data
 
 #' ## NMDS Plots
 #' The goal of NMDS plots is to visualize relationships betwen datapoints.
@@ -326,12 +327,12 @@ ps1.ord.data = ord.plot$data
 #' aspiration has a large effect on the bacterial community. However, 
 #' differences in antibiotic treatment does not seem to have a large effect.
 #+ NMDS plot: Antibiotic All Points, echo=FALSE
-ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
+ggplot(bacteria.even.ord.data, aes(NMDS1, NMDS2)) +
   theme_bw() +
   theme(plot.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  geom_point(data = transform(ps1.ord.data, aspiration_bool = NULL, lung = NULL), 
+  geom_point(data = transform(bacteria.even.ord.data, aspiration_bool = NULL, lung = NULL), 
              color = "grey90") +
   geom_point(aes(color = antibiotic)) + 
   facet_grid(aspiration_bool~lung,labeller = "label_both")
@@ -366,12 +367,12 @@ ggsave(file=file.path(figure_dir,"antibiotic_nmds_bray.png"))
 #' are small effects that are swamped out by the much larger effects in the left lung.
 #' A more careful analysis might be able to tease out finer effects.
 #+ NMDS plot: Aspiration All Points, echo=FALSE
-ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
+ggplot(bacteria.even.ord.data, aes(NMDS1, NMDS2)) +
   theme_bw() +
   theme(plot.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  geom_point(data = transform(ps1.ord.data, antibiotic_bool = NULL, lung = NULL), 
+  geom_point(data = transform(bacteria.even.ord.data, antibiotic_bool = NULL, lung = NULL), 
              color = "grey90") +
   geom_point(aes(color = left_aspiration)) + 
   scale_colour_brewer(palette="Set1",type="qual") +
@@ -379,45 +380,35 @@ ggplot(ps1.ord.data, aes(NMDS1, NMDS2)) +
 #+ NMDS plot: Aspiration All Points SAVE, include=FALSE
 ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 
-
-
 #----------------------------------------------------------------
+#+ Permanova with bacteria.even.ps, include=FALSE
+
 #' # Permanova
 
 # Let’s see if Bray Curtis varied significantly by tooth class
-library(vegan)
 # otus <- t(otu_table(psb_ab))
 # psb_ab.bray <- vegdist(otus, method="bray")
 # psb_ab.aov <- adonis(psb_ab.bray~sample_data(psb_ab)$Class)
 # psb_ab.aov 
 
 
-# otus <- t(otu_table(ps1))
-otus <- otu_table(ps1)
-ps1.bray <- vegdist(otus, method="bray")
+# otus <- t(otu_table(bacteria.even.ps))
+otus <- otu_table(bacteria.even.ps)
+bacteria.even.bray <- vegdist(otus, method="bray")
 
-adonis(ps1.bray ~ sample_data(ps1)$antibiotic_bool + sample_data(ps1)$aspiration_bool)
+adonis(bacteria.even.bray ~ sample_data(bacteria.even.ps)$antibiotic_bool + sample_data(bacteria.even.ps)$aspiration_bool)
 
-adonis(ps1.bray ~ sample_data(ps1)$antibiotic + sample_data(ps1)$sample_aspiration)
+adonis(bacteria.even.bray ~ sample_data(bacteria.even.ps)$antibiotic + sample_data(bacteria.even.ps)$sample_aspiration)
 
-adonis(ps1.bray ~ sample_data(ps1)$aspiration + sample_data(ps1)$antibiotic)
+adonis(bacteria.even.bray ~ sample_data(bacteria.even.ps)$sample_aspiration + sample_data(bacteria.even.ps)$antibiotic)
 
-ps1.aov <- adonis(ps1.bray ~ sample_data(ps1)$antibiotic)
-# ps1.aov <- adonis(ps1.bray ~antibiotic_bool, data=sample_data(ps1))
-ps1.aov 
+# bacteria.even.aov <- adonis(bacteria.even.bray ~ sample_data(bacteria.even.ps)$antibiotic)
+# # ps1.aov <- adonis(bacteria.even.bray ~antibiotic_bool, data=sample_data(ps1))
+# bacteria.even.aov 
 
-
-#' # Check Raw Count Sample Read Depth
-ps1.plots = plotCounts(ps1)
-#' ## Distribution by Treatment
-print(ps1.plots["grouped_boxplot"])
-#' ## Per Sample Read Depth, Organized by Treatment Group
-print(ps1.plots["sample_barplot"])
-
-#----------------------------------------------------------------
-#----------------------------------------------------------------
 #' # Check Sample Read Depth
-
+#----------------------------------------------------------------
+#+ plotCounts Definition, include=FALSE
 plotCounts = function(physeq){
   sum.df <- data.frame(sample_data(physeq), sample_sums(physeq))
   colnames(sum.df)[length(colnames(sum.df))] <- "depth"
@@ -434,39 +425,53 @@ plotCounts = function(physeq){
   return(list(grouped_boxplot=grouped_boxplot, sample_barplot=sample_barplot))
 }
 
+#----------------------------------------------------------------
+#+ plotCounts of bacteria.ps, echo=FALSE
 #' # Check Raw Count Sample Read Depth
-raw.plots = plotCounts(bacteria_ps)
+raw.plots = plotCounts(bacteria.ps)
 #' ## Distribution by Treatment
 print(raw.plots["grouped_boxplot"])
 #' ## Per Sample Read Depth, Organized by Treatment Group
 print(raw.plots["sample_barplot"])
 
+#----------------------------------------------------------------
+#+ plotCounts of bacteria.even.ps, echo=FALSE
+#' # Check Raw Count Sample Read Depth
+bacteria.even.plots = plotCounts(bacteria.even.ps)
+#' ## Distribution by Treatment
+print(bacteria.even.plots["grouped_boxplot"])
+#' ## Per Sample Read Depth, Organized by Treatment Group
+print(bacteria.even.plots["sample_barplot"])
 
+
+#+ rlog_transformation, echo=FALSE
+if (FALSE){
+# # temporarilyHideRlogStuff <- function(bacteria.ps, antibiotic, sample_aspiration, gridExtra) 
 #--------------------------------------------------
 #' # Try Regularized Log Transformation
-#+ rlog_transformation, echo=FALSE
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Based on http://statweb.stanford.edu/~susan/papers/oralRR.html
 #make a new object that we will transform
-bacteria.rlog <- bacteria_ps
+bacteria.rlog <- bacteria.ps
 
 #add 1 to each sample count prior to transforming
-# otu_table(bacteria.rlog) <- otu_table(bacteria_ps) + 1
-# colnames(sample_data(bacteria_ps))
+# otu_table(bacteria.rlog) <- otu_table(bacteria.ps) + 1
+# colnames(sample_data(bacteria.ps))
 
 #convert the phyloseq object to a DESeq object
 bacteria.rlog.ds = phyloseq_to_deseq2(bacteria.rlog, ~antibiotic+sample_aspiration)
 
-#do a regularized log transformation 
-bacteria.rlog.ds.rld  <- rlog(bacteria.rlog.ds , blind=FALSE, fitType="local") 
+#do a regularized log transformation
+bacteria.rlog.ds.rld  <- rlog(bacteria.rlog.ds , blind=FALSE, fitType="local")
 
 #extract the otu counts from the R-log transformed object
 bacteria.rlog.ds.rld.counts <- as.matrix(assay(bacteria.rlog.ds.rld))
 
-#exchange the otu tables 
+#exchange the otu tables
 otu_table(bacteria.rlog) <- otu_table(bacteria.rlog.ds.rld.counts, taxa_are_rows = TRUE)
 
-#' ## Regularized Log Transformation 
+#' ## Regularized Log Transformation
 rlog.plots = plotCounts(bacteria.rlog)
 #' ### Distribution by Treatment
 print(rlog.plots["grouped_boxplot"])
@@ -477,37 +482,37 @@ print(rlog.plots["sample_barplot"])
 # Try standardizing to relative abundance
 # min_counts = 2
 # sample_proportion = 0.01
-# min_samples = ceiling(sample_proportion*nsamples(bacteria_ps))
-# wh0 = genefilter_sample(bacteria_ps, 
-#                         filterfun_sample(function(x) x >= min_counts), 
+# min_samples = ceiling(sample_proportion*nsamples(bacteria.ps))
+# wh0 = genefilter_sample(bacteria.ps,
+#                         filterfun_sample(function(x) x >= min_counts),
 #                         A=min_samples)
-# 
-# ps1 = prune_taxa(wh0, bacteria_ps)
-# ntaxa(bacteria_ps)
+#
+# ps1 = prune_taxa(wh0, bacteria.ps)
+# ntaxa(bacteria.ps)
 # ntaxa(ps1)
 
 #' ## Pruning Taxa
 #' The data was pruned before ordination to remove rare taxa.
-#' To be included in the pruned dataset, a taxon must occur at least 
-#' `r min_counts` times in at least `r sample_proportion*100`% of samples 
+#' To be included in the pruned dataset, a taxon must occur at least
+#' `r min_counts` times in at least `r sample_proportion*100`% of samples
 #' (`r min_samples` samples).
-#' Before pruning there are `r ntaxa(bacteria_ps)` bacterial taxa 
-#' (all non-bacterial taxa have already been removed). After pruning there are 
+#' Before pruning there are `r ntaxa(bacteria.ps)` bacterial taxa
+#' (all non-bacterial taxa have already been removed). After pruning there are
 #' `r ntaxa(ps1)` bacterial taxa remaining.
 
 #--------------------------------------------------
-#+ Ordination plots: Transform counts, include=FALSE
+#+ Ordination plots: transform rlog to rlog-relative, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
 ## which (apply(otu_table(ps1), 1, function(row) all(row ==0 )))
 
 # ## Transform to even sampling depth.
 # bacteria.rlog.even = transform_sample_counts(bacteria.rlog, function(x) 1E6 * x/sum(x))
-# 
+#
 # ## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
 # bacteria.rlog.even = prune_samples(complete.cases(otu_table(bacteria.rlog.even)),bacteria.rlog.even)
 
-#+ Relative Abundance Plots, include=FALSE
+#+  plotCounts: bacteria.rlog.rel, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bacteria.rlog.rel  = transform_sample_counts(bacteria.rlog, function(x) x / sum(x) )
 # bacteria.rlog.rel.filt = filter_taxa(bacteria.rlog.rel, function(x) var(x) > 1e-3, TRUE)
@@ -556,7 +561,7 @@ rlog.nmds.p2 <- plot_ordination(bacteria.rlog, rlog.nmds, "samples", color="grou
 require(gridExtra)
 ## Loading required package: gridExtra
 grid.arrange(rel.nmds.p1, rlog.nmds.p2, ncol=2)
-
+}
 
 #'******************************************************************************
 #' # Further Analyses
