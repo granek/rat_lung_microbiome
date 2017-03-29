@@ -49,6 +49,13 @@ levels(sample_data(full_ps)$left_aspiration)
 levels(sample_data(full_ps)$right_aspiration)
 levels(sample_data(full_ps)$sample_aspiration)
 
+# antibiotic_bool = 
+sample_data(full_ps)$antibiotic_bool <- factor(get_variable(full_ps, "antibiotic") != "none")
+# aspiration_bool = 
+sample_data(full_ps)$aspiration_bool <- factor(get_variable(full_ps, "sample_aspiration") != "none")
+
+
+
 #' ****************************************************************************
 #' # How many taxa are from each kingdom?
 #+ How many taxa are from each kingdom?, echo=FALSE
@@ -126,6 +133,7 @@ print(eukaryota_barplot)
 print(bacteria_barplot)
 print(archaea_barplot)
 print(na_barplot)
+rm(all_barplot, eukaryota_barplot, bacteria_barplot, archaea_barplot, na_barplot)
 
 #'*****************************************************************************
 #+ Low count sample note
@@ -145,20 +153,31 @@ print(na_barplot)
 #------------------------------------------------------------------------------
 #+ Extract subset of replicates with most counts in each pair, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bacteria_ps = subset_taxa(full_ps,Kingdom=="Bacteria") # Drop non-bacteria taxa
-total_counts = as.data.frame(rowSums(otu_table(full_ps)))
-colnames(total_counts) = "totals"
-max_replicate = left_join(add_rownames(sample_data(bacteria_ps)), add_rownames(total_counts)) %>% 
-  select(rowname, Description, group, totals) %>%
-  group_by(Description) %>% 
-  top_n(n=1)
+bacteria_ps_both_reps = subset_taxa(full_ps,Kingdom=="Bacteria") # Drop non-bacteria taxa
+# total_count.df = data.frame(sample_data(full_ps), total_count=sample_sums(full_ps))
+total_count.df = data.frame(sample_data(bacteria_ps_both_reps), total_count=sample_sums(bacteria_ps_both_reps))
+#   
+#   
+#   
+#   as.data.frame(rowSums(otu_table(full_ps)))
+# total_count.df = as.data.frame(rowSums(otu_table(full_ps)))
+# mysums = sample_sums(full_ps)
+# sum.df <- 
+# colnames(sum.df)[length(colnames(sum.df))] <- "depth"
+# 
+# colnames(total_counts) = "totals"
+set.seed(1)
+max_replicate = total_count.df %>% 
+  select(SampleID, Description, group, total_count) %>%
+  group_by(Description) %>%
+  filter(rank(-total_count, ties.method="random")==1)
 
 # check to be sure replicates were removed
 max_replicate %>% select(Description) %>% duplicated() %>% any()
 
-max_rep_bacteria_ps = subset_samples(bacteria_ps,SampleID %in% max_replicate$rowname)
+bacteria_ps = subset_samples(bacteria_ps_both_reps,SampleID %in% max_replicate$SampleID)
 
-rm(full_ps) # Get rid of full_ps to be sure it isn't accidentally used
+rm(full_ps, bacteria_ps_both_reps) # Clean up to be sure these aren't used
 
 
 #==============================================================================
@@ -170,7 +189,7 @@ rm(full_ps) # Get rid of full_ps to be sure it isn't accidentally used
 #' samples than any other treatment group.
 #+ Alpha Diversity Plots, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-alpha_plot = plot_richness(max_rep_bacteria_ps, x = "antibiotic", 
+alpha_plot = plot_richness(bacteria_ps, x = "antibiotic", 
                            color = "sample_aspiration", 
                            measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=2) + 
   geom_boxplot() + theme(panel.background = element_blank())
@@ -185,13 +204,13 @@ print(alpha_plot)
 #' # Relative Abundance Plots
 #+ Relative Abundance Plots, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-max_rep_bacteria_ps.rel  = transform_sample_counts(max_rep_bacteria_ps, function(x) x / sum(x) )
-max_rep_bacteria_ps.rel.filt = filter_taxa(max_rep_bacteria_ps.rel, function(x) var(x) > 1e-3, TRUE)
+bacteria_ps.rel  = transform_sample_counts(bacteria_ps, function(x) x / sum(x) )
+bacteria_ps.rel.filt = filter_taxa(bacteria_ps.rel, function(x) var(x) > 1e-3, TRUE)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Relative Abundance Plots: Left Lung Samples, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="left")), 
+p = ggplot(psmelt(subset_samples(bacteria_ps.rel.filt,lung=="left")), 
            aes_string(x = "animal", y = "Abundance", fill = "Genus"))
 p = p + geom_bar(stat = "identity", position = "stack")
 p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
@@ -206,7 +225,7 @@ print(p)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Relative Abundance Plots Setup: Right Lung Samples, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p = ggplot(psmelt(subset_samples(max_rep_bacteria_ps.rel.filt,lung=="right")), 
+p = ggplot(psmelt(subset_samples(bacteria_ps.rel.filt,lung=="right")), 
            aes_string(x = "animal", y = "Abundance", fill = "Genus"))
 p = p + geom_bar(stat = "identity", position = "stack")
 p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
@@ -235,7 +254,7 @@ print(p)
 # #' ## relative abundances between antibiotic treatments
 # #+ Relative Abundance: Antibiotic Treatments, echo=FALSE
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# plot_bar(max_rep_bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
+# plot_bar(bacteria_ps.rel.filt, x="antibiotic", fill="Genus")
 
 
 #==============================================================================
@@ -246,13 +265,13 @@ print(p)
 
 min_counts = 2
 sample_proportion = 0.01
-min_samples = ceiling(sample_proportion*nsamples(max_rep_bacteria_ps))
-wh0 = genefilter_sample(max_rep_bacteria_ps, 
+min_samples = ceiling(sample_proportion*nsamples(bacteria_ps))
+wh0 = genefilter_sample(bacteria_ps, 
                         filterfun_sample(function(x) x >= min_counts), 
                         A=min_samples)
 
-ps1 = prune_taxa(wh0, max_rep_bacteria_ps)
-ntaxa(max_rep_bacteria_ps)
+ps1 = prune_taxa(wh0, bacteria_ps)
+ntaxa(bacteria_ps)
 ntaxa(ps1)
 
 #' ## Pruning Taxa
@@ -260,7 +279,7 @@ ntaxa(ps1)
 #' To be included in the pruned dataset, a taxon must occur at least 
 #' `r min_counts` times in at least `r sample_proportion*100`% of samples 
 #' (`r min_samples` samples).
-#' Before pruning there are `r ntaxa(max_rep_bacteria_ps)` bacterial taxa 
+#' Before pruning there are `r ntaxa(bacteria_ps)` bacterial taxa 
 #' (all non-bacterial taxa have already been removed). After pruning there are 
 #' `r ntaxa(ps1)` bacterial taxa remaining.
 
@@ -281,10 +300,6 @@ ps1 = prune_samples(complete.cases(otu_table(ps1)),ps1)
 # top5phyla = names(sort(phylum.sum, TRUE))[1:5]
 # ps1 = prune_taxa((tax_table(ps1)[, "Phylum"] %in% top5phyla), ps1)
 
-antibiotic_bool = get_variable(ps1, "antibiotic") != "none"
-sample_data(ps1)$antibiotic_bool <- factor(antibiotic_bool)
-aspiration_bool = get_variable(ps1, "sample_aspiration") != "none"
-sample_data(ps1)$aspiration_bool <- factor(aspiration_bool)
 
 ps1.ord <- ordinate(ps1, "NMDS", "bray")
 ord.plot = plot_ordination(ps1, ps1.ord, type="samples")
@@ -420,7 +435,7 @@ plotCounts = function(physeq){
 }
 
 #' # Check Raw Count Sample Read Depth
-raw.plots = plotCounts(max_rep_bacteria_ps)
+raw.plots = plotCounts(bacteria_ps)
 #' ## Distribution by Treatment
 print(raw.plots["grouped_boxplot"])
 #' ## Per Sample Read Depth, Organized by Treatment Group
@@ -433,11 +448,11 @@ print(raw.plots["sample_barplot"])
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Based on http://statweb.stanford.edu/~susan/papers/oralRR.html
 #make a new object that we will transform
-bacteria.rlog <- max_rep_bacteria_ps
+bacteria.rlog <- bacteria_ps
 
 #add 1 to each sample count prior to transforming
-otu_table(bacteria.rlog) <- otu_table(max_rep_bacteria_ps) + 1
-# colnames(sample_data(max_rep_bacteria_ps))
+# otu_table(bacteria.rlog) <- otu_table(bacteria_ps) + 1
+# colnames(sample_data(bacteria_ps))
 
 #convert the phyloseq object to a DESeq object
 bacteria.rlog.ds = phyloseq_to_deseq2(bacteria.rlog, ~antibiotic+sample_aspiration)
@@ -462,13 +477,13 @@ print(rlog.plots["sample_barplot"])
 # Try standardizing to relative abundance
 # min_counts = 2
 # sample_proportion = 0.01
-# min_samples = ceiling(sample_proportion*nsamples(max_rep_bacteria_ps))
-# wh0 = genefilter_sample(max_rep_bacteria_ps, 
+# min_samples = ceiling(sample_proportion*nsamples(bacteria_ps))
+# wh0 = genefilter_sample(bacteria_ps, 
 #                         filterfun_sample(function(x) x >= min_counts), 
 #                         A=min_samples)
 # 
-# ps1 = prune_taxa(wh0, max_rep_bacteria_ps)
-# ntaxa(max_rep_bacteria_ps)
+# ps1 = prune_taxa(wh0, bacteria_ps)
+# ntaxa(bacteria_ps)
 # ntaxa(ps1)
 
 #' ## Pruning Taxa
@@ -476,7 +491,7 @@ print(rlog.plots["sample_barplot"])
 #' To be included in the pruned dataset, a taxon must occur at least 
 #' `r min_counts` times in at least `r sample_proportion*100`% of samples 
 #' (`r min_samples` samples).
-#' Before pruning there are `r ntaxa(max_rep_bacteria_ps)` bacterial taxa 
+#' Before pruning there are `r ntaxa(bacteria_ps)` bacterial taxa 
 #' (all non-bacterial taxa have already been removed). After pruning there are 
 #' `r ntaxa(ps1)` bacterial taxa remaining.
 
