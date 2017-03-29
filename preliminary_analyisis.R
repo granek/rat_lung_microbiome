@@ -32,6 +32,7 @@ suppressPackageStartupMessages(library(magrittr))
 suppressPackageStartupMessages(library("tibble"))
 suppressPackageStartupMessages(library(DESeq2))
 suppressPackageStartupMessages(library(vegan))
+suppressPackageStartupMessages(library(gridExtra))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Phyloseq object from RDS, include=FALSE
@@ -445,31 +446,42 @@ print(bacteria.even.plots["sample_barplot"])
 
 
 #+ rlog_transformation, echo=FALSE
-if (FALSE){
-# # temporarilyHideRlogStuff <- function(bacteria.ps, antibiotic, sample_aspiration, gridExtra) 
 #--------------------------------------------------
 #' # Try Regularized Log Transformation
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Based on http://statweb.stanford.edu/~susan/papers/oralRR.html
 #make a new object that we will transform
-bacteria.rlog <- bacteria.ps
+bacteria.rlog <- bacteria.pruned.ps
 
 #add 1 to each sample count prior to transforming
 # otu_table(bacteria.rlog) <- otu_table(bacteria.ps) + 1
 # colnames(sample_data(bacteria.ps))
 
 #convert the phyloseq object to a DESeq object
-bacteria.rlog.ds = phyloseq_to_deseq2(bacteria.rlog, ~antibiotic+sample_aspiration)
+bacteria.rlog.dds = phyloseq_to_deseq2(bacteria.rlog, ~antibiotic+sample_aspiration)
+
+# Use alternative method to calculate geometric means to avoid problem with zeroes
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+geoMeans = apply(counts(bacteria.rlog.dds), 1, gm_mean)
+bacteria.rlog.dds = estimateSizeFactors(bacteria.rlog.dds, geoMeans = geoMeans)
+bacteria.rlog.dds = DESeq(bacteria.rlog.dds, fitType="local")
+
+
 
 #do a regularized log transformation
-bacteria.rlog.ds.rld  <- rlog(bacteria.rlog.ds , blind=FALSE, fitType="local")
+# bacteria.rlog.dds.rld  <- rlog(bacteria.rlog.dds , blind=FALSE, fitType="local")
 
 #extract the otu counts from the R-log transformed object
-bacteria.rlog.ds.rld.counts <- as.matrix(assay(bacteria.rlog.ds.rld))
+# bacteria.rlog.dds.assay <- as.matrix(assay(bacteria.rlog.dds))
+# bacteria.rlog.dds.counts <- as.matrix(counts(bacteria.rlog.dds,normalized=TRUE))
+bacteria.rlog.dds.counts <- as.matrix(assay(bacteria.rlog.dds))
+
 
 #exchange the otu tables
-otu_table(bacteria.rlog) <- otu_table(bacteria.rlog.ds.rld.counts, taxa_are_rows = TRUE)
+otu_table(bacteria.rlog) <- otu_table(bacteria.rlog.dds.counts, taxa_are_rows = TRUE)
 
 #' ## Regularized Log Transformation
 rlog.plots = plotCounts(bacteria.rlog)
@@ -478,27 +490,7 @@ print(rlog.plots["grouped_boxplot"])
 #' ### Per Sample Read Depth, Organized by Treatment Group
 print(rlog.plots["sample_barplot"])
 
-##------------------------------------------------------
-# Try standardizing to relative abundance
-# min_counts = 2
-# sample_proportion = 0.01
-# min_samples = ceiling(sample_proportion*nsamples(bacteria.ps))
-# wh0 = genefilter_sample(bacteria.ps,
-#                         filterfun_sample(function(x) x >= min_counts),
-#                         A=min_samples)
-#
-# ps1 = prune_taxa(wh0, bacteria.ps)
-# ntaxa(bacteria.ps)
-# ntaxa(ps1)
 
-#' ## Pruning Taxa
-#' The data was pruned before ordination to remove rare taxa.
-#' To be included in the pruned dataset, a taxon must occur at least
-#' `r min_counts` times in at least `r sample_proportion*100`% of samples
-#' (`r min_samples` samples).
-#' Before pruning there are `r ntaxa(bacteria.ps)` bacterial taxa
-#' (all non-bacterial taxa have already been removed). After pruning there are
-#' `r ntaxa(ps1)` bacterial taxa remaining.
 
 #--------------------------------------------------
 #+ Ordination plots: transform rlog to rlog-relative, include=FALSE
@@ -543,7 +535,6 @@ rlog.pcoa <- ordinate(bacteria.rlog, method="PCoA", distance="bray")
 rlog.pcoa.p2 <- plot_ordination(bacteria.rlog, rlog.pcoa, "samples", color="group") + ggtitle("Rlog-transformed")
 
 #plot them side by side
-require(gridExtra)
 ## Loading required package: gridExtra
 grid.arrange(rel.pcoa.p1, rlog.pcoa.p2, ncol=2)
 
@@ -558,10 +549,8 @@ rlog.nmds <- ordinate(bacteria.rlog, method="NMDS", distance="bray")
 rlog.nmds.p2 <- plot_ordination(bacteria.rlog, rlog.nmds, "samples", color="group") + ggtitle("Rlog-transformed")
 
 #plot them side by side
-require(gridExtra)
 ## Loading required package: gridExtra
 grid.arrange(rel.nmds.p1, rlog.nmds.p2, ncol=2)
-}
 
 #'******************************************************************************
 #' # Further Analyses
