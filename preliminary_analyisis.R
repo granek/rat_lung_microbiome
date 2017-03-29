@@ -302,10 +302,9 @@ bacteria.even.ps = prune_samples(complete.cases(otu_table(bacteria.even.ps)),bac
 # top5phyla = names(sort(phylum.sum, TRUE))[1:5]
 # bacteria.even.ps = prune_taxa((tax_table(bacteria.even.ps)[, "Phylum"] %in% top5phyla), bacteria.even.ps)
 
-
-bacteria.even.ord <- ordinate(bacteria.even.ps, "NMDS", "bray")
-ord.plot = plot_ordination(bacteria.even.ps, bacteria.even.ord, type="samples")
-bacteria.even.ord.data = ord.plot$data
+bacteria.even.nmds <- ordinate(bacteria.even.ps, "NMDS", "bray")
+nmds.plot = plot_ordination(bacteria.even.ps, bacteria.even.nmds, type="samples")
+bacteria.even.nmds.data = nmds.plot$data
 
 #' ## NMDS Plots
 #' The goal of NMDS plots is to visualize relationships betwen datapoints.
@@ -328,12 +327,12 @@ bacteria.even.ord.data = ord.plot$data
 #' aspiration has a large effect on the bacterial community. However, 
 #' differences in antibiotic treatment does not seem to have a large effect.
 #+ NMDS plot: Antibiotic All Points, echo=FALSE
-ggplot(bacteria.even.ord.data, aes(NMDS1, NMDS2)) +
+ggplot(bacteria.even.nmds.data, aes(NMDS1, NMDS2)) +
   theme_bw() +
   theme(plot.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  geom_point(data = transform(bacteria.even.ord.data, aspiration_bool = NULL, lung = NULL), 
+  geom_point(data = transform(bacteria.even.nmds.data, aspiration_bool = NULL, lung = NULL), 
              color = "grey90") +
   geom_point(aes(color = antibiotic)) + 
   facet_grid(aspiration_bool~lung,labeller = "label_both")
@@ -368,12 +367,12 @@ ggsave(file=file.path(figure_dir,"antibiotic_nmds_bray.png"))
 #' are small effects that are swamped out by the much larger effects in the left lung.
 #' A more careful analysis might be able to tease out finer effects.
 #+ NMDS plot: Aspiration All Points, echo=FALSE
-ggplot(bacteria.even.ord.data, aes(NMDS1, NMDS2)) +
+ggplot(bacteria.even.nmds.data, aes(NMDS1, NMDS2)) +
   theme_bw() +
   theme(plot.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  geom_point(data = transform(bacteria.even.ord.data, antibiotic_bool = NULL, lung = NULL), 
+  geom_point(data = transform(bacteria.even.nmds.data, antibiotic_bool = NULL, lung = NULL), 
              color = "grey90") +
   geom_point(aes(color = left_aspiration)) + 
   scale_colour_brewer(palette="Set1",type="qual") +
