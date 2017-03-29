@@ -302,6 +302,7 @@ bacteria.even.ps = prune_samples(complete.cases(otu_table(bacteria.even.ps)),bac
 # top5phyla = names(sort(phylum.sum, TRUE))[1:5]
 # bacteria.even.ps = prune_taxa((tax_table(bacteria.even.ps)[, "Phylum"] %in% top5phyla), bacteria.even.ps)
 
+set.seed(1)
 bacteria.even.nmds <- ordinate(bacteria.even.ps, "NMDS", "bray")
 nmds.plot = plot_ordination(bacteria.even.ps, bacteria.even.nmds, type="samples")
 bacteria.even.nmds.data = nmds.plot$data
@@ -380,6 +381,20 @@ ggplot(bacteria.even.nmds.data, aes(NMDS1, NMDS2)) +
 #+ NMDS plot: Aspiration All Points SAVE, include=FALSE
 ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 
+#' > ### NMDS Summary
+#' > **Stress: `r bacteria.even.nmds$stress`**
+#' 
+#' > | Stress Range | Interpretation                       |
+#' > |--------------+--------------------------------------|
+#' > | <0.1         | Great                                |
+#' > | 0.1 - 0.2    | Good                                 |
+#' > | 0.2 - 0.3    | Acceptable (treat with some caution) |
+#' > | > 0.3        | Unreliable                           |
+#' 
+
+#+ NMDS References, include=FALSE: 
+# https://jonlefcheck.net/2012/10/24/nmds-tutorial-in-r/
+# https://sites.google.com/site/mb3gustame/dissimilarity-based-methods/nmds
 #----------------------------------------------------------------
 #+ Permanova with bacteria.even.ps, include=FALSE
 
