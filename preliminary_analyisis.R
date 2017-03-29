@@ -395,6 +395,39 @@ ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 #+ NMDS References, include=FALSE: 
 # https://jonlefcheck.net/2012/10/24/nmds-tutorial-in-r/
 # https://sites.google.com/site/mb3gustame/dissimilarity-based-methods/nmds
+
+#----------------------------------------------------------------
+#' ## PCoA Plots
+#+ PCoA of bacteria.even.ps
+bacteria.even.pcoa <- ordinate(bacteria.even.ps, method="PCoA", distance="bray")
+bacteria.even.pcoa.plot = plot_ordination(bacteria.even.ps, bacteria.even.pcoa, type="samples")
+bacteria.even.pcoa.plotdata = bacteria.even.pcoa.plot$data
+
+#' ### PCoA Plot by Antibiotic
+#+ PCoA plot: Antibiotic All Points, echo=FALSE
+ggplot(bacteria.even.pcoa.plotdata, aes(Axis.1, Axis.2)) +
+  theme_bw() +
+  theme(plot.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_point(data = transform(bacteria.even.pcoa.plotdata, aspiration_bool = NULL, lung = NULL), 
+             color = "grey90") +
+  geom_point(aes(color = antibiotic)) + 
+  facet_grid(aspiration_bool~lung,labeller = "label_both")
+
+#' ### PCoA Plot by Aspiration
+#+ PCoA plot: Aspiration All Points, echo=FALSE
+ggplot(bacteria.even.pcoa.plotdata, aes(Axis.1, Axis.2)) +
+  theme_bw() +
+  theme(plot.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_point(data = transform(bacteria.even.pcoa.plotdata, antibiotic_bool = NULL, lung = NULL), 
+             color = "grey90") +
+  geom_point(aes(color = left_aspiration)) + 
+  scale_colour_brewer(palette="Set1",type="qual") +
+  facet_grid(antibiotic_bool~lung,labeller = "label_both")
+
 #----------------------------------------------------------------
 #+ Permanova with bacteria.even.ps, include=FALSE
 
