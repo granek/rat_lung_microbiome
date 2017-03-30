@@ -301,11 +301,45 @@ bacteria.even.ps = prune_samples(complete.cases(otu_table(bacteria.even.ps)),bac
 # phylum.sum = tapply(taxa_sums(bacteria.even.ps), tax_table(bacteria.even.ps)[, "Phylum"], sum, na.rm=TRUE)
 # top5phyla = names(sort(phylum.sum, TRUE))[1:5]
 # bacteria.even.ps = prune_taxa((tax_table(bacteria.even.ps)[, "Phylum"] %in% top5phyla), bacteria.even.ps)
+#--------------------------------------------------
+#+ NMDS ScreePlot Prep, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## NMDS Scree Plot
+mds_stress_dplyr = function(df,rep_num, dimensions) {
+  mds_result = metaMDS(df, autotransform=TRUE, k=dimensions)
+  return(mds_result$stress)
+}
+set.seed(1)
+scree.df = expand.grid(repnum=seq(1), dimensions=seq(6)) %>% 
+  rowwise() %>% 
+  mutate(stress = mds_stress_dplyr(otu_table(bacteria.even.ps), repnum, dimensions))
 
+#+ NMDS ScreePlot Calculations, echo=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ggplot(data = scree.df, aes(x = dimensions, y = stress)) +
+  geom_jitter(width = 0.05, alpha=1/3) +
+  stat_summary(fun.y=mean, geom="line") +
+  theme_bw()
+
+# set.seed(1)
+# mds_result.noauto = metaMDS(otu_table(bacteria.even.ps), autotransform=F, k=2)
+
+# set.seed(1)
+# mds_result.auto = metaMDS(otu_table(bacteria.even.ps), 
+#                           autotransform=TRUE, k=2, 
+#                           sratmax=0.999999999999,
+#                           maxit=400,
+#                           sfgrmin = 1e-10)
+# mds_result.auto$stress
+
+
+
+#+ NMDS Ordination, include=FALSE
 set.seed(1)
 bacteria.even.nmds <- ordinate(bacteria.even.ps, "NMDS", "bray")
 nmds.plot = plot_ordination(bacteria.even.ps, bacteria.even.nmds, type="samples")
 bacteria.even.nmds.data = nmds.plot$data
+bacteria.even.nmds$stress
 
 #' ## NMDS Plots
 #' The goal of NMDS plots is to visualize relationships betwen datapoints.
@@ -392,7 +426,7 @@ ggsave(file=file.path(figure_dir,"aspiration_nmds_bray.png"))
 #' > | > 0.3        | Unreliable                           |
 #' 
 
-#+ NMDS References, include=FALSE: 
+#+ NMDS References, include=FALSE
 # https://jonlefcheck.net/2012/10/24/nmds-tutorial-in-r/
 # https://sites.google.com/site/mb3gustame/dissimilarity-based-methods/nmds
 
