@@ -480,9 +480,36 @@ bacteria.even.bray <- vegdist(otus, method="bray")
 
 adonis(bacteria.even.bray ~ sample_data(bacteria.even.ps)$antibiotic_bool + sample_data(bacteria.even.ps)$aspiration_bool)
 
+
+#-------------------------
+antibiotic_bool.beta <- betadisper(bacteria.even.bray, sample_data(bacteria.even.ps)$antibiotic_bool)
+permutest(antibiotic_bool.beta)
+
+#-------------------------
+# http://thebiobucket.blogspot.com/2011/04/assumptions-for-permanova-with-adonis.html
+aspiration_bool.beta <- betadisper(bacteria.even.bray, sample_data(bacteria.even.ps)$aspiration_bool)
+permutest(aspiration_bool.beta)
+
+
+
+
+
 adonis(bacteria.even.bray ~ sample_data(bacteria.even.ps)$antibiotic + sample_data(bacteria.even.ps)$sample_aspiration)
 
 adonis(bacteria.even.bray ~ sample_data(bacteria.even.ps)$sample_aspiration + sample_data(bacteria.even.ps)$antibiotic)
+
+# http://deneflab.github.io/MicrobeMiseq/demos/mothur_2_phyloseq.html
+# Homogeneity of dispersion test
+# beta <- betadisper(erie_bray, sampledf$Station)
+# permutest(beta)
+#-------------------------
+antibiotic.beta <- betadisper(bacteria.even.bray, sample_data(bacteria.even.ps)$antibiotic)
+permutest(antibiotic.beta)
+
+#-------------------------
+sample_aspiration.beta <- betadisper(bacteria.even.bray, sample_data(bacteria.even.ps)$sample_aspiration)
+permutest(sample_aspiration.beta)
+
 
 # bacteria.even.aov <- adonis(bacteria.even.bray ~ sample_data(bacteria.even.ps)$antibiotic)
 # # ps1.aov <- adonis(bacteria.even.bray ~antibiotic_bool, data=sample_data(ps1))
@@ -543,6 +570,7 @@ bacteria.rlog <- bacteria.pruned.ps
 bacteria.rlog.dds = phyloseq_to_deseq2(bacteria.rlog, ~antibiotic+sample_aspiration)
 
 # Use alternative method to calculate geometric means to avoid problem with zeroes
+# https://github.com/joey711/phyloseq/issues/387
 gm_mean = function(x, na.rm=TRUE){
   exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
 }
@@ -644,7 +672,8 @@ grid.arrange(rel.nmds.p1, rlog.nmds.p2, ncol=2)
 #' 1. Identify taxa that distinguish groups (e.g. unaspirated vs gastric)
 #' 1. Compare duplicates from each sample to determine how well min sample replicates max 
 #' 1. Paired analysis of L and R lungs from same animal to look for communication
-#' 1. Switch to using 
+#' 1. Switch to using
+#' 1. Unifrac? 
 #- 1. Anything else?
 
 #--------------------------------------------------
