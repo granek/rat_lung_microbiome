@@ -196,6 +196,59 @@ ggplot(antibiotic_only_ord, aes(NMDS1, NMDS2)) +
 
 # Save plot to file
 # ggsave(file=file.path(figure_dir,"antibiotic_nmds_bray.png"))
+#==============================================================================
+#' # Permanova
+#+ Permanova, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+stop("Does data need to be rarified before permanova?")
+stop("Apply 'waste not' to preliminary analysis")
+# https://www.bioconductor.org/packages/devel/bioc/vignettes/phyloseq/inst/doc/phyloseq-FAQ.html#negative-numbers-in-my-transformed-data-table
+# https://github.com/joey711/phyloseq/issues/689
+# https://github.com/joey711/phyloseq/issues/184
+# http://deneflab.github.io/MicrobeMiseq/demos/mothur_2_phyloseq.html#permanova
+# http://joey711.github.io/phyloseq-demo/Restroom-Biogeography.html
+# https://rpubs.com/michberr/randomforestmicrobe
+# 
+# restroom0 = restroom
+# restroom = prune_taxa(taxa_sums(restroom) > 0, restroom)
+# Any empty samples? Apparently not, though the code for pruning “empty” samples is also shown. And procedes quickly since there is nothing in restroom to modify.
+# 
+# any(sample_sums(restroom) == 0)
+# ## [1] FALSE
+# restroom = prune_samples(sample_sums(restroom) > 0, restroom)
+# What about the total reads per sample, and what does the distribution look like?
+# 
+# readsumsdf = data.frame(nreads = sort(taxa_sums(restroom), TRUE), sorted = 1:ntaxa(restroom), 
+#                         type = "OTUs")
+# readsumsdf = rbind(readsumsdf, data.frame(nreads = sort(sample_sums(restroom), 
+#                                                         TRUE), sorted = 1:nsamples(restroom), type = "Samples"))
+# title = "Total number of reads"
+# p = ggplot(readsumsdf, aes(x = sorted, y = nreads)) + geom_bar(stat = "identity")
+# p + ggtitle(title) + scale_y_log10() + facet_wrap(~type, 1, scales = "free")
+# set.seed(28132)
+# restroomR = rarefy_even_depth(restroom, sample.size = 500)
+# And now an alternative to random subsampling, a simple proportional transformation, calling it restroomP.
+# 
+# restroomP = transform_sample_counts(restroom, function(x) 500 * x/sum(x))
+# For sanity-check, let's replot the sample sums of each of these new data objects, to convince ourselves that all of the samples now sum to 500.
+
+par(mfrow = c(1, 2))
+title = "Sum of reads for each sample, restroomR"
+plot(sort(sample_sums(restroomR), TRUE), type = "h", main = title, ylab = "reads", 
+    ylim = c(0, 1000))
+title = "Sum of reads for each sample, restroomP"
+plot(sort(sample_sums(restroomP), TRUE), type = "h", main = title, ylab = "reads", 
+    ylim = c(0, 1000))
+
+# df = as(sample_data(restroomR), "data.frame")
+# d = distance(restroomR, "bray")
+# restroomadonis = adonis(d ~ SURFACE + GENDER + BUILDING + FLOOR, df)
+# restroomadonis
+# plot(restroomadonis$aov.tab)
+
+
+
+
 
 
 #'******************************************************************************
