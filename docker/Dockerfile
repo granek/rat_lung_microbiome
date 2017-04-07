@@ -57,8 +57,17 @@ RUN cd /tmp && \
     conda clean -tipsy
 
 # Install qiime1 notebook as 
-RUN conda create -n qiime1 python=2.7 qiime matplotlib=1.4.3 mock nose -c bioconda && \
+RUN conda create -n qiime1 python=2.7 qiime matplotlib=1.4.3 mock nose \
+    lefse -c bioconda -c r && \
     conda clean -tipsy
+
+# RUN conda create -n lefse python=2.7 lefse -c bioconda -c r && \
+#    conda clean -tipsy
+
+# RUN conda create -n qiime1_lefse python=2.7 qiime matplotlib=1.4.3 mock nose lefse -c bioconda -c r && \
+#    conda clean -tipsy
+# conda info lefse
+
 
 ##------------------------------------------------------------
 USER root
