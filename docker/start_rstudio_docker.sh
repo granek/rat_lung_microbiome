@@ -35,7 +35,7 @@ fi
 if [ "$1" == "shell" ]; then
     DOCKER_COMMAND="/bin/bash"
     CONTAINER_NAME="rstudio_shell_${DOCKER_IMAGE_TAG}"
-    DOCKER_ARGS="--rm --interactive --tty --user $USER"
+    DOCKER_ARGS="--rm --interactive --tty --user $(id -u)"
     echo "------------------------------"
     echo "In docker run the following:"
     echo "cd $DOCKER_MNTPOINT"
