@@ -1,8 +1,0 @@
-Lefse
-https://bitbucket.org/nsegata/lefse/src/54694b4b0d9e335ff1ecafff8db4f1e0cf7004da?at=default
-
-
-https://bitbucket.org/nsegata/metaphlan/wiki/MetaPhlAn_Pipelines_Tutorial (see Step 4: Taxonomic biomarker discovery with LEfSe)
-
-
-https://bitbucket.org/biobakery/biobakery/wiki/lefse#rst-header-lefse-bitbucket
