@@ -131,7 +131,8 @@ write.table(antibiotic_wcontrol.spread, file="antibiotic_wcontrol.tsv", sep="\t"
             row.names = FALSE)
 dim(antibiotic_wcontrol.spread)
 
-
+# lefse-format_input.py input/hmp_aerobiosis_small.txt tmp/hmp_aerobiosis_small.in -c 1 -s 2 -u 3 -o 1000000 --output_table 
+# lefse-format_input.py antibiotic_wcontrol.tsv  antibiotic_wcontrol.in -f c -c 2 -o 1000000 -u 1 --output_table antibiotic_wcontrol.tab 
 
 #==============================================================================
 #' # Generate BIOM file for LefSE
