@@ -88,45 +88,47 @@ antibiotic_only_ps = subset_samples(max_rep_bacteria_ps,group %in% c("ASNLU", "A
 #' # Generate LefSE format directly
 #+ Generate LefSE format directly, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-psmelt(antibiotic_wcontrol_ps) %>% colnames %>% paste(collapse=",")
+# psmelt(antibiotic_wcontrol_ps) %>% colnames %>% paste(collapse=",")
 # "OTU,Sample,Abundance,SampleID,BarcodeSequence,LinkerPrimerSequence,techrep,
 # animal,group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,
 # lung,treated_lung,BarcodePlate,Well,Description,antibiotic_bool,aspiration_bool,Kingdom,Phylum,Class,Order,Family,Genus"
 library(tidyr)
-antibiotic_wcontrol.spread = psmelt(antibiotic_wcontrol_ps) %>% 
+
+## Remove OTUs that do not show appear more than 5 times in more than half the samples
+min_counts = 2
+sample_proportion = 0.01
+min_samples = ceiling(sample_proportion*nsamples(antibiotic_wcontrol_ps))
+wh0 = genefilter_sample(antibiotic_wcontrol_ps, 
+                        filterfun_sample(function(x) x >= min_counts), 
+                        A=min_samples)
+antibiotic_wcontrol.taxfilt.ps = prune_taxa(wh0, antibiotic_wcontrol_ps)
+ntaxa(antibiotic_wcontrol_ps)
+ntaxa(antibiotic_wcontrol.taxfilt.ps)
+
+antibiotic_wcontrol.spread = psmelt(antibiotic_wcontrol.taxfilt.ps) %>% 
   mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
-  select(SampleID,OTU,Abundance,animal,group,antibiotic) %>%
-  spread(OTU, Abundance)
+  select(SampleID,OTU,Abundance,antibiotic) %>%
+  spread(OTU, Abundance); View(antibiotic_wcontrol.spread)
 
-View(antibiotic_wcontrol.spread)
-
-tax.df = as.data.frame(tax_table(antibiotic_wcontrol_ps)) %>%
+tax.df = as.data.frame(tax_table(antibiotic_wcontrol.taxfilt.ps)) %>%
   rownames_to_column("repseq") %>%
   mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
   select(repseq, taxonomy)
 
+# need to preserve non-OTU column names (otherwise they get lost)
+colname_match = match(names(antibiotic_wcontrol.spread), tax.df$repseq)
+cols_to_keep = which(is.na(colname_match))
+colnames_to_keep = names(antibiotic_wcontrol.spread)[cols_to_keep]
 
+# replace repseqs with taxonomies
 names(antibiotic_wcontrol.spread) = tax.df$taxonomy[match(names(antibiotic_wcontrol.spread), tax.df$repseq)]
+# now reset the non-OTU column names
+names(antibiotic_wcontrol.spread)[cols_to_keep] = colnames_to_keep
 
+write.table(antibiotic_wcontrol.spread, file="antibiotic_wcontrol.tsv", sep="\t", quote = FALSE,
+            row.names = FALSE)
+dim(antibiotic_wcontrol.spread)
 
-oldvars = c("mpg", "cyl" , "disp",  "hp", "drat", "wt", "qsec", "vs", "am", "gear", "carb")
-newvars = c("Miles Per Gallon", "Cycle", "Displacement", "Horsepower", "Distance Rating", 
-            "Working Time", "Quick Second", "Versus", "America", "Gears", "Carbohydrates")
-lookup = data.frame(oldvars, newvars)
-mycars = mtcars
-
-names(mycars) = lookup$newvars[match(names(mycars), lookup$oldvars)]
-
-
-  head
-# filter(row_number() %in% c(31405, 31465, 38889))
-
-
-
-
-
-otu.df = as.data.frame(t(as.matrix(otu_table(antibiotic_wcontrol_ps)))) %>%
-  rownames_to_column("#OTU ID")
 
 
 #==============================================================================
