@@ -8,7 +8,8 @@ mkdir -p input tmp results output_figures
 mv 129 input/hmp_aerobiosis_small.txt
 
 source /opt/conda/bin/activate qiime1
-lefse-format_input.py input/hmp_aerobiosis_small.txt tmp/hmp_aerobiosis_small.in -c 1 -s 2 -u 3 -o 1000000
+# lefse-format_input.py input/hmp_aerobiosis_small.txt tmp/hmp_aerobiosis_small.in -c 1 -s 2 -u 3 -o 1000000
+lefse-format_input.py input/hmp_aerobiosis_small.txt tmp/hmp_aerobiosis_small.in -c 1 -s 2 -u 3 -o 1000000 --output_table tmp/hmp_aerobiosis_small.tab
 run_lefse.py tmp/hmp_aerobiosis_small.in results/hmp_aerobiosis_small.res
 
 lefse-plot_res.py results/hmp_aerobiosis_small.res output_figures/hmp_aerobiosis_small.png
