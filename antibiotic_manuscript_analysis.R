@@ -84,7 +84,49 @@ rm(full_ps) # Get rid of full_ps to be sure it isn't accidentally used
 antibiotic_wcontrol_ps = subset_samples(max_rep_bacteria_ps,group %in% c("NLU", "ASNLU", "APNLU", "AINLU"))
 antibiotic_only_ps = subset_samples(max_rep_bacteria_ps,group %in% c("ASNLU", "APNLU", "AINLU"))
 
+#==============================================================================
+#' # Generate LefSE format directly
+#+ Generate LefSE format directly, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+psmelt(antibiotic_wcontrol_ps) %>% colnames %>% paste(collapse=",")
+# "OTU,Sample,Abundance,SampleID,BarcodeSequence,LinkerPrimerSequence,techrep,
+# animal,group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,
+# lung,treated_lung,BarcodePlate,Well,Description,antibiotic_bool,aspiration_bool,Kingdom,Phylum,Class,Order,Family,Genus"
+library(tidyr)
+antibiotic_wcontrol.spread = psmelt(antibiotic_wcontrol_ps) %>% 
+  mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
+  select(SampleID,OTU,Abundance,animal,group,antibiotic) %>%
+  spread(OTU, Abundance)
 
+View(antibiotic_wcontrol.spread)
+
+tax.df = as.data.frame(tax_table(antibiotic_wcontrol_ps)) %>%
+  rownames_to_column("repseq") %>%
+  mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
+  select(repseq, taxonomy)
+
+
+names(antibiotic_wcontrol.spread) = tax.df$taxonomy[match(names(antibiotic_wcontrol.spread), tax.df$repseq)]
+
+
+oldvars = c("mpg", "cyl" , "disp",  "hp", "drat", "wt", "qsec", "vs", "am", "gear", "carb")
+newvars = c("Miles Per Gallon", "Cycle", "Displacement", "Horsepower", "Distance Rating", 
+            "Working Time", "Quick Second", "Versus", "America", "Gears", "Carbohydrates")
+lookup = data.frame(oldvars, newvars)
+mycars = mtcars
+
+names(mycars) = lookup$newvars[match(names(mycars), lookup$oldvars)]
+
+
+  head
+# filter(row_number() %in% c(31405, 31465, 38889))
+
+
+
+
+
+otu.df = as.data.frame(t(as.matrix(otu_table(antibiotic_wcontrol_ps)))) %>%
+  rownames_to_column("#OTU ID")
 
 
 #==============================================================================
