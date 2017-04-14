@@ -93,6 +93,7 @@ antibiotic_only_ps = subset_samples(max_rep_bacteria_ps,group %in% c("ASNLU", "A
 # animal,group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,
 # lung,treated_lung,BarcodePlate,Well,Description,antibiotic_bool,aspiration_bool,Kingdom,Phylum,Class,Order,Family,Genus"
 library(tidyr)
+library(stringr)
 
 ## Remove OTUs that do not show appear more than 5 times in more than half the samples
 min_counts = 2
@@ -106,6 +107,7 @@ ntaxa(antibiotic_wcontrol_ps)
 ntaxa(antibiotic_wcontrol.taxfilt.ps)
 
 antibiotic_wcontrol.spread = psmelt(antibiotic_wcontrol.taxfilt.ps) %>% 
+  mutate(SampleID = str_replace(SampleID, pattern="\\.", replacement="_")) %>%
   mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
   select(SampleID,OTU,Abundance,antibiotic) %>%
   spread(OTU, Abundance); View(antibiotic_wcontrol.spread)
