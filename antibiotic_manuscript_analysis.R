@@ -26,6 +26,9 @@ parser <- ArgumentParser()
 parser$add_argument("--RDS", default="results/rat_lung_ps.rds",
                     help="RDS containing phyloseq object",
                     metavar="DIR")
+parser$add_argument("--outdir", default="workspace",
+                    help="RDS containing phyloseq object",
+                    metavar="DIR")
 args <- parser$parse_args()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Setup Paths, include=FALSE
@@ -47,6 +50,9 @@ suppressPackageStartupMessages(library("phyloseq"))
 suppressPackageStartupMessages(library("dplyr"))
 suppressPackageStartupMessages(library("tibble"))
 suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("tidyr"))
+suppressPackageStartupMessages(library("stringr"))
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Phyloseq object from RDS, include=FALSE
@@ -92,8 +98,6 @@ antibiotic_only_ps = subset_samples(max_rep_bacteria_ps,group %in% c("ASNLU", "A
 # "OTU,Sample,Abundance,SampleID,BarcodeSequence,LinkerPrimerSequence,techrep,
 # animal,group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,
 # lung,treated_lung,BarcodePlate,Well,Description,antibiotic_bool,aspiration_bool,Kingdom,Phylum,Class,Order,Family,Genus"
-library(tidyr)
-library(stringr)
 
 ## Remove OTUs that do not show appear more than 5 times in more than half the samples
 min_counts = 2
@@ -110,7 +114,7 @@ antibiotic_wcontrol.spread = psmelt(antibiotic_wcontrol.taxfilt.ps) %>%
   mutate(SampleID = str_replace(SampleID, pattern="\\.", replacement="_")) %>%
   mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
   select(SampleID,OTU,Abundance,antibiotic) %>%
-  spread(OTU, Abundance); View(antibiotic_wcontrol.spread)
+  spread(OTU, Abundance) # ; View(antibiotic_wcontrol.spread)
 
 tax.df = as.data.frame(tax_table(antibiotic_wcontrol.taxfilt.ps)) %>%
   rownames_to_column("repseq") %>%
@@ -127,9 +131,13 @@ names(antibiotic_wcontrol.spread) = tax.df$taxonomy[match(names(antibiotic_wcont
 # now reset the non-OTU column names
 names(antibiotic_wcontrol.spread)[cols_to_keep] = colnames_to_keep
 
-write.table(antibiotic_wcontrol.spread, file="antibiotic_wcontrol.tsv", sep="\t", quote = FALSE,
+lefse_outdir = file.path(args$outdir,"lefse")
+dir.create(lefse_outdir, showWarnings = FALSE)
+lefse_formatted_file = file.path(lefse_outdir, "antibiotic_wcontrol.tsv")
+
+write.table(antibiotic_wcontrol.spread, file=lefse_formatted_file, sep="\t", quote = FALSE,
             row.names = FALSE)
-dim(antibiotic_wcontrol.spread)
+# dim(antibiotic_wcontrol.spread)
 
 # lefse-format_input.py input/hmp_aerobiosis_small.txt tmp/hmp_aerobiosis_small.in -c 1 -s 2 -u 3 -o 1000000 --output_table 
 # lefse-format_input.py antibiotic_wcontrol.tsv  antibiotic_wcontrol.in -f c -c 2 -o 1000000 -u 1 --output_table antibiotic_wcontrol.tab 
