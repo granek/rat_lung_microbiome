@@ -60,10 +60,20 @@ suppressPackageStartupMessages(library("stringr"))
 full_ps = readRDS(args$RDS)
 # sample_variables(full_ps)
 
-antibiotic_bool = get_variable(full_ps, "antibiotic") != "none"
-sample_data(full_ps)$antibiotic_bool <- factor(antibiotic_bool)
-aspiration_bool = get_variable(full_ps, "sample_aspiration") != "none"
-sample_data(full_ps)$aspiration_bool <- factor(aspiration_bool)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#+ Setup: Relevel so "none" treatment is first, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sample_data(full_ps)$antibiotic = relevel(sample_data(full_ps)$antibiotic, "none")
+sample_data(full_ps)$left_aspiration = relevel(sample_data(full_ps)$left_aspiration, "none")
+sample_data(full_ps)$right_aspiration = relevel(sample_data(full_ps)$right_aspiration, "none")
+sample_data(full_ps)$sample_aspiration = relevel(sample_data(full_ps)$sample_aspiration, "none")
+levels(sample_data(full_ps)$antibiotic)
+levels(sample_data(full_ps)$left_aspiration)
+levels(sample_data(full_ps)$right_aspiration)
+levels(sample_data(full_ps)$sample_aspiration)
+
+sample_data(full_ps)$antibiotic_bool <- factor(get_variable(full_ps, "antibiotic") != "none")
+sample_data(full_ps)$aspiration_bool <- factor(get_variable(full_ps, "sample_aspiration") != "none")
 
 #------------------------------------------------------------------------------
 #+ Extract subset of replicates with most counts in each pair, include=FALSE
