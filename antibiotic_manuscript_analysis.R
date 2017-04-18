@@ -123,8 +123,11 @@ ntaxa(antibiotic_wcontrol.taxfilt.ps)
 antibiotic_wcontrol.spread = psmelt(antibiotic_wcontrol.taxfilt.ps) %>% 
   mutate(SampleID = str_replace(SampleID, pattern="\\.", replacement="_")) %>%
   mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
-  select(SampleID,OTU,Abundance,antibiotic) %>%
-  spread(OTU, Abundance) # ; View(antibiotic_wcontrol.spread)
+  select(SampleID,OTU,Abundance,antibiotic_bool,antibiotic) %>%
+  spread(OTU, Abundance) %>% 
+  arrange(antibiotic)
+
+# ; View(antibiotic_wcontrol.spread)
 
 tax.df = as.data.frame(tax_table(antibiotic_wcontrol.taxfilt.ps)) %>%
   rownames_to_column("repseq") %>%

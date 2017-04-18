@@ -18,7 +18,8 @@ LEFSE_RESULTS="workspace/lefse/antibiotic_wcontrol.res"
 LEFSE_PLOT="workspace/lefse/antibiotic_wcontrol.pdf"
 
 
-lefse-format_input.py $TABLE_FOR_LEFSE  $LEFSE_INPUT -f c -c 2 -o 1000000 -u 1 --output_table $LEFSE_REFORMATTED_TABLE
+# lefse-format_input.py $TABLE_FOR_LEFSE  $LEFSE_INPUT -f c -u 1 -c 2 -s 3 -o 1000000  --output_table $LEFSE_REFORMATTED_TABLE
+lefse-format_input.py $TABLE_FOR_LEFSE  $LEFSE_INPUT -f c -u 1 -c 3 -s 2 -o 1000000  --output_table $LEFSE_REFORMATTED_TABLE
 
 
 # run_lefse.py performs the actual statistica analysis
