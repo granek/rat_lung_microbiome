@@ -23,25 +23,13 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser()
-parser$add_argument("--RDS", default="results/rat_lung_ps.rds",
+parser$add_argument("--RDS", default="workspace/antibiotic_ps.rds",
                     help="RDS containing phyloseq object",
                     metavar="DIR")
 parser$add_argument("--outdir", default="workspace",
                     help="RDS containing phyloseq object",
                     metavar="DIR")
 args <- parser$parse_args()
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#+ Setup: Setup Paths, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# basedir = args$basedir
-# 
-# workdir = file.path(basedir, "workspace")
-# results_dir = file.path(workdir,"results")
-# figure_dir = file.path(workdir,"figures")
-# dir.create(figure_dir, showWarnings = TRUE)
-# 
-# phyloseq.rds = file.path("results", "rat_lung_ps.rds")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Libraries, include=FALSE
@@ -53,52 +41,11 @@ suppressPackageStartupMessages(library("ggplot2"))
 suppressPackageStartupMessages(library("tidyr"))
 suppressPackageStartupMessages(library("stringr"))
 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Phyloseq object from RDS, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-full_ps = readRDS(args$RDS)
-# sample_variables(full_ps)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#+ Setup: Relevel so "none" treatment is first, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sample_data(full_ps)$antibiotic = relevel(sample_data(full_ps)$antibiotic, "none")
-sample_data(full_ps)$left_aspiration = relevel(sample_data(full_ps)$left_aspiration, "none")
-sample_data(full_ps)$right_aspiration = relevel(sample_data(full_ps)$right_aspiration, "none")
-sample_data(full_ps)$sample_aspiration = relevel(sample_data(full_ps)$sample_aspiration, "none")
-levels(sample_data(full_ps)$antibiotic)
-levels(sample_data(full_ps)$left_aspiration)
-levels(sample_data(full_ps)$right_aspiration)
-levels(sample_data(full_ps)$sample_aspiration)
-
-sample_data(full_ps)$antibiotic_bool <- factor(get_variable(full_ps, "antibiotic") != "none")
-sample_data(full_ps)$aspiration_bool <- factor(get_variable(full_ps, "sample_aspiration") != "none")
-
-#------------------------------------------------------------------------------
-#+ Extract subset of replicates with most counts in each pair, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bacteria_ps = subset_taxa(full_ps,Kingdom=="Bacteria") # Drop non-bacteria taxa
-total_counts = as.data.frame(rowSums(otu_table(full_ps)))
-colnames(total_counts) = "totals"
-max_replicate = left_join(add_rownames(sample_data(bacteria_ps)), add_rownames(total_counts)) %>% 
-  select(rowname, Description, group, totals) %>%
-  group_by(Description) %>% 
-  top_n(n=1)
-
-# check to be sure replicates were removed
-max_replicate %>% select(Description) %>% duplicated() %>% any()
-
-max_rep_bacteria_ps = subset_samples(bacteria_ps,SampleID %in% max_replicate$rowname)
-
-rm(full_ps) # Get rid of full_ps to be sure it isn't accidentally used
-
-#------------------------------------------------------------------------------
-#+ Extract "antibiotic" samples, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# sample_data(max_rep_bacteria_ps) %>% filter(group %in% ())
-antibiotic_wcontrol_ps = subset_samples(max_rep_bacteria_ps,group %in% c("NLU", "ASNLU", "APNLU", "AINLU"))
-antibiotic_only_ps = subset_samples(max_rep_bacteria_ps,group %in% c("ASNLU", "APNLU", "AINLU"))
+antibiotic_wcontrol_ps = readRDS(args$RDS)
+antibiotic_only_ps = subset_samples(antibiotic_wcontrol_ps,group %in% c("ASNLU", "APNLU", "AINLU"))
 
 #==============================================================================
 #' # Generate LefSE format directly
