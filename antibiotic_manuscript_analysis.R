@@ -129,31 +129,66 @@ antibiotic_wcontrol.spread = psmelt(antibiotic_wcontrol.taxfilt.ps) %>%
 
 # ; View(antibiotic_wcontrol.spread)
 
-tax.df = as.data.frame(tax_table(antibiotic_wcontrol.taxfilt.ps)) %>%
-  rownames_to_column("repseq") %>%
-  mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
-  select(repseq, taxonomy)
-
-# need to preserve non-OTU column names (otherwise they get lost)
-colname_match = match(names(antibiotic_wcontrol.spread), tax.df$repseq)
-cols_to_keep = which(is.na(colname_match))
-colnames_to_keep = names(antibiotic_wcontrol.spread)[cols_to_keep]
-
-# replace repseqs with taxonomies
-names(antibiotic_wcontrol.spread) = tax.df$taxonomy[match(names(antibiotic_wcontrol.spread), tax.df$repseq)]
-# now reset the non-OTU column names
-names(antibiotic_wcontrol.spread)[cols_to_keep] = colnames_to_keep
 
 lefse_outdir = file.path(args$outdir,"lefse")
 dir.create(lefse_outdir, showWarnings = FALSE)
-lefse_formatted_file = file.path(lefse_outdir, "antibiotic_wcontrol.tsv")
 
-write.table(antibiotic_wcontrol.spread, file=lefse_formatted_file, sep="\t", quote = FALSE,
+#' RepseqToTaxa:
+#' Convert Repseq column names to Taxa column names in a spread data frame
+#' The big problem here is that this needs to be done after all other 
+#' manipulations to the dataframe, otherwise most functions will balk if there
+#' are dataframe columns with identical names
+#'
+#' @param spread.df The dataframe generated from phyloseq object.
+#' @param source.ps phyloseq object from which spread.df was derived.
+RepseqToTaxa <- function(spread.df, source.ps) {
+  tax.df = as.data.frame(tax_table(source.ps)) %>%
+    rownames_to_column("repseq") %>%
+    mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
+    select(repseq, taxonomy)
+  
+  # need to preserve non-OTU column names (otherwise they get lost)
+  colname_match = match(names(spread.df), tax.df$repseq)
+  cols_to_keep = which(is.na(colname_match))
+  colnames_to_keep = names(spread.df)[cols_to_keep]
+  
+  # replace repseqs with taxonomies
+  names(spread.df) = tax.df$taxonomy[match(names(spread.df), tax.df$repseq)]
+  # now reset the non-OTU column names
+  names(spread.df)[cols_to_keep] = colnames_to_keep
+  return(spread.df)
+}
+
+antibiotic_wcontrol.spread %>%
+  select(-antibiotic_bool) %>%
+  RepseqToTaxa(antibiotic_wcontrol.taxfilt.ps) %>%
+  write.table(file=file.path(lefse_outdir, "antibiotic_factor.tsv"), 
+            sep="\t", quote = FALSE,
             row.names = FALSE)
+
+antibiotic_wcontrol.spread %>%
+  select(-antibiotic) %>%
+  RepseqToTaxa(antibiotic_wcontrol.taxfilt.ps) %>%
+  write.table(file=file.path(lefse_outdir, "antibiotic_bool.tsv"), 
+              sep="\t", quote = FALSE,
+              row.names = FALSE)
+
+antibiotic_wcontrol.spread %>%
+  select(-antibiotic_bool) %>%
+  filter(antibiotic!="none") %>%
+  RepseqToTaxa(antibiotic_wcontrol.taxfilt.ps) %>%
+  write.table(file=file.path(lefse_outdir, "antibiotic_factor_no_control.tsv"), 
+              sep="\t", quote = FALSE,
+              row.names = FALSE)
+
+
+
 # dim(antibiotic_wcontrol.spread)
 
 # lefse-format_input.py input/hmp_aerobiosis_small.txt tmp/hmp_aerobiosis_small.in -c 1 -s 2 -u 3 -o 1000000 --output_table 
 # lefse-format_input.py antibiotic_wcontrol.tsv  antibiotic_wcontrol.in -f c -c 2 -o 1000000 -u 1 --output_table antibiotic_wcontrol.tab 
+# system2('source /opt/conda/bin/activate qiime1; lefse-format_input.py -h')
+# system2('bash', 'run_lefse.sh')
 
 #==============================================================================
 #' # Generate BIOM file for LefSE
