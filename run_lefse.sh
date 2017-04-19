@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Based on https://bitbucket.org/nsegata/lefse/raw/ee1653ca297801562a3118aa606d063085be20d8/example/run.sh
 
-
+Rscript antibiotic_for_lefse.R
 source /opt/conda/bin/activate qiime1
 
 BOOL_INPUT="workspace/lefse/antibiotic_bool.tsv"
