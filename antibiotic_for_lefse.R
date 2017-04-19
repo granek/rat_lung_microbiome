@@ -1,23 +1,5 @@
 #!/usr/bin/env Rscript
 
-
-#'******************************************************************************
-#' # Manuscript 1: Relationship of antibiotic modality on lung microbiome
-#+ Goals, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' 1. Samples
-#'     + NLU1 through 9 (control)
-#'     + ASNLU1 through 14 (subcutaneous antibiotic)
-#'     + APNLU1 through 12 (oral antibiotic)
-#'     + AINLU1 through 12 (IV antibiotic)
-#' 2. Analyses
-#'     + NMDS plots
-#'         + Include no-antibiotic (NLU) samples
-#'         + Excude no-antibiotic (NLU) samples
-#'     + LEfSe
-#'         + no-antibiotic vs yes-antibiotic (all administration methods combined)
-#'         + compare among antibiotic administration method
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Parse Commandline, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,18 +12,6 @@ parser$add_argument("--outdir", default="workspace",
                     help="RDS containing phyloseq object",
                     metavar="DIR")
 args <- parser$parse_args()
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#+ Setup: Setup Paths, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# basedir = args$basedir
-# 
-# workdir = file.path(basedir, "workspace")
-# results_dir = file.path(workdir,"results")
-# figure_dir = file.path(workdir,"figures")
-# dir.create(figure_dir, showWarnings = TRUE)
-# 
-# phyloseq.rds = file.path("results", "rat_lung_ps.rds")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Libraries, include=FALSE
@@ -51,7 +21,6 @@ suppressPackageStartupMessages(library("dplyr"))
 suppressPackageStartupMessages(library("tibble"))
 suppressPackageStartupMessages(library("tidyr"))
 suppressPackageStartupMessages(library("stringr"))
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Phyloseq object from RDS, include=FALSE
@@ -63,11 +32,6 @@ antibiotic_only_ps = subset_samples(antibiotic_wcontrol_ps,group %in% c("ASNLU",
 #' # Generate LefSE format directly
 #+ Generate LefSE format directly, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# psmelt(antibiotic_wcontrol_ps) %>% colnames %>% paste(collapse=",")
-# "OTU,Sample,Abundance,SampleID,BarcodeSequence,LinkerPrimerSequence,techrep,
-# animal,group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,
-# lung,treated_lung,BarcodePlate,Well,Description,antibiotic_bool,aspiration_bool,Kingdom,Phylum,Class,Order,Family,Genus"
-
 ## Remove OTUs that do not show appear more than 5 times in more than half the samples
 min_counts = 2
 sample_proportion = 0.01
@@ -85,9 +49,6 @@ antibiotic_wcontrol.spread = psmelt(antibiotic_wcontrol.taxfilt.ps) %>%
   select(SampleID,OTU,Abundance,antibiotic_bool,antibiotic) %>%
   spread(OTU, Abundance) %>% 
   arrange(antibiotic)
-
-# ; View(antibiotic_wcontrol.spread)
-
 
 lefse_outdir = file.path(args$outdir,"lefse")
 dir.create(lefse_outdir, showWarnings = FALSE)
