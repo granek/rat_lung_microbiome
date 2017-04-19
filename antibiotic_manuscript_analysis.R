@@ -167,21 +167,10 @@ antibiotic_wcontrol.spread %>%
             row.names = FALSE)
 
 antibiotic_wcontrol.spread %>%
-  select(-antibiotic) %>%
   RepseqToTaxa(antibiotic_wcontrol.taxfilt.ps) %>%
   write.table(file=file.path(lefse_outdir, "antibiotic_bool.tsv"), 
               sep="\t", quote = FALSE,
               row.names = FALSE)
-
-antibiotic_wcontrol.spread %>%
-  select(-antibiotic_bool) %>%
-  filter(antibiotic!="none") %>%
-  RepseqToTaxa(antibiotic_wcontrol.taxfilt.ps) %>%
-  write.table(file=file.path(lefse_outdir, "antibiotic_factor_no_control.tsv"), 
-              sep="\t", quote = FALSE,
-              row.names = FALSE)
-
-
 
 # dim(antibiotic_wcontrol.spread)
 
