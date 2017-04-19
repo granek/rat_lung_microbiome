@@ -1,4 +1,21 @@
+#!/usr/bin/env bash
 # Based on https://bitbucket.org/nsegata/lefse/raw/ee1653ca297801562a3118aa606d063085be20d8/example/run.sh
+
+
+source /opt/conda/bin/activate qiime1
+
+# INPUT_FILE="workspace/lefse/antibiotic_wcontrol.tsv"
+# LEFSE_INPUT="workspace/lefse/antibiotic_wcontrol.in"
+# LEFSE_REFORMATTED_TABLE="workspace/lefse/antibiotic_wcontrol.tab"
+# LEFSE_RESULTS="workspace/lefse/antibiotic_wcontrol.res"
+# LEFSE_PLOT="workspace/lefse/antibiotic_wcontrol.pdf"
+
+INPUT_FILE=${1:-"workspace/lefse/antibiotic_factor.tsv"}
+BASENAME="${INPUT_FILE%.*}"
+LEFSE_INPUT="${BASENAME}.in"
+LEFSE_REFORMATTED_TABLE="${BASENAME}.tab"
+LEFSE_RESULTS="${BASENAME}.res"
+LEFSE_PLOT="${BASENAME}.pdf"
 
 # Running the LEfSe commands with -h gives the list of available options
 
@@ -11,16 +28,8 @@
 # -o 1000000 scales the feature such that the sum (of the same taxonomic leve)
 # is 1M: this is done only for obtaining more meaningful values for the LDA score
 
-TABLE_FOR_LEFSE="workspace/lefse/antibiotic_wcontrol.tsv"
-LEFSE_INPUT="workspace/lefse/antibiotic_wcontrol.in"
-LEFSE_REFORMATTED_TABLE="workspace/lefse/antibiotic_wcontrol.tab"
-LEFSE_RESULTS="workspace/lefse/antibiotic_wcontrol.res"
-LEFSE_PLOT="workspace/lefse/antibiotic_wcontrol.pdf"
-
-
-# lefse-format_input.py $TABLE_FOR_LEFSE  $LEFSE_INPUT -f c -u 1 -c 2 -s 3 -o 1000000  --output_table $LEFSE_REFORMATTED_TABLE
-lefse-format_input.py $TABLE_FOR_LEFSE  $LEFSE_INPUT -f c -u 1 -c 3 -s 2 -o 1000000  --output_table $LEFSE_REFORMATTED_TABLE
-
+# lefse-format_input.py $INPUT_FILE  $LEFSE_INPUT -f c -u 1 -c 2 -s 3 -o 1000000  --output_table $LEFSE_REFORMATTED_TABLE
+lefse-format_input.py $INPUT_FILE  $LEFSE_INPUT -f c -u 1 -c 2 -o 1000000  --output_table $LEFSE_REFORMATTED_TABLE
 
 # run_lefse.py performs the actual statistica analysis
 #
