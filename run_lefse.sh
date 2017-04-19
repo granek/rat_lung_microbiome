@@ -60,14 +60,14 @@ for INPUT_FILE in $BOOL_INPUT $FACTOR_INPUT; do
     lefse-plot_cladogram.py ${BASENAME}.res ${BASENAME}.cladogram.pdf --format pdf
     
     # Create a directory for storing the raw-data representation of the discovered biomarkers
-    mkdir -p ${BASENAME}/biomarkers_raw_images
+    mkdir -p ${BASENAME}_biomarkers_raw_images
     
     # plot_features.py visualizes the raw-data features
     #
     # The module for exporting the raw-data representation of the features.
     # With the default options we will obtain the images for all the features that are
     # detected as biomarkers
-    lefse-plot_features.py ${BASENAME}.in ${BASENAME}.res ${BASENAME}/biomarkers_raw_images/
+    lefse-plot_features.py ${BASENAME}.in ${BASENAME}.res ${BASENAME}_biomarkers_raw_images/
 done
 
 
