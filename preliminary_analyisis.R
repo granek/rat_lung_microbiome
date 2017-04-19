@@ -20,7 +20,7 @@ results_dir = file.path(workdir,"results")
 figure_dir = file.path(workdir,"figures")
 dir.create(figure_dir, showWarnings = TRUE)
 
-phyloseq.rds = file.path("results", "rat_lung_ps.rds")
+phyloseq_rds.filename = file.path("results", "rat_lung_ps.rds")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Libraries, include=FALSE
@@ -37,7 +37,7 @@ suppressPackageStartupMessages(library(gridExtra))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Load Phyloseq object from RDS, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-full_ps = readRDS(phyloseq.rds)
+full_ps = readRDS(phyloseq_rds.filename)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Relevel so "none" treatment is first, include=FALSE
@@ -180,6 +180,13 @@ max_replicate %>% select(Description) %>% duplicated() %>% any()
 bacteria.ps = subset_samples(bacteria_ps_both_reps,SampleID %in% max_replicate$SampleID)
 
 rm(full_ps, bacteria_ps_both_reps) # Clean up to be sure these aren't used
+
+#------------------------------------------------------------------------------
+#+ Extract "antibiotic" samples, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# sample_data(max_rep_bacteria_ps) %>% filter(group %in% ())
+antibiotic_ps = subset_samples(bacteria.ps,group %in% c("NLU", "ASNLU", "APNLU", "AINLU"))
+saveRDS(antibiotic_ps, file.path(workdir, "antibiotic_ps.rds"))
 
 
 #==============================================================================
@@ -673,7 +680,7 @@ grid.arrange(rel.nmds.p1, rlog.nmds.p2, ncol=2)
 #' 1. Compare duplicates from each sample to determine how well min sample replicates max 
 #' 1. Paired analysis of L and R lungs from same animal to look for communication
 #' 1. Switch to using
-#' 1. Unifrac? 
+#' 1. (Generalized) Unifrac? 
 #- 1. Anything else?
 
 #--------------------------------------------------
