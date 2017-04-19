@@ -48,14 +48,9 @@ antibiotic_wcontrol_ps = readRDS(args$RDS)
 antibiotic_only_ps = subset_samples(antibiotic_wcontrol_ps,group %in% c("ASNLU", "APNLU", "AINLU"))
 
 #==============================================================================
-#' # Generate LefSE format directly
-#+ Generate LefSE format directly, include=FALSE
+#' # Remove rare taxa
+#+ Remove rare taxa, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# psmelt(antibiotic_wcontrol_ps) %>% colnames %>% paste(collapse=",")
-# "OTU,Sample,Abundance,SampleID,BarcodeSequence,LinkerPrimerSequence,techrep,
-# animal,group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,
-# lung,treated_lung,BarcodePlate,Well,Description,antibiotic_bool,aspiration_bool,Kingdom,Phylum,Class,Order,Family,Genus"
-
 ## Remove OTUs that do not show appear more than 5 times in more than half the samples
 min_counts = 2
 sample_proportion = 0.01
@@ -66,116 +61,6 @@ wh0 = genefilter_sample(antibiotic_wcontrol_ps,
 antibiotic_wcontrol.taxfilt.ps = prune_taxa(wh0, antibiotic_wcontrol_ps)
 ntaxa(antibiotic_wcontrol_ps)
 ntaxa(antibiotic_wcontrol.taxfilt.ps)
-
-antibiotic_wcontrol.spread = psmelt(antibiotic_wcontrol.taxfilt.ps) %>% 
-  mutate(SampleID = str_replace(SampleID, pattern="\\.", replacement="_")) %>%
-  mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
-  select(SampleID,OTU,Abundance,antibiotic_bool,antibiotic) %>%
-  spread(OTU, Abundance) %>% 
-  arrange(antibiotic)
-
-# ; View(antibiotic_wcontrol.spread)
-
-
-lefse_outdir = file.path(args$outdir,"lefse")
-dir.create(lefse_outdir, showWarnings = FALSE)
-
-#' RepseqToTaxa:
-#' Convert Repseq column names to Taxa column names in a spread data frame
-#' The big problem here is that this needs to be done after all other 
-#' manipulations to the dataframe, otherwise most functions will balk if there
-#' are dataframe columns with identical names
-#'
-#' @param spread.df The dataframe generated from phyloseq object.
-#' @param source.ps phyloseq object from which spread.df was derived.
-RepseqToTaxa <- function(spread.df, source.ps) {
-  tax.df = as.data.frame(tax_table(source.ps)) %>%
-    rownames_to_column("repseq") %>%
-    mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
-    select(repseq, taxonomy)
-  
-  # need to preserve non-OTU column names (otherwise they get lost)
-  colname_match = match(names(spread.df), tax.df$repseq)
-  cols_to_keep = which(is.na(colname_match))
-  colnames_to_keep = names(spread.df)[cols_to_keep]
-  
-  # replace repseqs with taxonomies
-  names(spread.df) = tax.df$taxonomy[match(names(spread.df), tax.df$repseq)]
-  # now reset the non-OTU column names
-  names(spread.df)[cols_to_keep] = colnames_to_keep
-  return(spread.df)
-}
-
-antibiotic_wcontrol.spread %>%
-  select(-antibiotic_bool) %>%
-  RepseqToTaxa(antibiotic_wcontrol.taxfilt.ps) %>%
-  write.table(file=file.path(lefse_outdir, "antibiotic_factor.tsv"), 
-            sep="\t", quote = FALSE,
-            row.names = FALSE)
-
-antibiotic_wcontrol.spread %>%
-  RepseqToTaxa(antibiotic_wcontrol.taxfilt.ps) %>%
-  write.table(file=file.path(lefse_outdir, "antibiotic_bool.tsv"), 
-              sep="\t", quote = FALSE,
-              row.names = FALSE)
-
-# dim(antibiotic_wcontrol.spread)
-
-# lefse-format_input.py input/hmp_aerobiosis_small.txt tmp/hmp_aerobiosis_small.in -c 1 -s 2 -u 3 -o 1000000 --output_table 
-# lefse-format_input.py antibiotic_wcontrol.tsv  antibiotic_wcontrol.in -f c -c 2 -o 1000000 -u 1 --output_table antibiotic_wcontrol.tab 
-# system2('source /opt/conda/bin/activate qiime1; lefse-format_input.py -h')
-# system2('bash', 'run_lefse.sh')
-
-#==============================================================================
-#' # Generate BIOM file for LefSE
-#+ Generate BIOM file for LefSE, include=FALSE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# library(biomformat)
-otu.df = as.data.frame(t(as.matrix(otu_table(antibiotic_wcontrol_ps)))) %>%
-  rownames_to_column("#OTU ID")
-
-write.table(otu.df, file="antibiotic_wcontrol.otu.tsv", sep="\t", quote = FALSE,
-            row.names = FALSE)
-# source /opt/conda/bin/activate qiime1
-# biom convert -i antibiotic_wcontrol.otu.tsv -o antibiotic_wcontrol.otu.biom --to-hdf5
-
-# blah = read.delim("antibiotic_wcontrol.otu.tsv")
-
-
-# otu.df = t(as.matrix(otu_table(antibiotic_wcontrol_ps)))
-sam = as.matrix(sample_data(antibiotic_wcontrol_ps))
-sam.df = as.data.frame(sample_data(antibiotic_wcontrol_ps)) %>%
-  rename("#SampleID" = SampleID)
-write.table(sam.df, file="antibiotic_wcontrol.sam.tsv", sep="\t", quote = FALSE,
-            row.names = FALSE)
-
-# biom add-metadata -i antibiotic_wcontrol.otu.biom -o antibiotic_wcontrol.wsam.biom --sample-metadata-fp antibiotic_wcontrol.sam.tsv 
-tax.df = as.data.frame(tax_table(antibiotic_wcontrol_ps)) %>%
-  rownames_to_column("#OTUID") %>%
-  mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep=";")) %>%
-  select(1, taxonomy)
-write.table(tax.df, file="antibiotic_wcontrol.tax.tsv", sep="\t", quote = FALSE,
-            row.names = FALSE)
-
-# biom add-metadata -i antibiotic_wcontrol.otu.biom -o antibiotic_wcontrol.wsam.biom --observation-metadata-fp antibiotic_wcontrol.tax.tsv --sample-metadata-fp antibiotic_wcontrol.sam.tsv
-# lefse-format_input.py /home/rstudio/parker_rat_lung/antibiotic_wcontrol.biom antibiotic_wcontrol.in -biom_c antibiotic
-
-# tax = as.matrix(tax_table(antibiotic_wcontrol_ps))
-# # antibiotic_wcontrol.biom = make_biom(otu, sample_metadata=sam, observation_metadata = tax)
-# antibiotic_wcontrol.biom = make_biom(otu)
-# outfile = "antibiotic_wcontrol.biom"
-# write_biom(antibiotic_wcontrol.biom, outfile)
-# 
-# # x = psmelt(antibiotic_wcontrol_ps)
-# 
-# y = read_biom(outfile)
-# identical(antibiotic_wcontrol.biom, y)
-# sessionInfo()
-# z = read_biom("otu_table.biom")
-# 
-
-# biom convert -i /home/rstudio/parker_rat_lung/antibiotic_wcontrol.biom -o /home/rstudio/parker_rat_lung/antibiotic_wcontrol_hdf5.biom --to-hdf5
-
 
 #==============================================================================
 #' # Ordination plots
