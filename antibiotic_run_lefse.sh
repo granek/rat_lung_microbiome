@@ -6,6 +6,9 @@ source /opt/conda/bin/activate qiime1
 
 BOOL_INPUT="workspace/lefse/antibiotic_bool.tsv"
 FACTOR_INPUT="workspace/lefse/antibiotic_factor.tsv"
+ORAL_INPUT="workspace/lefse/antibiotic_oral_bool.tsv"
+FORMAT="png"
+
 
 # INPUT_FILE=${1:-"workspace/lefse/antibiotic_factor.tsv"}
 BASENAME="${INPUT_FILE%.*}"
@@ -31,9 +34,12 @@ INPUT_FILE=$FACTOR_INPUT
 BASENAME="${INPUT_FILE%.*}"
 lefse-format_input.py $INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 
-FORMAT="png"
+INPUT_FILE=$ORAL_INPUT
+BASENAME="${INPUT_FILE%.*}"
+lefse-format_input.py $INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -s 3 -o 1000000  --output_table ${BASENAME}.tab
 
-for INPUT_FILE in $BOOL_INPUT $FACTOR_INPUT; do
+
+for INPUT_FILE in $BOOL_INPUT $FACTOR_INPUT $ORAL_INPUT; do
     BASENAME="${INPUT_FILE%.*}"
     # BASENAME=
     # BASENAME=$(basename "${INPUT_FILE}")

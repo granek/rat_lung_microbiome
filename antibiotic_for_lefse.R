@@ -92,6 +92,17 @@ antibiotic_wcontrol.spread %>%
               sep="\t", quote = FALSE,
               row.names = FALSE)
 
+non_oral = antibiotic_wcontrol.spread %>%
+  filter(antibiotic_bool==TRUE) %>%
+  select(-antibiotic_bool) %>%
+  mutate(oral_bool = antibiotic=="oral") %>%
+  select(SampleID,oral_bool,everything()) %>%
+  RepseqToTaxa(antibiotic_wcontrol.taxfilt.ps) %>%
+  write.table(file=file.path(lefse_outdir, "antibiotic_oral_bool.tsv"), 
+              sep="\t", quote = FALSE,
+              row.names = FALSE)
+
+
 sessionInfo()
 # writeLines(capture.output(sessionInfo()), file.path(results_dir,"analyze_phyloseq_object_sessionInfo.txt"))
 
