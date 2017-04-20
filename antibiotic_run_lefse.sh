@@ -79,5 +79,9 @@ for INPUT_FILE in $BOOL_INPUT $FACTOR_INPUT $ORAL_INPUT; do
 done
 
 
+source deactivate
+
+Rscript -e "library(knitr); rmarkdown::render('run_antibiotic_analysis.Rmd')"
+
 
 
