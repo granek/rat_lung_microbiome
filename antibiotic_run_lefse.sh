@@ -31,6 +31,8 @@ INPUT_FILE=$FACTOR_INPUT
 BASENAME="${INPUT_FILE%.*}"
 lefse-format_input.py $INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 
+FORMAT="png"
+
 for INPUT_FILE in $BOOL_INPUT $FACTOR_INPUT; do
     BASENAME="${INPUT_FILE%.*}"
     # BASENAME=
@@ -48,7 +50,7 @@ for INPUT_FILE in $BOOL_INPUT $FACTOR_INPUT; do
     # Plot the list of biomarkers with their effect size
     # Severak graphical options are available for personalizing the output
     # ../plot_res.py hmp_aerobiosis_small.res hmp_aerobiosis_small.png
-    lefse-plot_res.py --format pdf ${BASENAME}.res ${BASENAME}.pdf
+    lefse-plot_res.py --format ${FORMAT} ${BASENAME}.res ${BASENAME}.${FORMAT}
     
     # plot_cladogram.py visualizes the output on a hierarchical tree
     #
@@ -57,7 +59,7 @@ for INPUT_FILE in $BOOL_INPUT $FACTOR_INPUT; do
     # In this case we will obtain the RDP taxonomy.
     # This is an early implementation of the module. I'm working on an improved version
     # that will be released independently from LEfSe
-    lefse-plot_cladogram.py ${BASENAME}.res ${BASENAME}.cladogram.pdf --format pdf
+    lefse-plot_cladogram.py ${BASENAME}.res ${BASENAME}.cladogram.${FORMAT} --format ${FORMAT}
     
     # Create a directory for storing the raw-data representation of the discovered biomarkers
     mkdir -p ${BASENAME}_biomarkers_raw_images
