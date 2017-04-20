@@ -10,7 +10,7 @@ RAW_DATA_DIR := raw_data/160614_McKenney_fastqs
 WORKSPACE_DIR := workspace
 SPLIT_FASTQ_BASE := $(WORKSPACE_DIR)/split_fastq
 TAGGED_FASTQ_DIR := $(WORKSPACE_DIR)/tagged_fastq
-
+RESULTS_DIR := results
 #--------------------------------------------------
 
 
@@ -30,9 +30,12 @@ RAW_FASTQS := $(READ1_FASTQ) $(READ2_FASTQ)
 TAGGED_FASTQS := $(addprefix $(TAGGED_FASTQ_DIR)/, $(notdir $(RAW_FASTQS:.fastq.gz=_tagged.fastq)))
 SPLIT_FASTQS := $(addprefix $(WORKSPACE_DIR)/split_, $(addsuffix /COMPLETION_STAMP, $(notdir $(RAW_FASTQS:.fastq.gz=))))
 
+#--------------------------------------------------
+FULL_PHYLOSEQ_RDS := $(RESULTS_DIR)/rat_lung_ps.rds
+#--------------------------------------------------
 
 
-all : $(TAGGED_FASTQS) $(SPLIT_FASTQS) run_rscript
+all : $(TAGGED_FASTQS) $(SPLIT_FASTQS) $(FULL_PHYLOSEQ_RDS)
 
 
 test : 
@@ -76,7 +79,8 @@ $(WORKSPACE_DIR)/split_%/COMPLETION_STAMP : $(TAGGED_FASTQ_DIR)/%_tagged.fastq
 TAXONOMY_DIR := $(WORKSPACE_DIR)/taxonomy_refs
 SILVA_DB := $(TAXONOMY_DIR)/silva_nr_v123_train_set.fa.gz
 
-run_rscript : $(SPLIT_FASTQS) $(SILVA_DB)
+$(FULL_PHYLOSEQ_RDS) : $(SPLIT_FASTQS) $(SILVA_DB)
+	$(dir_guard)
 	# Rscript --no-restore process_fastq_to_counts.R --quality_plots 5 
 	# Rscript --no-restore process_fastq_to_counts.R --filter_fastqs
 	Rscript --no-restore process_fastq_to_counts.R
