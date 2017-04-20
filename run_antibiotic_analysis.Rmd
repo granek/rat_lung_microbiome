@@ -11,10 +11,9 @@ file.path()
 # Preparation
 1. Run `preliminary_analyisis.R` first to generate `antibiotic_ps.rds`. (Might want to split that out into a separate file that can be run here.
 )
-2. Run `antibiotic_run_lefse.sh` to generate figures
-
-
-
+2. Run `antibiotic_run_lefse.sh` which:
+    1. runs `antibiotic_for_lefse.R` to reformat data in lefse format
+    2. runs lefse and generates figures
 
 # LefSE
 ## With and Without Antibiotic
@@ -40,31 +39,11 @@ Some **subcutaneous** samples are enriched in *Caulobacter*, with some enrichmen
 A few of the **IV** administered animals have a small enrichment of *Rhodobacteraceae*, although the small number of samples and degree of enrichment make this suspect.
 ![This is workspace/lefse/antibiotic_factor_biomarkers_raw_images/1_Bacteria-Proteobacteria-Alphaproteobacteria-Rhodobacterales-Rhodobacteraceae.png](workspace/lefse/antibiotic_factor_biomarkers_raw_images/1_Bacteria-Proteobacteria-Alphaproteobacteria-Rhodobacterales-Rhodobacteraceae.png)
 
-# All Plots
 
-```{r show_all_pngs, echo = F, results = 'asis'}
+```{r show_all_pngs, include = F, results = 'asis'}
+# All Plots
 lefse_dir="workspace/lefse"
 for (cur_png in list.files(lefse_dir, pattern = ".png$",recursive = TRUE,full.names = TRUE)){
-  md_string = paste0("![This is ", cur_png,"](", cur_png, ")\n")
-  cat(md_string, fill=TRUE)
-}
-```
-
-```{r show_all_pngs2, echo = F, results = 'asis'}
-lefse_dir="workspace/lefse"
-
-all_pngs = list.files(lefse_dir, pattern = ".png$",recursive = TRUE,full.names = TRUE)
-print(all_pngs)
-
-grep("bool",all_pngs)
-
-grep("factor",all_pngs)
-
-```
-
-
-```
-for (cur_png in list.files(lefse_dir, pattern = ".*factor*png$",recursive = TRUE,full.names = TRUE)){
   md_string = paste0("![This is ", cur_png,"](", cur_png, ")\n")
   cat(md_string, fill=TRUE)
 }
