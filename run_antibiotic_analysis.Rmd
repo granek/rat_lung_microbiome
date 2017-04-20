@@ -18,12 +18,15 @@ file.path()
 # LefSE
 ## With and Without Antibiotic
 If we compare the "no antibiotic" treatment to all "antibiotic" treatments combined (still accounting for mode of administration), we see that two genera of Enterobacteriaceae distinguish them.
+
 ![Effect of antibiotic](workspace/lefse/antibiotic_bool.png)
 
 *Serratia* is present in most of the "no-antibiotic" samples, but is not observed in any of the antibiotic treated samples.
+
 ![This is workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Serratia.png](workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Serratia.png)
 
 *Pantoea* shows the opposite pattern: not observed in most "no-antibiotic" samples, and present in almost all samples form antibiotic treated animals
+
 ![This is workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Pantoea.png](workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Pantoea.png)
 
 ## Antibiotic Subclass Analysis
