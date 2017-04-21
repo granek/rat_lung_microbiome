@@ -38,6 +38,20 @@ alpha_plot = plot_richness(antibiotic.ps, x = "antibiotic",
 # ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
 print(alpha_plot)
 ```
+# Relative Abundance Plot
+```{r}
+antibiotic.ps.rel  = transform_sample_counts(antibiotic.ps, function(x) x / sum(x) )
+antibiotic.ps.rel.filt = filter_taxa(antibiotic.ps.rel, function(x) var(x) > 1e-3, TRUE)
+
+antibiotic.rel.plot = ggplot(psmelt(subset_samples(antibiotic.ps.rel.filt,lung=="left")), 
+           aes_string(x = "animal", y = "Abundance", fill = "Genus")) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_grid(~antibiotic) + 
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_text(angle = -90, hjust = 0))
+print(antibiotic.rel.plot)
+```
 
 # LefSE
 ## With and Without Antibiotic
