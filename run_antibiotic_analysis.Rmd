@@ -15,21 +15,18 @@ file.path()
     1. runs `antibiotic_for_lefse.R` to reformat data in lefse format
     2. runs lefse and generates figures
 
+```{r, echo=FALSE, results='hide'}
 ## Load Libraries
-```{r}
 suppressPackageStartupMessages(library("phyloseq"))
 suppressPackageStartupMessages(library("ggplot2"))
-```
 
 ## Load Antibiotic Data
-```{r}
 antibiotic.rds = "workspace/antibiotic_ps.rds"
 antibiotic.ps = readRDS(antibiotic.rds)
-
 ```
 
 # Alpha Diversity Plots
-```{r}
+```{r, echo=FALSE, results='hide'}
 alpha_plot = plot_richness(antibiotic.ps, x = "antibiotic", 
                            measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=NULL) + 
   geom_boxplot() + 
@@ -41,7 +38,7 @@ print(alpha_plot)
 
 # Relative Abundance Plot
 
-```{r}
+```{r, echo=FALSE, results='hide'}
 antibiotic.ps.rel  = transform_sample_counts(antibiotic.ps, function(x) x / sum(x) )
 antibiotic.ps.rel.filt = filter_taxa(antibiotic.ps.rel, function(x) var(x) > 1e-3, TRUE)
 
@@ -62,7 +59,7 @@ print(antibiotic.rel.plot)
 ## Ordination Plot Prep
 
 ### Pruning Rare Taxa
-```{r}
+```{r, echo=FALSE, results='hide'}
 min_counts = 2
 sample_proportion = 0.01
 min_samples = ceiling(sample_proportion*nsamples(antibiotic.ps))
@@ -75,14 +72,15 @@ ntaxa(antibiotic.ps)
 ntaxa(antibiotic.pruned.ps)
 ```
 
-The data was pruned before ordination to remove rare taxa. To be included in the pruned dataset, a taxon must occur at least `r min_counts` times in at least `r sample_proportion*100`% of samples (`r min_samples` samples). Before pruning there are `r ntaxa(antibiotic.ps)` taxa (all non-bacterial taxa have already been removed). After pruning there are `r ntaxa(antibiotic.pruned.ps)` taxa remaining.
+The data was pruned before ordination to remove rare taxa. To be included in the pruned dataset, a taxon must occur at least `r min_counts` times in at least `r sample_proportion*100`% of samples (`r min_samples` samples). 
+
+Before pruning there are `r ntaxa(antibiotic.ps)` taxa, after pruning there are `r ntaxa(antibiotic.pruned.ps)` taxa remaining.
 
 
 ## NMDS Plots
 The goal of NMDS plots is to visualize relationships betwen datapoints. In the NMDS plots below, each point represents a sample. The distance between two points indicates how similar the two samples are in terms of bacterial community composition.
 
 ### NMDS Plot: All Antibiotic Samples
-In this plot, points are colored by antibiotic treatment.
 
 [comment]: # (This actually is the most platform independent comment)
 
@@ -139,35 +137,47 @@ ggplot(antibiotic.no_none.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
 > | 0.2 - 0.3    | Acceptable (treat with some caution) |
 > | > 0.3        | Unreliable                           |
 
+## PCoA Plot
+```{r, echo=FALSE, results='hide'}
+antibiotic.even.pcoa <- ordinate(antibiotic.even.ps, "PCoA", "bray")
+antibiotic.even.pcoa.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.pcoa, type="samples")
 
+ggplot(antibiotic.even.pcoa.plot$data, aes(Axis.1, Axis.2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
+## Unifrac
+
+
+# Permanova
 
 
 # LefSE
 ## With and Without Antibiotic
-If we compare the "no antibiotic" treatment to all "antibiotic" treatments combined (still accounting for mode of administration), we see that two genera of Enterobacteriaceae distinguish them.
 
-![Effect of antibiotic](workspace/lefse/antibiotic_bool.png)
+If we compare the "no antibiotic" treatment to all "antibiotic" treatments combined (still accounting for mode of administration), we see that two genera of Enterobacteriaceae distinguish them.
+![](workspace/lefse/antibiotic_bool.png)
 
 *Serratia* is present in most of the "no-antibiotic" samples, but is not observed in any of the antibiotic treated samples.
 
-![This is workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Serratia.png](workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Serratia.png)
+![](workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Serratia.png)
 
 *Pantoea* shows the opposite pattern: not observed in most "no-antibiotic" samples, and present in almost all samples form antibiotic treated animals
 
-![This is workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Pantoea.png](workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Pantoea.png)
+![](workspace/lefse/antibiotic_bool_biomarkers_raw_images/1_Bacteria-Proteobacteria-Gammaproteobacteria-Enterobacteriales-Enterobacteriaceae-Pantoea.png)
 
 ## Antibiotic Subclass Analysis
 We can break out the individual modes of antibiotic administration to look for differences.  We find a weaker signal that seems to indicate there may be subtle differences.
-![This is workspace/lefse/antibiotic_factor.png](workspace/lefse/antibiotic_factor.png)
+![](workspace/lefse/antibiotic_factor.png)
 
 ### Subcutaneous enrichment
 Some **subcutaneous** samples are enriched in *Caulobacter*, with some enrichment in **IV**.
-![This is workspace/lefse/antibiotic_factor_biomarkers_raw_images/1_Bacteria-Proteobacteria-Alphaproteobacteria-Caulobacterales-Caulobacteraceae-Caulobacter.png](workspace/lefse/antibiotic_factor_biomarkers_raw_images/1_Bacteria-Proteobacteria-Alphaproteobacteria-Caulobacterales-Caulobacteraceae-Caulobacter.png)
+![](workspace/lefse/antibiotic_factor_biomarkers_raw_images/1_Bacteria-Proteobacteria-Alphaproteobacteria-Caulobacterales-Caulobacteraceae-Caulobacter.png)
 
 ### IV enrichment
 
 A few of the **IV** administered animals have a small enrichment of *Rhodobacteraceae*, although the small number of samples and degree of enrichment make this suspect.
-![This is workspace/lefse/antibiotic_factor_biomarkers_raw_images/1_Bacteria-Proteobacteria-Alphaproteobacteria-Rhodobacterales-Rhodobacteraceae.png](workspace/lefse/antibiotic_factor_biomarkers_raw_images/1_Bacteria-Proteobacteria-Alphaproteobacteria-Rhodobacterales-Rhodobacteraceae.png)
+![](workspace/lefse/antibiotic_factor_biomarkers_raw_images/1_Bacteria-Proteobacteria-Alphaproteobacteria-Rhodobacterales-Rhodobacteraceae.png)
 
 
 ```{r show_all_pngs, include = F, results = 'asis'}
