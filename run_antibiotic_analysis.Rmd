@@ -49,7 +49,9 @@ antibiotic.rel.plot = ggplot(psmelt(subset_samples(antibiotic.ps.rel.filt,lung==
   facet_grid(~antibiotic) + 
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_text(angle = -90, hjust = 0))
+  theme(axis.text.x = element_text(angle = -90, hjust = 0)) +
+  theme(legend.key.size = unit(0.5, "cm"))
+  # guides(fill=guide_legend(ncol=2))
 print(antibiotic.rel.plot)
 ```
 
