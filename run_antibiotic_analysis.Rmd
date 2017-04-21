@@ -15,6 +15,30 @@ file.path()
     1. runs `antibiotic_for_lefse.R` to reformat data in lefse format
     2. runs lefse and generates figures
 
+## Load Libraries
+```{r}
+suppressPackageStartupMessages(library("phyloseq"))
+suppressPackageStartupMessages(library("ggplot2"))
+```
+
+## Load Antibiotic Data
+```{r}
+antibiotic.rds = "workspace/antibiotic_ps.rds"
+antibiotic.ps = readRDS(antibiotic.rds)
+
+```
+
+# Alpha Diversity Plots
+```{r}
+alpha_plot = plot_richness(antibiotic.ps, x = "antibiotic", 
+                           measures = c("Chao1", "ACE", "Shannon", "InvSimpson"), nrow=NULL) + 
+  geom_boxplot() + 
+  theme(panel.background = element_blank(), 
+        axis.text.x  = element_text(angle=0,hjust=0.5))
+# ggsave(file=file.path(figure_dir,"max_rep_alpha_diversity.pdf"))
+print(alpha_plot)
+```
+
 # LefSE
 ## With and Without Antibiotic
 If we compare the "no antibiotic" treatment to all "antibiotic" treatments combined (still accounting for mode of administration), we see that two genera of Enterobacteriaceae distinguish them.
