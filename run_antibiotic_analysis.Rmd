@@ -81,14 +81,14 @@ The data was pruned before ordination to remove rare taxa. To be included in the
 ## NMDS Plots
 The goal of NMDS plots is to visualize relationships betwen datapoints. In the NMDS plots below, each point represents a sample. The distance between two points indicates how similar the two samples are in terms of bacterial community composition.
 
-### NMDS Plot by Antibiotic
+### NMDS Plot: All Antibiotic Samples
 In this plot, points are colored by antibiotic treatment.
 
 [comment]: # (This actually is the most platform independent comment)
 
 [//]: # (We can see that coordinate 1 (along the x-axis) does a reasonably good job of distinguishing aspirated lungs from unaspirated lungs, indicating that aspiration has a large effect on the bacterial community. However, differences in antibiotic treatment does not seem to have a large effect.)
 
-```{r}
+```{r, echo=FALSE, results='hide'}
 ## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
 ## which (apply(otu_table(antibiotic.pruned.ps), 1, function(row) all(row ==0 )))
 ## Transform to even sampling depth.
@@ -102,8 +102,6 @@ antibiotic.even.nmds <- ordinate(antibiotic.even.ps, "NMDS", "bray")
 antibiotic.even.nmds.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.nmds, type="samples")
 ggplot(antibiotic.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
   theme_classic() +
-  geom_point(data = transform(antibiotic.even.nmds.plot$data, aspiration_bool = NULL, lung = NULL), 
-             color = "grey90") +
   geom_point(aes(color = antibiotic))
 ```
 
