@@ -108,7 +108,29 @@ ggplot(antibiotic.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
 - **Stress:** `r antibiotic.even.nmds$stress`
 - **Converged:** `r antibiotic.even.nmds$converged`
 
-> ### NMDS Stress Interpretation
+### NMDS Plot: Exclude no-antibiotic
+```{r, echo=FALSE, results='hide'}
+## Drop "none" samples
+antibiotic.no_none.pruned.ps = subset_samples(antibiotic.pruned.ps,group %in% c("ASNLU", "APNLU", "AINLU"))
+## Transform to even sampling depth.
+antibiotic.no_none.even.ps = transform_sample_counts(antibiotic.no_none.pruned.ps, function(x) 1E6 * x/sum(x))
+
+## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
+antibiotic.no_none.even.ps = prune_samples(complete.cases(otu_table(antibiotic.no_none.even.ps)),antibiotic.no_none.even.ps)
+
+set.seed(1)
+antibiotic.no_none.even.nmds <- ordinate(antibiotic.no_none.even.ps, "NMDS", "bray")
+antibiotic.no_none.even.nmds.plot = plot_ordination(antibiotic.no_none.even.ps, antibiotic.no_none.even.nmds, type="samples")
+ggplot(antibiotic.no_none.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
+
+- **Stress:** `r antibiotic.no_none.even.nmds$stress`
+- **Converged:** `r antibiotic.no_none.even.nmds$converged`
+
+
+> #### NMDS Stress Interpretation
 > 
 > | Stress Range | Interpretation                       |
 > |--------------+--------------------------------------|
