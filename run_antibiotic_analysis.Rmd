@@ -153,7 +153,7 @@ Blah blah blah
 
 # Permanova
 
-## With and Without Antibiotic
+## With vs. Without Antibiotic
 The ordination plots, especially the PCoA plot, suggest that there is a signature of most "no-antibiotic" samples that is  distinct from the antibiotic treated samples. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
@@ -176,7 +176,22 @@ print(antibiotic_bool.beta.permute)
 The test for test for homogeneity of dispersions yields an insignificant p-value of `r antibiotic_bool.beta.permute$tab$"Pr(>F)"[1]`, giving us some confidence that the significant result of the permanova is due to true differences induced by antibiotics, and cannot be explained by differences in dispersion.
 
 ## Antibiotic Subclass Analysis
+The ordination plots also seems to suggest subtle differences between different modes of antibiotic administration.  We can also test this. 
 
+```{r, echo=FALSE}
+antibiotic.adonis = adonis(antibiotic.even.bray ~ sample_data(antibiotic.even.ps)$antibiotic)
+print(antibiotic.adonis)
+```
+
+
+```{r, echo=FALSE}
+antibiotic.beta <- betadisper(antibiotic.even.bray, sample_data(antibiotic.even.ps)$antibiotic)
+antibiotic.beta.permute = permutest(antibiotic.beta)
+print(antibiotic.beta.permute)
+# str(antibiotic.beta.permute)
+# antibiotic.beta.permute$tab$"Pr(>F)"[1]
+```
+The subclass permanova analysis is also significant, with a p-value of `r antibiotic.adonis$aov.tab$"Pr(>F)"[1]`, and the test for homogeneity of dispersion is again insignificant (p-value of `r antibiotic.beta.permute$tab$"Pr(>F)"[1]`), again giving us some confidence that the significant result of the permanova is due to true differences in mode of antibiotics administration.
 
 # LefSE
 ## With and Without Antibiotic
