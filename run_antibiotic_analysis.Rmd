@@ -19,6 +19,7 @@ file.path()
 ## Load Libraries
 suppressPackageStartupMessages(library("phyloseq"))
 suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("vegan"))
 
 ## Load Antibiotic Data
 antibiotic.rds = "workspace/antibiotic_ps.rds"
@@ -146,10 +147,35 @@ ggplot(antibiotic.even.pcoa.plot$data, aes(Axis.1, Axis.2)) +
   theme_classic() +
   geom_point(aes(color = antibiotic))
 ```
-## Unifrac
 
+## Unifrac
+Blah blah blah
 
 # Permanova
+
+## With and Without Antibiotic
+The ordination plots, especially the PCoA plot, suggest that there is a signature of most "no-antibiotic" samples that is  distinct from the antibiotic treated samples. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+antibiotic.even.otus <- otu_table(antibiotic.even.ps)
+antibiotic.even.bray <- vegdist(antibiotic.even.otus, method="bray")
+antibiotic_bool.adonis = adonis(antibiotic.even.bray ~ sample_data(antibiotic.even.ps)$antibiotic_bool)
+print(antibiotic_bool.adonis)
+# antibiotic_bool.adonis.pval = antibiotic_bool.adonis$aov.tab$`Pr(>F)`[1]
+```
+The permanova comparing all modes of antibiotic treatment to no-antibiotic finds a significant difference with a p-value of `r antibiotic_bool.adonis$aov.tab$"Pr(>F)"[1]`. However, the permanova test is sensitive to differences in dispersion between the two groups, so we need to test for homogeneity of dispersion to examine whether differences in dispersion could lead us to falsely conclude that antibiotic treatment results in a signifcant differences between the groups. 
+
+```{r, echo=FALSE}
+antibiotic_bool.beta <- betadisper(antibiotic.even.bray, sample_data(antibiotic.even.ps)$antibiotic_bool)
+antibiotic_bool.beta.permute = permutest(antibiotic_bool.beta)
+print(antibiotic_bool.beta.permute)
+# str(antibiotic_bool.beta.permute)
+# antibiotic_bool.beta.permute$tab$"Pr(>F)"[1]
+```
+
+The test for test for homogeneity of dispersions yields an insignificant p-value of `r antibiotic_bool.beta.permute$tab$"Pr(>F)"[1]`, giving us some confidence that the significant result of the permanova is due to true differences induced by antibiotics, and cannot be explained by differences in dispersion.
+
+## Antibiotic Subclass Analysis
 
 
 # LefSE
