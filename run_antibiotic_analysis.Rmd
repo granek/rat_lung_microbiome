@@ -149,7 +149,47 @@ ggplot(antibiotic.even.pcoa.plot$data, aes(Axis.1, Axis.2)) +
 ```
 
 ## Unifrac
-Blah blah blah
+### NMDS - Unweighted Unifrac
+```{r, echo=FALSE, results='hide'}
+
+set.seed(1)
+antibiotic.even.nmds_unifrac <- ordinate(antibiotic.even.ps, "NMDS", "unifrac")
+antibiotic.even.nmds_unifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.nmds_unifrac, type="samples")
+ggplot(antibiotic.even.nmds_unifrac.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
+
+### NMDS - Weighted Unifrac
+```{r, echo=FALSE, results='hide'}
+
+set.seed(1)
+antibiotic.even.nmds_wunifrac <- ordinate(antibiotic.even.ps, "NMDS", "wunifrac")
+antibiotic.even.nmds_wunifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.nmds_wunifrac, type="samples")
+ggplot(antibiotic.even.nmds_wunifrac.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
+
+## PCoA - Unifrac
+```{r, echo=FALSE, results='hide'}
+antibiotic.even.pcoa_unifrac <- ordinate(antibiotic.even.ps, "PCoA", "unifrac")
+antibiotic.even.pcoa_unifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.pcoa_unifrac, type="samples")
+
+ggplot(antibiotic.even.pcoa_unifrac.plot$data, aes(Axis.1, Axis.2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
+
+## PCoA - Weighted Unifrac
+```{r, echo=FALSE, results='hide'}
+antibiotic.even.pcoa_wunifrac <- ordinate(antibiotic.even.ps, "PCoA", "wunifrac")
+antibiotic.even.pcoa_wunifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.pcoa_wunifrac, type="samples")
+
+ggplot(antibiotic.even.pcoa_wunifrac.plot$data, aes(Axis.1, Axis.2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
 
 # Permanova
 
