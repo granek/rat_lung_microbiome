@@ -273,3 +273,8 @@ ggplot(antibiotic.even.pcoa_wunifrac.plot$data, aes(Axis.1, Axis.2)) +
   geom_point(aes(color = antibiotic))
 ```
 
+## Session Info
+```{r}
+sessionInfo()
+```
+
