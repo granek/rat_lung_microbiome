@@ -61,6 +61,7 @@ max_replicate = total_count.df %>%
 max_replicate %>% select(Description) %>% duplicated() %>% any()
 
 bacteria.ps = subset_samples(bacteria_ps_both_reps,SampleID %in% max_replicate$SampleID)
+saveRDS(bacteria.ps, file.path(workdir, "bacteria_ps.rds"))
 
 rm(full_ps, bacteria_ps_both_reps) # Clean up to be sure these aren't used
 
