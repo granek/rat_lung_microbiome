@@ -416,14 +416,33 @@ random.seed=100
 # ps_and_seqid = makePhyloseq(seqtab,silva_ref,map_file)
 # ps = ps_and_seqid[[1]]
 # seqid.map.df = ps_and_seqid[[2]]
-ps = makePhyloseq(seqtab,silva_ref,map_file)
+full_ps = makePhyloseq(seqtab,silva_ref,map_file)
 ## plot_richness(ps, x="animal", measures=c("Shannon", "Simpson"), color="antibiotic") + theme_bw()
 ## plot_bar(ps, x="antibiotic", fill="Family") 
-saveRDS(ps, paste0(psfile.prefix,".rds"))
+
+
+sample_data(full_ps)$antibiotic = relevel(sample_data(full_ps)$antibiotic, "none")
+sample_data(full_ps)$left_aspiration = relevel(sample_data(full_ps)$left_aspiration, "none")
+sample_data(full_ps)$right_aspiration = relevel(sample_data(full_ps)$right_aspiration, "none")
+sample_data(full_ps)$sample_aspiration = relevel(sample_data(full_ps)$sample_aspiration, "none")
+levels(sample_data(full_ps)$antibiotic)
+levels(sample_data(full_ps)$left_aspiration)
+levels(sample_data(full_ps)$right_aspiration)
+levels(sample_data(full_ps)$sample_aspiration)
+
+# antibiotic_bool = 
+sample_data(full_ps)$antibiotic_bool <- factor(get_variable(full_ps, "antibiotic") != "none")
+# aspiration_bool = 
+sample_data(full_ps)$aspiration_bool <- factor(get_variable(full_ps, "sample_aspiration") != "none")
+
+
+
+
+saveRDS(full_ps, paste0(psfile.prefix,".rds"))
 
 
 # output.files = outputPhyloseq(ps,seqid.map.df,psfile.prefix)
-output.files = outputPhyloseq(ps,psfile.prefix)
+output.files = outputPhyloseq(full_ps,psfile.prefix)
 otu_table_file = output.files[[1]]
 sample_data_file = output.files[[2]]
 tax_table_file = output.files[[3]]
@@ -438,7 +457,7 @@ write(paste("tax_table_file:\t", tax_table_file), file="")
 ps.loaded = readRDS(paste0(psfile.prefix,".rds"))
 
 ## # outputPhyloseq(ps.loaded,paste0(psfile.prefix,"_loaded"))
-if (identical(ps,ps.loaded)) {
+if (identical(full_ps,ps.loaded)) {
     print("YAY! Saved and reloaded ps is identical to original")
 } else {
     print("*** ERROR: Saved and reloaded ps is DIFFERENT from original****")
