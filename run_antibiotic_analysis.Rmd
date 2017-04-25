@@ -148,49 +148,6 @@ ggplot(antibiotic.even.pcoa.plot$data, aes(Axis.1, Axis.2)) +
   geom_point(aes(color = antibiotic))
 ```
 
-## Unifrac
-### NMDS - Unweighted Unifrac
-```{r, echo=FALSE, results='hide'}
-
-set.seed(1)
-antibiotic.even.nmds_unifrac <- ordinate(antibiotic.even.ps, "NMDS", "unifrac")
-antibiotic.even.nmds_unifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.nmds_unifrac, type="samples")
-ggplot(antibiotic.even.nmds_unifrac.plot$data, aes(NMDS1, NMDS2)) +
-  theme_classic() +
-  geom_point(aes(color = antibiotic))
-```
-
-### NMDS - Weighted Unifrac
-```{r, echo=FALSE, results='hide'}
-
-set.seed(1)
-antibiotic.even.nmds_wunifrac <- ordinate(antibiotic.even.ps, "NMDS", "wunifrac")
-antibiotic.even.nmds_wunifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.nmds_wunifrac, type="samples")
-ggplot(antibiotic.even.nmds_wunifrac.plot$data, aes(NMDS1, NMDS2)) +
-  theme_classic() +
-  geom_point(aes(color = antibiotic))
-```
-
-## PCoA - Unifrac
-```{r, echo=FALSE, results='hide'}
-antibiotic.even.pcoa_unifrac <- ordinate(antibiotic.even.ps, "PCoA", "unifrac")
-antibiotic.even.pcoa_unifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.pcoa_unifrac, type="samples")
-
-ggplot(antibiotic.even.pcoa_unifrac.plot$data, aes(Axis.1, Axis.2)) +
-  theme_classic() +
-  geom_point(aes(color = antibiotic))
-```
-
-## PCoA - Weighted Unifrac
-```{r, echo=FALSE, results='hide'}
-antibiotic.even.pcoa_wunifrac <- ordinate(antibiotic.even.ps, "PCoA", "wunifrac")
-antibiotic.even.pcoa_wunifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.pcoa_wunifrac, type="samples")
-
-ggplot(antibiotic.even.pcoa_wunifrac.plot$data, aes(Axis.1, Axis.2)) +
-  theme_classic() +
-  geom_point(aes(color = antibiotic))
-```
-
 # Permanova
 
 ## With vs. Without Antibiotic
@@ -237,6 +194,7 @@ The subclass permanova analysis is also significant, with a p-value of `r antibi
 ## With and Without Antibiotic
 
 If we compare the "no antibiotic" treatment to all "antibiotic" treatments combined (still accounting for mode of administration), we see that two genera of Enterobacteriaceae distinguish them.
+
 ![](workspace/lefse/antibiotic_bool.png)
 
 *Serratia* is present in most of the "no-antibiotic" samples, but is not observed in any of the antibiotic treated samples.
@@ -249,6 +207,7 @@ If we compare the "no antibiotic" treatment to all "antibiotic" treatments combi
 
 ## Antibiotic Subclass Analysis
 We can break out the individual modes of antibiotic administration to look for differences.  We find a weaker signal that seems to indicate there may be subtle differences.
+
 ![](workspace/lefse/antibiotic_factor.png)
 
 ### Subcutaneous enrichment
@@ -269,3 +228,49 @@ for (cur_png in list.files(lefse_dir, pattern = ".png$",recursive = TRUE,full.na
   cat(md_string, fill=TRUE)
 }
 ```
+# Appendix
+## Unifrac
+Weighted and Unweighted Unifrac are alternative metrics for calculating the similarity between samples based on phylogenetic distance between the taxa that are present in the sample.  This is a common metric used to generate NMDS and PCoA plots.  While the overall plot is very different from above, the general conclusions are the same as the ordination plots above, which use the Bray-Curtis distance metric.
+
+### NMDS - Unweighted Unifrac
+```{r, echo=FALSE, results='hide'}
+
+set.seed(1)
+antibiotic.even.nmds_unifrac <- ordinate(antibiotic.even.ps, "NMDS", "unifrac")
+antibiotic.even.nmds_unifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.nmds_unifrac, type="samples")
+ggplot(antibiotic.even.nmds_unifrac.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
+
+### NMDS - Weighted Unifrac
+```{r, echo=FALSE, results='hide'}
+
+set.seed(1)
+antibiotic.even.nmds_wunifrac <- ordinate(antibiotic.even.ps, "NMDS", "wunifrac")
+antibiotic.even.nmds_wunifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.nmds_wunifrac, type="samples")
+ggplot(antibiotic.even.nmds_wunifrac.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
+
+### PCoA - Unweighted Unifrac
+```{r, echo=FALSE, results='hide'}
+antibiotic.even.pcoa_unifrac <- ordinate(antibiotic.even.ps, "PCoA", "unifrac")
+antibiotic.even.pcoa_unifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.pcoa_unifrac, type="samples")
+
+ggplot(antibiotic.even.pcoa_unifrac.plot$data, aes(Axis.1, Axis.2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
+
+### PCoA - Weighted Unifrac
+```{r, echo=FALSE, results='hide'}
+antibiotic.even.pcoa_wunifrac <- ordinate(antibiotic.even.ps, "PCoA", "wunifrac")
+antibiotic.even.pcoa_wunifrac.plot = plot_ordination(antibiotic.even.ps, antibiotic.even.pcoa_wunifrac, type="samples")
+
+ggplot(antibiotic.even.pcoa_wunifrac.plot$data, aes(Axis.1, Axis.2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic))
+```
+
