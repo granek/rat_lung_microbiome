@@ -3,6 +3,16 @@ title: "Manuscript 2: Gastric aspiration and the lung microbiome"
 output: html_document
 ---
 
+```{r, echo=FALSE, results='hide'}
+## Load Libraries
+suppressPackageStartupMessages(library("phyloseq"))
+suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("dplyr"))
+# suppressPackageStartupMessages(library("vegan"))
+
+## Load Data
+bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
+```
 
 # LEFT LUNG only
 ## Part 1
@@ -17,6 +27,87 @@ output: html_document
     + **without** SLU group
         + NMDS plot
         + LEfSe 
+
+```{r, echo=FALSE, results='hide'}
+# subset data
+left_lung1.ps = subset_samples(bacteria.ps,
+                               group %in% c("SLU", "WLU", "ILU"))
+left_lung1.ps = subset_samples(left_lung1.ps, animal %in% seq(1,12))
+
+### Pruning Rare Taxa
+min_counts = 2
+sample_proportion = 0.01
+min_samples = ceiling(sample_proportion*nsamples(left_lung1.ps))
+wh0 = genefilter_sample(left_lung1.ps, 
+                        filterfun_sample(function(x) x >= min_counts), 
+                        A=min_samples)
+
+left_lung1.pruned.ps = prune_taxa(wh0, left_lung1.ps)
+```
+
+```{r, echo=FALSE, results='hide'}
+# Figure out how to label plot
+sample_data(left_lung1.ps) %>% colnames() %>% paste(collapse = ",")
+
+sample_data(left_lung1.ps) %>% select(group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,lung,treated_lung,antibiotic_bool,aspiration_bool) %>% unique
+```
+
+The data was pruned before ordination to remove rare taxa. To be included in the pruned dataset, a taxon must occur at least `r min_counts` times in at least `r sample_proportion*100`% of samples (`r min_samples` samples). 
+
+Before pruning there are `r ntaxa(left_lung1.ps)` taxa, after pruning there are `r ntaxa(left_lung1.pruned.ps)` taxa remaining.
+
+
+```{r, echo=FALSE, results='hide'}
+## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
+## which (apply(otu_table(left_lung1.pruned.ps), 1, function(row) all(row ==0 )))
+## Transform to even sampling depth.
+left_lung1.even.ps = transform_sample_counts(left_lung1.pruned.ps, function(x) 1E6 * x/sum(x))
+
+## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
+left_lung1.even.ps = prune_samples(complete.cases(otu_table(left_lung1.even.ps)),left_lung1.even.ps)
+
+set.seed(1)
+left_lung1.even.nmds <- ordinate(left_lung1.even.ps, "NMDS", "bray")
+left_lung1.even.nmds.plot = plot_ordination(left_lung1.even.ps, left_lung1.even.nmds, type="samples")
+ggplot(left_lung1.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = sample_aspiration)) +
+  annotate("text",x=-Inf,y=-Inf,hjust=0,vjust=0,
+           label= paste("Stress:", left_lung1.even.nmds$stress, 
+                        "\nConverged:", left_lung1.even.nmds$converged))
+```
+
+- **Stress:** `r left_lung1.even.nmds$stress`
+- **Converged:** `r left_lung1.even.nmds$converged`
+
+
+```{r, echo=FALSE, results='hide'}
+## Drop "saline" samples
+left_lung1_no_saline.pruned.ps = subset_samples(left_lung1.pruned.ps,group %in% c("WLU", "ILU"))
+
+## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
+## which (apply(otu_table(left_lung1.pruned.ps), 1, function(row) all(row ==0 )))
+## Transform to even sampling depth.
+left_lung1_no_saline.even.ps = transform_sample_counts(left_lung1_no_saline.pruned.ps, function(x) 1E6 * x/sum(x))
+
+## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
+left_lung1_no_saline.even.ps = prune_samples(complete.cases(otu_table(left_lung1_no_saline.even.ps)),left_lung1_no_saline.even.ps)
+
+set.seed(1)
+left_lung1_no_saline.even.nmds <- ordinate(left_lung1_no_saline.even.ps, "NMDS", "bray")
+left_lung1_no_saline.even.nmds.plot = plot_ordination(left_lung1_no_saline.even.ps, left_lung1_no_saline.even.nmds, type="samples")
+ggplot(left_lung1_no_saline.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = sample_aspiration)) +
+  annotate("text",x=-Inf,y=-Inf,hjust=0,vjust=0,
+           label= paste("Stress:", left_lung1_no_saline.even.nmds$stress, 
+                        "\nConverged:", left_lung1_no_saline.even.nmds$converged))
+```
+
+- **Stress:** `r left_lung1_no_saline.even.nmds$stress`
+- **Converged:** `r left_lung1_no_saline.even.nmds$converged`
+
+
 
 ## Part 2
 * Samples
@@ -85,3 +176,10 @@ output: html_document
     + For RIGHT LUNG samples only, WRU and ASWRU groups
         + NMDS plot
         + LEfSe
+        
+# Appendix
+
+## Session Info
+```{r}
+sessionInfo()
+```
