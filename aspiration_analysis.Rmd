@@ -2,7 +2,7 @@
 title: "Manuscript 2: Gastric aspiration and the lung microbiome"
 output: html_document
 ---
-
+# Setup
 ```{r, echo=FALSE, results='hide'}
 ## Load Libraries
 suppressPackageStartupMessages(library("phyloseq"))
@@ -12,6 +12,24 @@ suppressPackageStartupMessages(library("vegan"))
 
 ## Load Data
 bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
+```
+
+## Dummy Image
+```{r, echo=FALSE}
+ShowFigure = function(plotfile){
+  if (!file.exists(plotfile)){
+    # make a dummy figure if the real one doesn't exist so pandoc doesn't barf
+    ggplot() + ggtitle(paste("placeholder for:", plotfile))
+    ggsave(plotfile)
+  }
+  fig_markdown = paste0("![](", plotfile, ")")
+  cat(fig_markdown, fill=TRUE)
+  # return(paste0("![](", plotfile, ")"))
+}
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure("workspace/lefse/blah_blah_blah.png")
 ```
 
 # LEFT LUNG only
@@ -219,6 +237,7 @@ The test for test for homogeneity of dispersions yields a slightly significant p
         + LEfSe
         
 # Appendix
+## Testing
 
 ## Session Info
 ```{r}
