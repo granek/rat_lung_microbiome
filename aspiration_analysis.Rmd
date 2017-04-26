@@ -9,27 +9,91 @@ suppressPackageStartupMessages(library("phyloseq"))
 suppressPackageStartupMessages(library("ggplot2"))
 suppressPackageStartupMessages(library("dplyr"))
 suppressPackageStartupMessages(library("vegan"))
+suppressPackageStartupMessages(library("stringr"))
+suppressPackageStartupMessages(library("tidyr"))
+suppressPackageStartupMessages(library("tibble"))
+
 
 ## Load Data
 bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
+
+## Setup Output
+lefse_outdir = file.path("workspace","lefse_aspiration")
+dir.create(lefse_outdir, showWarnings = FALSE)
 ```
 
-## Dummy Image
+## Functions
 ```{r, echo=FALSE}
-ShowFigure = function(plotfile){
-  if (!file.exists(plotfile)){
+ShowFigure = function(plotfile, dummy_figure=FALSE){
+  # if (!file.exists(plotfile)){
+  #   # make a dummy figure if the real one doesn't exist so pandoc doesn't barf
+  #   ggplot() + ggtitle(paste("placeholder for:", plotfile))
+  #   ggsave(plotfile)
+  # }
+  if (file.exists(plotfile)){
+    fig_markdown = paste0("![](", plotfile, ")")
+  } else if (dummy_figure) {
     # make a dummy figure if the real one doesn't exist so pandoc doesn't barf
     ggplot() + ggtitle(paste("placeholder for:", plotfile))
     ggsave(plotfile)
+    fig_markdown = paste0("![](", plotfile, ")")
+  } else {
+    fig_markdown = paste("> Image doesn't exist:", plotfile)
   }
-  fig_markdown = paste0("![](", plotfile, ")")
   cat(fig_markdown, fill=TRUE)
-  # return(paste0("![](", plotfile, ")"))
 }
 ```
 
+
+```{r, echo=FALSE}
+#' RepseqToTaxa:
+#' Convert Repseq column names to Taxa column names in a spread data frame
+#' The big problem here is that this needs to be done after all other 
+#' manipulations to the dataframe, otherwise most functions will balk if there
+#' are dataframe columns with identical names
+#'
+#' @param spread.df The dataframe generated from phyloseq object.
+#' @param source.ps phyloseq object from which spread.df was derived.
+RepseqToTaxa <- function(spread.df, source.ps) {
+  tax.df = as.data.frame(tax_table(source.ps)) %>%
+    rownames_to_column("repseq") %>%
+    mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
+    select(repseq, taxonomy)
+  
+  # need to preserve non-OTU column names (otherwise they get lost)
+  colname_match = match(names(spread.df), tax.df$repseq)
+  cols_to_keep = which(is.na(colname_match))
+  colnames_to_keep = names(spread.df)[cols_to_keep]
+  
+  # replace repseqs with taxonomies
+  names(spread.df) = tax.df$taxonomy[match(names(spread.df), tax.df$repseq)]
+  # now reset the non-OTU column names
+  names(spread.df)[cols_to_keep] = colnames_to_keep
+  return(spread.df)
+}
+
+GenerateLefseOutput = function(ps,output_columns,outfile){
+  base_columns = c("SampleID","OTU","Abundance")
+  spread.df = psmelt(ps) %>% 
+  mutate(SampleID = str_replace(SampleID, pattern="\\.", replacement="_")) %>%
+  mutate(taxonomy = paste(Kingdom,Phylum,Class,Order,Family,Genus, sep="|")) %>%
+  select(one_of(c(base_columns,output_columns))) %>%
+  spread(OTU, Abundance)
+  
+  RepseqToTaxa(spread.df, ps) %>%
+      write.table(file=outfile, 
+            sep="\t", quote = FALSE,
+            row.names = FALSE)
+}
+```
+
+
+
 ```{r, echo=FALSE, results = 'asis'}
-ShowFigure("workspace/lefse/blah_blah_blah.png")
+ShowFigure(file.path(lefse_outdir,"no_dummy.png"))
+
+
+ShowFigure(file.path(lefse_outdir,"dummy_file.png"),dummy_figure=TRUE)
 ```
 
 # LEFT LUNG only
@@ -120,6 +184,41 @@ print(left_lung1.beta.permute)
 ```
 
 The test for test for homogeneity of dispersions yields a **significant** p-value of `r left_lung1.beta.permute$tab$"Pr(>F)"[1]`.  This is not necessarily surprising, because in the NMDS plots the Saline samples seems more tightly clustered than the Gastric samples.  This does **not** mean that we must discard the significant result of the permanova, but we should keep in mind that differences in dispersion are a possible explanation for the permanova result.
+
+#### LefSE
+```{r left_lung1_generate_lefse}
+left_lung1.lefse.file = file.path(lefse_outdir,"left_lung1_aspiration.tsv")
+GenerateLefseOutput(left_lung1.pruned.ps, 
+                    output_columns = c("sample_aspiration"),
+                    outfile = left_lung1.lefse.file
+)
+
+Sys.setenv(LEFSE_INPUT_FILE = left_lung1.lefse.file)
+```
+
+```{bash}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+
+# format_input.py convert the input data matrix to the format for LEfSe.
+#
+# In this example we use the class information in the first line (-c 1)
+# the subclass in the second line (-s 2) and the subject in the third (-u 3).
+# If the subclass or the subject are not present in the data you need to set
+# the value -1 for them.
+# -o 1000000 scales the feature such that the sum (of the same taxonomic leve)
+# is 1M: this is done only for obtaining more meaningful values for the LDA score
+
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+left_lung1.pruned.ps
+# GenerateLefseOutput = function(ps,output_columns,outfile){
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(file.path(lefse_outdir,"left_lung1_aspiration.png"))
+```
 
 ### Without Saline Samples
 #### NMDS
