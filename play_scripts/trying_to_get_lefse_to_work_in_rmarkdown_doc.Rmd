@@ -17,15 +17,7 @@ When you click the **Knit** button a document will be generated that includes bo
 summary(cars)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 ```{bash}
 # which R
 
@@ -68,6 +60,7 @@ R  --vanilla -q -e ".libPaths()"
 # echo $R_LIBS
 
 ```
+
 ```{bash}
 source /opt/conda/bin/activate qiime1
 R_LIBS_USER=""
@@ -103,3 +96,12 @@ run_lefse.py -h
 
 # echo $R_LIBS
 ```
+```{bash}
+type R
+```
+
+https://github.com/conda/conda/issues/1258
+
+```{bash}
+source /opt/conda/bin/activate qiime1
+type R
