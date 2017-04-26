@@ -131,6 +131,23 @@ ggplot(left_lung1_no_saline.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
 - **Stress:** `r left_lung1_no_saline.even.nmds$stress`
 - **Converged:** `r left_lung1_no_saline.even.nmds$converged`
 
+#### Permanova
+The ordination plot, suggest that aspiration treatment effects microbial community. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+left_lung1_no_saline.even.otus <- otu_table(left_lung1_no_saline.even.ps)
+left_lung1_no_saline.even.bray <- vegdist(left_lung1_no_saline.even.otus, method="bray")
+left_lung1_no_saline.adonis = adonis(left_lung1_no_saline.even.bray ~ sample_data(left_lung1_no_saline.even.ps)$sample_aspiration)
+print(left_lung1_no_saline.adonis)
+```
+The permanova comparing aspiration of whole gastric fluid with irradiated gastric does not find a significant difference (p-value of `r left_lung1_no_saline.adonis$aov.tab$"Pr(>F)"[1]`). 
+```{r, echo=FALSE}
+left_lung1_no_saline.beta <- betadisper(left_lung1_no_saline.even.bray, sample_data(left_lung1_no_saline.even.ps)$sample_aspiration)
+left_lung1_no_saline.beta.permute = permutest(left_lung1_no_saline.beta)
+print(left_lung1_no_saline.beta.permute)
+```
+
+The test for test for homogeneity of dispersions yields a slightly significant p-value of `r left_lung1_no_saline.beta.permute$tab$"Pr(>F)"[1]`.
 
 # NOT DONE YET
 ## Part 2
