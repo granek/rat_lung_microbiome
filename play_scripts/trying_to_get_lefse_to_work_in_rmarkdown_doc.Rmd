@@ -105,3 +105,21 @@ https://github.com/conda/conda/issues/1258
 ```{bash}
 source /opt/conda/bin/activate qiime1
 type R
+```
+
+
+# What about runr?
+```{r}
+library(runr)
+library(knitr)
+b = proc_bash()
+b$start()
+knit_engines$set(bash = function(options) {
+    knitr:::wrap(b$exec(options$code), options)
+})
+
+x=asdfqwer
+echo $x
+```
+Apparently runr is not in CRAN yet, let's not bother for now
+
