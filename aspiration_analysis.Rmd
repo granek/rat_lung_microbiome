@@ -212,6 +212,8 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ShowFigure(file.path(lefse_outdir,"left_lung1_aspiration.png"))
 ```
 
+#### TODO: LefSE gastric boolean
+
 ### Without Saline Samples
 #### NMDS
 ```{r, echo=FALSE, results='hide'}
@@ -340,14 +342,14 @@ for (cur_png in list.files(lefse_outdir, pattern = ".png$",recursive = TRUE,full
   ShowFigure(cur_png)
 }
 ```
+
 ### Test ShowFigure
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, include=FALSE, results = 'asis'}
 ShowFigure(file.path(lefse_outdir,"no_dummy.png"))
 
 
 ShowFigure(file.path(lefse_outdir,"dummy_file.png"),dummy_figure=TRUE)
 ```
-
 
 ## Session Info
 ```{r}
