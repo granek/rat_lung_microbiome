@@ -8,7 +8,7 @@ output: html_document
 suppressPackageStartupMessages(library("phyloseq"))
 suppressPackageStartupMessages(library("ggplot2"))
 suppressPackageStartupMessages(library("dplyr"))
-# suppressPackageStartupMessages(library("vegan"))
+suppressPackageStartupMessages(library("vegan"))
 
 ## Load Data
 bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
@@ -28,6 +28,8 @@ bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
         + NMDS plot
         + LEfSe 
 
+> Should we include the no-aspiration group to determine if aspiration itself has an effect?
+
 ```{r, echo=FALSE, results='hide'}
 # subset data
 left_lung1.ps = subset_samples(bacteria.ps,
@@ -45,18 +47,20 @@ wh0 = genefilter_sample(left_lung1.ps,
 left_lung1.pruned.ps = prune_taxa(wh0, left_lung1.ps)
 ```
 
+
+
+The data was pruned before ordination to remove rare taxa. To be included in the pruned dataset, a taxon must occur at least `r min_counts` times in at least `r sample_proportion*100`% of samples (`r min_samples` samples). 
+
+Before pruning there are `r ntaxa(left_lung1.ps)` taxa, after pruning there are `r ntaxa(left_lung1.pruned.ps)` taxa remaining.
+
 ```{r, echo=FALSE, results='hide'}
 # Figure out how to label plot
 sample_data(left_lung1.ps) %>% colnames() %>% paste(collapse = ",")
 
 sample_data(left_lung1.ps) %>% select(group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,lung,treated_lung,antibiotic_bool,aspiration_bool) %>% unique
 ```
-
-The data was pruned before ordination to remove rare taxa. To be included in the pruned dataset, a taxon must occur at least `r min_counts` times in at least `r sample_proportion*100`% of samples (`r min_samples` samples). 
-
-Before pruning there are `r ntaxa(left_lung1.ps)` taxa, after pruning there are `r ntaxa(left_lung1.pruned.ps)` taxa remaining.
-
-
+### With Saline Samples
+#### NMDS
 ```{r, echo=FALSE, results='hide'}
 ## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
 ## which (apply(otu_table(left_lung1.pruned.ps), 1, function(row) all(row ==0 )))
@@ -80,7 +84,27 @@ ggplot(left_lung1.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
 - **Stress:** `r left_lung1.even.nmds$stress`
 - **Converged:** `r left_lung1.even.nmds$converged`
 
+#### Permanova
+The ordination plot, suggest that aspiration treatment effects microbial community. A permanova analysis allows us to quantify this. 
 
+```{r, echo=FALSE}
+left_lung1.even.otus <- otu_table(left_lung1.even.ps)
+left_lung1.even.bray <- vegdist(left_lung1.even.otus, method="bray")
+left_lung1.adonis = adonis(left_lung1.even.bray ~ sample_data(left_lung1.even.ps)$sample_aspiration)
+print(left_lung1.adonis)
+```
+The permanova comparing all modes of aspiration finds a significant difference with a p-value of `r left_lung1.adonis$aov.tab$"Pr(>F)"[1]`. However, the permanova test is sensitive to differences in dispersion between the two groups, so we need to test for homogeneity of dispersion to examine whether differences in dispersion could lead us to falsely conclude that aspriation treatment results in a signifcant differences between the groups. 
+
+```{r, echo=FALSE}
+left_lung1.beta <- betadisper(left_lung1.even.bray, sample_data(left_lung1.even.ps)$sample_aspiration)
+left_lung1.beta.permute = permutest(left_lung1.beta)
+print(left_lung1.beta.permute)
+```
+
+The test for test for homogeneity of dispersions yields a **significant** p-value of `r left_lung1.beta.permute$tab$"Pr(>F)"[1]`.  This is not necessarily surprising, because in the NMDS plots the Saline samples seems more tightly clustered than the Gastric samples.  This does **not** mean that we must discard the significant result of the permanova, but we should keep in mind that differences in dispersion are a possible explanation for the permanova result.
+
+### Without Saline Samples
+#### NMDS
 ```{r, echo=FALSE, results='hide'}
 ## Drop "saline" samples
 left_lung1_no_saline.pruned.ps = subset_samples(left_lung1.pruned.ps,group %in% c("WLU", "ILU"))
@@ -108,7 +132,7 @@ ggplot(left_lung1_no_saline.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
 - **Converged:** `r left_lung1_no_saline.even.nmds$converged`
 
 
-
+# NOT DONE YET
 ## Part 2
 * Samples
     + WLU1 through 12 (whole gastric fluid, cohort #1)
