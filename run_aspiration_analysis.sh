@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# Based on https://bitbucket.org/nsegata/lefse/raw/ee1653ca297801562a3118aa606d063085be20d8/example/run.sh
-
-
-
 
 RMARKDOWN_FILE="aspiration_analysis.Rmd"
 LEFSE_DIR="workspace/lefse_aspiration"
