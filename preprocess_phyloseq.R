@@ -15,9 +15,9 @@ args <- parser$parse_args()
 basedir = args$basedir
 
 workdir = file.path(basedir, "workspace")
-results_dir = file.path(workdir,"results")
-figure_dir = file.path(workdir,"figures")
-dir.create(figure_dir, showWarnings = TRUE)
+# results_dir = file.path(workdir,"results")
+# figure_dir = file.path(workdir,"figures")
+# dir.create(figure_dir, showWarnings = TRUE)
 
 phyloseq_rds.filename = file.path("results", "rat_lung_ps.rds")
 
@@ -35,10 +35,39 @@ full_ps = readRDS(phyloseq_rds.filename)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #+ Setup: Relevel so "none" treatment is first, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+aspiration_levels= c("none", "saline", "whole_gastric", "irradiated_gastric")
+
+old_left = sample_data(full_ps)$left_aspiration
+old_right = sample_data(full_ps)$right_aspiration
+old_sample = sample_data(full_ps)$sample_aspiration
+
+
+# Fix mispelling of "gastric" and relevel so "none" is reference 
+sample_data(full_ps)$left_aspiration %<>%
+  str_replace("gastic","gastric") %>%
+  factor(levels=aspiration_levels)
+
+sample_data(full_ps)$right_aspiration %<>%
+  str_replace("gastic","gastric") %>%
+  factor(levels=aspiration_levels)
+
+sample_data(full_ps)$sample_aspiration %<>%
+  str_replace("gastic","gastric") %>%
+  factor(levels=aspiration_levels)
+
+left = sample_data(full_ps)$left_aspiration
+right = sample_data(full_ps)$right_aspiration
+sample = sample_data(full_ps)$sample_aspiration
+
+check = data_frame(old_left, left, old_right, right, old_sample, sample)
+
+levels(check)
+levels(left)
+levels(right)
+levels(sample)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 sample_data(full_ps)$antibiotic = relevel(sample_data(full_ps)$antibiotic, "none")
-sample_data(full_ps)$left_aspiration = relevel(sample_data(full_ps)$left_aspiration, "none")
-sample_data(full_ps)$right_aspiration = relevel(sample_data(full_ps)$right_aspiration, "none")
-sample_data(full_ps)$sample_aspiration = relevel(sample_data(full_ps)$sample_aspiration, "none")
 
 sample_data(full_ps)$antibiotic_bool <- factor(get_variable(full_ps, "antibiotic") != "none")
 sample_data(full_ps)$aspiration_bool <- factor(get_variable(full_ps, "sample_aspiration") != "none")

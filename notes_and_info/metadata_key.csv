@@ -2,12 +2,12 @@ group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,lung,treated
 AINLU,iv,none,none,none,left,TRUE
 APNLU,oral,none,none,none,left,TRUE
 ASNLU,subq,none,none,none,left,TRUE
-ASWLU,subq,whole_gastic,none,whole_gastic,left,TRUE
-ASWRU,subq,whole_gastic,none,none,right,FALSE
+ASWLU,subq,whole_gastric,none,whole_gastric,left,TRUE
+ASWRU,subq,whole_gastric,none,none,right,FALSE
 ILU,none,irradiated_gastric,none,irradiated_gastric,left,TRUE
 IRU,none,irradiated_gastric,none,none,right,FALSE
 NLU,none,none,none,none,left,TRUE
 SLU,none,saline,none,saline,left,TRUE
 SRU,none,saline,none,none,right,FALSE
-WLU,none,whole_gastic,none,whole_gastic,left,TRUE
-WRU,none,whole_gastic,none,none,right,FALSE
+WLU,none,whole_gastric,none,whole_gastric,left,TRUE
+WRU,none,whole_gastric,none,none,right,FALSE
