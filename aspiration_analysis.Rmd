@@ -352,8 +352,7 @@ print(left_lung2.beta.permute)
 ```
 The permanova comparing whole_gastric cohorts does not find a significant difference (p-value of `r left_lung2.adonis$aov.tab$"Pr(>F)"[1]`) and the test for homogeneity of dispersions is also not significant (p-value of `r left_lung2.beta.permute$tab$"Pr(>F)"[1]`.)
 
-# NOT DONE YET
-## Part 3
+## Part 3 (LEFT LUNG only)
 * Samples
     + SLU1 through 11 (control)
     + WLU13 through 24 (whole gastric fluid, cohort #2)
@@ -366,6 +365,25 @@ The permanova comparing whole_gastric cohorts does not find a significant differ
         + NMDS plot
         + LEfSe 
 
+```{r, echo=FALSE, results='hide'}
+# subset data
+left_lung3.ps = subset_samples(bacteria.ps,
+                               (group %in% c("SLU", "ASWLU") | ((group == "WLU") & (animal > 12))))
+x = sample_data(left_lung3.ps)
+
+
+### Pruning Rare Taxa
+min_counts = 2
+sample_proportion = 0.01
+min_samples = ceiling(sample_proportion*nsamples(left_lung3.ps))
+wh0 = genefilter_sample(left_lung3.ps, 
+                        filterfun_sample(function(x) x >= min_counts), 
+                        A=min_samples)
+
+left_lung3.pruned.ps = prune_taxa(wh0, left_lung3.ps)
+```
+
+# NOT DONE YET -------------------------------------------------------------------
 # RIGHT lung PAIRED with LEFT lung from same animal (e.g. SLU1 paired with SRU1) 
 ## Part 1
 * Samples
