@@ -338,7 +338,7 @@ The test for test for homogeneity of dispersions yields a slightly significant p
 
 # All Plots
 for (cur_png in list.files(lefse_outdir, pattern = ".png$",recursive = TRUE,full.names = TRUE)){
-  cat(cur_png)
+  cat(paste0(cur_png,"\n\n\n"))
   ShowFigure(cur_png)
 }
 ```
