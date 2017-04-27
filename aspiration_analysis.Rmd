@@ -12,7 +12,8 @@ suppressPackageStartupMessages(library("vegan"))
 suppressPackageStartupMessages(library("stringr"))
 suppressPackageStartupMessages(library("tidyr"))
 suppressPackageStartupMessages(library("tibble"))
-
+suppressPackageStartupMessages(library("magrittr"))
+suppressPackageStartupMessages(library("stringr"))
 
 ## Load Data
 bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
@@ -180,7 +181,31 @@ print(left_lung1.beta.permute)
 
 The test for test for homogeneity of dispersions yields a **significant** p-value of `r left_lung1.beta.permute$tab$"Pr(>F)"[1]`.  This is not necessarily surprising, because in the NMDS plots the Saline samples seems more tightly clustered than the Gastric samples.  This does **not** mean that we must discard the significant result of the permanova, but we should keep in mind that differences in dispersion are a possible explanation for the permanova result.
 
-#### LefSE
+#### LefSE: saline vs gastric
+```{r left_lung1_gastric_generate_lefse, echo=FALSE, results='hide'}
+sample_data(left_lung1.pruned.ps)$saline_gastric = get_variable(left_lung1.pruned.ps, "sample_aspiration") %>%
+  str_extract("gastric|saline")
+
+left_lung1_gastric.lefse.file = file.path(lefse_outdir,"left_lung1_gastric_aspiration.tsv")
+GenerateLefseOutput(left_lung1.pruned.ps, 
+                    output_columns = c("saline_gastric", "sample_aspiration"),
+                    outfile = left_lung1_gastric.lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = left_lung1_gastric.lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -s 3 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(file.path(lefse_outdir,"left_lung1_gastric_aspiration.png"))
+```
+
+#### LefSE: Aspiration as factors
 ```{r left_lung1_generate_lefse, echo=FALSE, results='hide'}
 left_lung1.lefse.file = file.path(lefse_outdir,"left_lung1_aspiration.tsv")
 GenerateLefseOutput(left_lung1.pruned.ps, 
@@ -211,8 +236,6 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ```{r, echo=FALSE, results = 'asis'}
 ShowFigure(file.path(lefse_outdir,"left_lung1_aspiration.png"))
 ```
-
-#### TODO: LefSE gastric boolean
 
 ### Without Saline Samples
 #### NMDS
@@ -336,7 +359,6 @@ The test for test for homogeneity of dispersions yields a slightly significant p
 ### All Lefse Plots
 ```{r show_all_pngs, echo=FALSE, results = 'asis'}
 
-# All Plots
 for (cur_png in list.files(lefse_outdir, pattern = ".png$",recursive = TRUE,full.names = TRUE)){
   cat(paste0(cur_png,"\n\n\n"))
   ShowFigure(cur_png)
@@ -347,8 +369,7 @@ for (cur_png in list.files(lefse_outdir, pattern = ".png$",recursive = TRUE,full
 ```{r, echo=FALSE, include=FALSE, results = 'asis'}
 ShowFigure(file.path(lefse_outdir,"no_dummy.png"))
 
-
-ShowFigure(file.path(lefse_outdir,"dummy_file.png"),dummy_figure=TRUE)
+# ShowFigure(file.path(lefse_outdir,"dummy_file.png"),dummy_figure=TRUE)
 ```
 
 ## Session Info
