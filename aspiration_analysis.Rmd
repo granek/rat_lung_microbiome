@@ -88,12 +88,8 @@ GenerateLefseOutput = function(ps,output_columns,outfile){
 }
 ```
 
-
-
-
-
 # LEFT LUNG only
-## Part 1
+## Part 1 (LEFT LUNG only)
 * Samples
     + SLU1 through 11 (control)
     + WLU1 through 12 (whole gastric fluid, group #1)
@@ -125,6 +121,7 @@ wh0 = genefilter_sample(left_lung1.ps,
 left_lung1.pruned.ps = prune_taxa(wh0, left_lung1.ps)
 ```
 
+> What are the two cohorts? Why not use all at once?
 
 
 The data was pruned before ordination to remove rare taxa. To be included in the pruned dataset, a taxon must occur at least `r min_counts` times in at least `r sample_proportion*100`% of samples (`r min_samples` samples). 
@@ -283,8 +280,7 @@ print(left_lung1_no_saline.beta.permute)
 
 The test for test for homogeneity of dispersions yields a slightly significant p-value of `r left_lung1_no_saline.beta.permute$tab$"Pr(>F)"[1]`.
 
-# NOT DONE YET
-## Part 2
+## Part 2 (LEFT LUNG only)
 * Samples
     + WLU1 through 12 (whole gastric fluid, cohort #1)
     + WLU13 through 24 (whole gastric fluid, cohort #2)
@@ -292,6 +288,71 @@ The test for test for homogeneity of dispersions yields a slightly significant p
     + NMDS plot
     + LEfSe
 
+```{r, echo=FALSE, results='hide'}
+# subset data
+left_lung2.ps = subset_samples(bacteria.ps, group == "WLU")
+
+# Create cohort variable
+sample_data(left_lung2.ps)$cohort = get_variable(left_lung2.ps, "animal") %>%
+  divide_by_int(13) %>%
+  add(1) %>% 
+  factor
+
+### Pruning Rare Taxa
+min_counts = 2
+sample_proportion = 0.01
+min_samples = ceiling(sample_proportion*nsamples(left_lung2.ps))
+wh0 = genefilter_sample(left_lung2.ps, 
+                        filterfun_sample(function(x) x >= min_counts), 
+                        A=min_samples)
+
+left_lung2.pruned.ps = prune_taxa(wh0, left_lung2.ps)
+```
+
+The data was pruned before ordination to remove rare taxa. To be included in the pruned dataset, a taxon must occur at least `r min_counts` times in at least `r sample_proportion*100`% of samples (`r min_samples` samples). 
+
+Before pruning there are `r ntaxa(left_lung2.ps)` taxa, after pruning there are `r ntaxa(left_lung2.pruned.ps)` taxa remaining.
+
+### NMDS
+```{r, echo=FALSE, results='hide'}
+## Transform to even sampling depth.
+left_lung2.even.ps = transform_sample_counts(left_lung2.pruned.ps, function(x) 1E6 * x/sum(x))
+
+## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
+left_lung2.even.ps = prune_samples(complete.cases(otu_table(left_lung2.even.ps)),left_lung2.even.ps)
+
+set.seed(1)
+left_lung2.even.nmds <- ordinate(left_lung2.even.ps, "NMDS", "bray")
+left_lung2.even.nmds.plot = plot_ordination(left_lung2.even.ps, left_lung2.even.nmds, type="samples")
+ggplot(left_lung2.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = cohort)) +
+  annotate("text",x=-Inf,y=-Inf,hjust=0,vjust=0,
+           label= paste("Stress:", left_lung2.even.nmds$stress, 
+                        "\nConverged:", left_lung2.even.nmds$converged))
+```
+
+- **Stress:** `r left_lung2.even.nmds$stress`
+- **Converged:** `r left_lung2.even.nmds$converged`
+
+### Permanova
+The ordination plot, suggest that aspiration treatment effects microbial community. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+left_lung2.even.otus <- otu_table(left_lung2.even.ps)
+left_lung2.even.bray <- vegdist(left_lung2.even.otus, method="bray")
+left_lung2.adonis = adonis(left_lung2.even.bray ~ sample_data(left_lung2.even.ps)$cohort)
+print(left_lung2.adonis)
+```
+
+```{r, echo=FALSE}
+left_lung2.beta <- betadisper(left_lung2.even.bray, sample_data(left_lung2.even.ps)$cohort)
+left_lung2.beta.permute = permutest(left_lung2.beta)
+print(left_lung2.beta.permute)
+```
+The permanova comparing whole_gastric cohorts does not find a significant difference (p-value of `r left_lung2.adonis$aov.tab$"Pr(>F)"[1]`) and the test for homogeneity of dispersions is also not significant (p-value of `r left_lung2.beta.permute$tab$"Pr(>F)"[1]`.)
+
+# NOT DONE YET
 ## Part 3
 * Samples
     + SLU1 through 11 (control)
