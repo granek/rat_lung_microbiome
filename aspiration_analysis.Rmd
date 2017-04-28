@@ -1,9 +1,15 @@
 ---
 title: "Manuscript 2: Gastric aspiration and the lung microbiome"
-output: html_document
+output: 
+  html_document:
+    toc: true # table of content true
+    depth: 3  # upto three depths of headings (specified by #, ## and ###)
+    number_sections: true  ## if you want number sections at each table header
+    theme: united  # many options for theme, this one is my favorite.
+    highlight: tango  # specifies the syntax highlighting style
 ---
 # Setup
-```{r, echo=FALSE, results='hide'}
+```{r load_libraries, echo=FALSE, results='hide'}
 ## Load Libraries
 suppressPackageStartupMessages(library("phyloseq"))
 suppressPackageStartupMessages(library("ggplot2"))
@@ -24,13 +30,8 @@ dir.create(lefse_outdir, showWarnings = FALSE)
 ```
 
 ## Functions
-```{r, echo=FALSE}
+```{r declare_functions, echo=FALSE}
 ShowFigure = function(plotfile, dummy_figure=FALSE){
-  # if (!file.exists(plotfile)){
-  #   # make a dummy figure if the real one doesn't exist so pandoc doesn't barf
-  #   ggplot() + ggtitle(paste("placeholder for:", plotfile))
-  #   ggsave(plotfile)
-  # }
   if (file.exists(plotfile)){
     fig_markdown = paste0("![](", plotfile, ")")
   } else if (dummy_figure) {
@@ -369,8 +370,6 @@ The permanova comparing whole_gastric cohorts does not find a significant differ
 # subset data
 left_lung3.ps = subset_samples(bacteria.ps,
                                (group %in% c("SLU", "ASWLU") | ((group == "WLU") & (animal > 12))))
-x = sample_data(left_lung3.ps)
-
 
 ### Pruning Rare Taxa
 min_counts = 2
