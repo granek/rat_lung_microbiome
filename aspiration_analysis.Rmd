@@ -2,7 +2,10 @@
 title: "Manuscript 2: Gastric aspiration and the lung microbiome"
 output: 
   html_document:
-    toc: true # table of content true
+    toc: true # table of content 
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
     depth: 3  # upto three depths of headings (specified by #, ## and ###)
     number_sections: true  ## if you want number sections at each table header
     theme: united  # many options for theme, this one is my favorite.
