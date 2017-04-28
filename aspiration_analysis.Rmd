@@ -479,7 +479,7 @@ Sys.setenv(LEFSE_INPUT_FILE = left_lung3_SLU_WLU_lefse.file)
 source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
-lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -s 3 -o 1000000  --output_table ${BASENAME}.tab
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
 ```{r, echo=FALSE, results = 'asis'}
