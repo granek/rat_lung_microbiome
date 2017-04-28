@@ -11,7 +11,6 @@ output:
     theme: united  # many options for theme, this one is my favorite.
     highlight: tango  # specifies the syntax highlighting style
 ---
-# Setup
 ```{r load_libraries, echo=FALSE, results='hide'}
 ## Load Libraries
 suppressPackageStartupMessages(library("phyloseq"))
@@ -33,7 +32,6 @@ lefse_outdir = file.path("workspace","lefse_aspiration")
 dir.create(lefse_outdir, showWarnings = FALSE)
 ```
 
-## Functions
 ```{r declare_functions, echo=FALSE}
 ShowFigure = function(plotfile, dummy_figure=FALSE){
   if (file.exists(plotfile)){
@@ -93,8 +91,17 @@ GenerateLefseOutput = function(ps,output_columns,outfile){
 }
 ```
 
+
+```{r check_metadata, echo=FALSE, results='hide'}
+# Figure out how to label plot
+sample_data(bacteria.ps) %>% colnames() %>% paste(collapse = ",")
+
+sample_data(bacteria.ps) %>% select(group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,lung,treated_lung,antibiotic_bool,aspiration_bool) %>% unique
+```
+
+
 # LEFT LUNG only
-## Part 1 (LEFT LUNG only)
+## Part 1: Aspiration with Saline,Gastric Fluid, and Irradiated Gastric Fluid
 * Samples
     + SLU1 through 11 (control)
     + WLU1 through 12 (whole gastric fluid, group #1)
@@ -285,7 +292,7 @@ print(left_lung1_no_saline.beta.permute)
 
 The test for test for homogeneity of dispersions yields a slightly significant p-value of `r left_lung1_no_saline.beta.permute$tab$"Pr(>F)"[1]`.
 
-## Part 2 (LEFT LUNG only)
+## Part 2: Compare Whole Gastric Fluid Cohorts
 * Samples
     + WLU1 through 12 (whole gastric fluid, cohort #1)
     + WLU13 through 24 (whole gastric fluid, cohort #2)
@@ -341,7 +348,7 @@ ggplot(left_lung2.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
 - **Converged:** `r left_lung2.even.nmds$converged`
 
 ### Permanova
-The ordination plot, suggest that aspiration treatment effects microbial community. A permanova analysis allows us to quantify this. 
+Based on the ordination plot there does not seem to be a significant difference between the two Whole Gastric Fluid Cohorts. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
 left_lung2.even.otus <- otu_table(left_lung2.even.ps)
@@ -357,7 +364,7 @@ print(left_lung2.beta.permute)
 ```
 The permanova comparing whole_gastric cohorts does not find a significant difference (p-value of `r left_lung2.adonis$aov.tab$"Pr(>F)"[1]`) and the test for homogeneity of dispersions is also not significant (p-value of `r left_lung2.beta.permute$tab$"Pr(>F)"[1]`.)
 
-## Part 3 (LEFT LUNG only)
+## Part 3: Saline and Whole Gastric Fluid with and without Antibiotics
 * Samples
     + SLU1 through 11 (control)
     + WLU13 through 24 (whole gastric fluid, cohort #2)
@@ -370,32 +377,6 @@ The permanova comparing whole_gastric cohorts does not find a significant differ
         + NMDS plot
         + LEfSe 
 
-```{r, echo=FALSE, results='hide'}
-# subset data
-left_lung3.ps = subset_samples(bacteria.ps,
-                               (group %in% c("SLU", "ASWLU") | ((group == "WLU") & (animal > 12))))
-
-### Pruning Rare Taxa
-min_counts = 2
-sample_proportion = 0.01
-min_samples = ceiling(sample_proportion*nsamples(left_lung3.ps))
-wh0 = genefilter_sample(left_lung3.ps, 
-                        filterfun_sample(function(x) x >= min_counts), 
-                        A=min_samples)
-
-left_lung3.pruned.ps = prune_taxa(wh0, left_lung3.ps)
-```
-
-The data was pruned before ordination to remove rare taxa. To be included in the pruned dataset, a taxon must occur at least `r min_counts` times in at least `r sample_proportion*100`% of samples (`r min_samples` samples). 
-
-Before pruning there are `r ntaxa(left_lung3.ps)` taxa, after pruning there are `r ntaxa(left_lung3.pruned.ps)` taxa remaining.
-
-```{r left_lung3_check_metadata, echo=FALSE, results='hide'}
-# Figure out how to label plot
-sample_data(left_lung3.ps) %>% colnames() %>% paste(collapse = ",")
-
-sample_data(left_lung3.ps) %>% select(group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,lung,treated_lung,antibiotic_bool,aspiration_bool) %>% unique
-```
 ### Saline and Whole Gastric (SLU and WLU)
 ```{r, echo=FALSE, results='hide'}
 left_lung3_SLU_WLU.ps = subset_samples(bacteria.ps,
@@ -486,7 +467,6 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ShowFigure(paste0(file_path_sans_ext(left_lung3_SLU_WLU_lefse.file), ".png"))
 ```
 
-# HERE HERE HERE
 ### Whole Gastric with and without Antibiotics (WLU and ASWLU)
 ```{r, echo=FALSE, results='hide'}
 left_lung3_WLU_ASWLU.ps = subset_samples(bacteria.ps,
@@ -578,7 +558,7 @@ ShowFigure(paste0(file_path_sans_ext(left_lung3_WLU_ASWLU_lefse.file), ".png"))
 ```
 
 
-# NOT DONE YET -------------------------------------------------------------------
+# HERE HERE HERE
 # RIGHT lung PAIRED with LEFT lung from same animal (e.g. SLU1 paired with SRU1) 
 ## Part 1
 * Samples
@@ -598,6 +578,8 @@ ShowFigure(paste0(file_path_sans_ext(left_lung3_WLU_ASWLU_lefse.file), ".png"))
     + For RIGHT LUNG samples only excluding SRU group
         + NMDS plot
         + LEfSe
+
+# NOT DONE YET -------------------------------------------------------------------
 
 ## Part 2
 * Samples
@@ -627,8 +609,6 @@ ShowFigure(paste0(file_path_sans_ext(left_lung3_WLU_ASWLU_lefse.file), ".png"))
         + LEfSe
         
 # Appendix
-## Testing
-
 
 ### All Lefse Plots
 ```{r show_all_pngs, echo=FALSE, results = 'asis'}
