@@ -1,0 +1,12 @@
+- [[http://statweb.stanford.edu/~susan/papers/oralRR.html][Reproducible Analysis: Oral Microbiome]]
+- [[http://deneflab.github.io/MicrobeMiseq/demos/mothur_2_phyloseq.html#permanova][Microbial Community Diversity Analysis Tutorial with Phyloseq]]
+- https://rpubs.com/michberr/randomforestmicrobe
+- https://sites.google.com/site/mb3gustame/hypothesis-tests/manova/npmanova
+- http://www.coloss.org/beebook/I/statistical-guidelines/5/1/1
+- http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/betadisper.html
+- https://stats.stackexchange.com/questions/188519/adonis-in-vegan-order-of-variables-or-use-of-strata
+* Methods
+  - [[https://dx.doi.org/10.1186%2Fgb-2011-12-6-r60][LefSE]]
+** Permanova
+   - [[http://thebiobucket.blogspot.com/2011/04/repeat-measure-adonis-lately-i-had-to.html#more][Multivariate Repeated Measurements with adonis]]
+   - [[http://thebiobucket.blogspot.com/2011/08/two-way-permanova-adonis-with-custom.html][Two-Way PERMANOVA (adonis, vegan-Package) with Customized Contrasts]]
