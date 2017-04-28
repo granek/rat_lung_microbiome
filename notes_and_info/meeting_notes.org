@@ -6,6 +6,7 @@
     - [ ] lefSE or other analysis to identify changes (ANOSIM, ADONIS, PERMANOVA, MRPP)
     - [ ] Separate analyses of antibiotic data and aspiration data for
       separate papers
+
 ** Notes
    - Send metadata to Sade for review and annotation
    - possibly split 
