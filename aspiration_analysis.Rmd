@@ -487,6 +487,96 @@ ShowFigure(paste0(file_path_sans_ext(left_lung3_SLU_WLU_lefse.file), ".png"))
 ```
 
 # HERE HERE HERE
+### Whole Gastric with and without Antibiotics (WLU and ASWLU)
+```{r, echo=FALSE, results='hide'}
+left_lung3_WLU_ASWLU.ps = subset_samples(bacteria.ps,
+                               (group == "ASWLU") | 
+                                  ((group == "WLU") & (animal > 12)))
+
+### Pruning Rare Taxa
+min_counts = 2
+sample_proportion = 0.01
+min_samples = ceiling(sample_proportion*nsamples(left_lung3_WLU_ASWLU.ps))
+wh0 = genefilter_sample(left_lung3_WLU_ASWLU.ps, 
+                        filterfun_sample(function(x) x >= min_counts), 
+                        A=min_samples)
+
+left_lung3_WLU_ASWLU.pruned.ps = prune_taxa(wh0, left_lung3_WLU_ASWLU.ps)
+```
+
+The data was pruned before ordination to remove rare taxa. To be included in the pruned dataset, a taxon must occur at least `r min_counts` times in at least `r sample_proportion*100`% of samples (`r min_samples` samples). 
+
+Before pruning there are `r ntaxa(left_lung3_WLU_ASWLU.ps)` taxa, after pruning there are `r ntaxa(left_lung3_WLU_ASWLU.pruned.ps)` taxa remaining.
+
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
+## which (apply(otu_table(left_lung3_WLU_ASWLU.pruned.ps), 1, function(row) all(row ==0 )))
+## Transform to even sampling depth.
+left_lung3_WLU_ASWLU.even.ps = 
+  transform_sample_counts(left_lung3_WLU_ASWLU.pruned.ps, function(x) 1E6 * x/sum(x))
+
+## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
+left_lung3_WLU_ASWLU.even.ps =
+  prune_samples(complete.cases(otu_table(left_lung3_WLU_ASWLU.even.ps)),
+                left_lung3_WLU_ASWLU.even.ps)
+
+set.seed(1)
+left_lung3_WLU_ASWLU.even.nmds <- ordinate(left_lung3_WLU_ASWLU.even.ps, "NMDS", "bray")
+left_lung3_WLU_ASWLU.even.nmds.plot = plot_ordination(left_lung3_WLU_ASWLU.even.ps, left_lung3_WLU_ASWLU.even.nmds, type="samples")
+ggplot(left_lung3_WLU_ASWLU.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = antibiotic)) +
+  annotate("text",x=-Inf,y=-Inf,hjust=0,vjust=0,
+           label= paste("Stress:", left_lung3_WLU_ASWLU.even.nmds$stress, 
+                        "\nConverged:", left_lung3_WLU_ASWLU.even.nmds$converged))
+```
+
+- **Stress:** `r left_lung3_WLU_ASWLU.even.nmds$stress`
+- **Converged:** `r left_lung3_WLU_ASWLU.even.nmds$converged`
+
+#### Permanova
+The ordination plot, suggest that antibiotic treatment does **not** substantially effect the microbial community in the context of whole gastric aspiration. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+left_lung3_WLU_ASWLU.even.otus <- otu_table(left_lung3_WLU_ASWLU.even.ps)
+left_lung3_WLU_ASWLU.even.bray <- vegdist(left_lung3_WLU_ASWLU.even.otus, method="bray")
+left_lung3_WLU_ASWLU.adonis = adonis(left_lung3_WLU_ASWLU.even.bray ~ sample_data(left_lung3_WLU_ASWLU.even.ps)$antibiotic)
+print(left_lung3_WLU_ASWLU.adonis)
+```
+The permanova evaluating the effect of antibiotic treatment in the context of whole gastric aspiration does not find a significant difference (p-value of `r left_lung3_WLU_ASWLU.adonis$aov.tab$"Pr(>F)"[1]`). 
+
+```{r, echo=FALSE}
+left_lung3_WLU_ASWLU.beta <- betadisper(left_lung3_WLU_ASWLU.even.bray, sample_data(left_lung3_WLU_ASWLU.even.ps)$antibiotic)
+left_lung3_WLU_ASWLU.beta.permute = permutest(left_lung3_WLU_ASWLU.beta)
+print(left_lung3_WLU_ASWLU.beta.permute)
+```
+
+The test for test for homogeneity of dispersions yields an insignificant p-value of
+`r left_lung3_WLU_ASWLU.beta.permute$tab$"Pr(>F)"[1]`. 
+
+
+#### LefSE: Whole Gastric with and without Antibiotics
+```{r left_lung3_WLU_ASWLU_generate_lefse, echo=FALSE, results='hide'}
+left_lung3_WLU_ASWLU_lefse.file = file.path(lefse_outdir,"left_lung3_WLU_ASWLU.tsv")
+GenerateLefseOutput(left_lung3_WLU_ASWLU.pruned.ps, 
+                    output_columns = c("antibiotic"),
+                    outfile = left_lung3_WLU_ASWLU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = left_lung3_WLU_ASWLU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(paste0(file_path_sans_ext(left_lung3_WLU_ASWLU_lefse.file), ".png"))
+```
+
 
 # NOT DONE YET -------------------------------------------------------------------
 # RIGHT lung PAIRED with LEFT lung from same animal (e.g. SLU1 paired with SRU1) 
