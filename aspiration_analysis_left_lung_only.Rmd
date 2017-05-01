@@ -535,9 +535,9 @@ print(left_lung3_WLU_ASWLU.beta.permute)
 The test for test for homogeneity of dispersions yields an insignificant p-value of
 `r left_lung3_WLU_ASWLU.beta.permute$tab$"Pr(>F)"[1]`. 
 
-
+<!-- 
 #### LefSE: Whole Gastric with and without Antibiotics
-```{r left_lung3_WLU_ASWLU_generate_lefse, echo=FALSE, results='hide'}
+```{r left_lung3_WLU_ASWLU_generate_lefse, echo=FALSE, results='hide', eval=FALSE}
 left_lung3_WLU_ASWLU_lefse.file = file.path(lefse_outdir,"left_lung3_WLU_ASWLU.tsv")
 GenerateLefseOutput(left_lung3_WLU_ASWLU.pruned.ps, 
                     output_columns = c("antibiotic"),
@@ -546,17 +546,18 @@ GenerateLefseOutput(left_lung3_WLU_ASWLU.pruned.ps,
 Sys.setenv(LEFSE_INPUT_FILE = left_lung3_WLU_ASWLU_lefse.file)
 ```
 
-```{bash, echo=FALSE, results='hide'}
+```{bash, echo=FALSE, results='hide', eval=FALSE}
 source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
-ShowFigure(paste0(file_path_sans_ext(left_lung3_WLU_ASWLU_lefse.file), ".png"))
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
+# ShowFigure(paste0(file_path_sans_ext(left_lung3_WLU_ASWLU_lefse.file), ".png"))
 ```
 
+--> 
 
 # HERE HERE HERE
 # RIGHT lung PAIRED with LEFT lung from same animal (e.g. SLU1 paired with SRU1) 
@@ -610,20 +611,14 @@ ShowFigure(paste0(file_path_sans_ext(left_lung3_WLU_ASWLU_lefse.file), ".png"))
         
 # Appendix
 
-### All Lefse Plots
+## All Lefse Plots
+LefSE has the capacity to generate a lot of plots.  I have incorporated the ones that I think are most relevant above, but am including the full set here to give a different perspective on the data, and in case you want more information about any of them.
 ```{r show_all_pngs, echo=FALSE, results = 'asis'}
 
 for (cur_png in list.files(lefse_outdir, pattern = ".png$",recursive = TRUE,full.names = TRUE)){
   cat(paste0(cur_png,"\n\n\n"))
   ShowFigure(cur_png)
 }
-```
-
-### Test ShowFigure
-```{r, echo=FALSE, include=FALSE, results = 'asis'}
-ShowFigure(file.path(lefse_outdir,"no_dummy.png"))
-
-# ShowFigure(file.path(lefse_outdir,"dummy_file.png"),dummy_figure=TRUE)
 ```
 
 ## Session Info
