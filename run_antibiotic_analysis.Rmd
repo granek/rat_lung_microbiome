@@ -7,12 +7,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 file.path()
 ```
+<!-- 
 
-[comment]: # # Preparation
-[comment]: # 1. Run `preliminary_analyisis.R` first to generate `antibiotic_ps.rds`. 
-[comment]: # 2. Run `antibiotic_run_lefse.sh` which:
-[comment]: #     1. runs `antibiotic_for_lefse.R` to reformat data in lefse format
-[comment]: #     2. runs lefse and generates figures
+# Preparation
+1. Run `preliminary_analyisis.R` first to generate `antibiotic_ps.rds`. 
+2. Run `antibiotic_run_lefse.sh` which:
+    1. runs `antibiotic_for_lefse.R` to reformat data in lefse format
+    2. runs lefse and generates figures
+--> 
 
 ```{r, echo=FALSE, results='hide'}
 ## Load Libraries
