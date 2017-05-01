@@ -51,3 +51,23 @@ GenerateLefseOutput = function(ps,output_columns,outfile){
                 sep="\t", quote = FALSE,
                 row.names = FALSE)
 }
+
+
+PruneTaxa <- function(ps, min_counts = 2, sample_proportion = 0.01) {
+  min_samples = ceiling(sample_proportion*nsamples(ps))
+  wh0 = genefilter_sample(ps, 
+                          filterfun_sample(function(x) x >= min_counts), 
+                          A=min_samples)
+  
+  ps.pruned = prune_taxa(wh0, ps)
+  
+  cat(paste(c("The data was pruned before ordination to remove rare taxa.",
+              "To be included in the pruned dataset, a taxon must occur at least",
+              min_counts,  "times in at least", sample_proportion*100, 
+              "% of samples (", min_samples, "samples).\n", 
+              "Before pruning there are", ntaxa(ps), "taxa, after pruning there are", 
+              ntaxa(ps.pruned), "taxa remaining.")))
+  return(ps)
+}
+
+
