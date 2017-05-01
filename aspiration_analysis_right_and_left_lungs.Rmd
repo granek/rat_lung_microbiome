@@ -1,0 +1,80 @@
+---
+title: "Manuscript 2: Gastric aspiration and the lung microbiome, right and left lungs"
+output: 
+  html_document:
+    toc: true # table of content 
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+    depth: 3  # upto three depths of headings (specified by #, ## and ###)
+    number_sections: true  ## if you want number sections at each table header
+    theme: united  # many options for theme, this one is my favorite.
+    highlight: tango  # specifies the syntax highlighting style
+---
+
+
+
+
+
+
+
+# HERE HERE HERE
+# RIGHT lung PAIRED with LEFT lung from same animal (e.g. SLU1 paired with SRU1) 
+## Part 1
+* Samples
+    + SLU1 through 11 (control)
+    + SRU1 through 11
+    + WLU1 through 12 (whole gastric fluid, group #1)
+    + WRU1 through 12
+    + ILU1 through 12 (irradiated gastric fluid)
+    + IRU1 through 12
+* Analysis
+    + For each right and left lung PAIR (e.g. SLU1 and SRU1)
+        + NMDS plot
+        + LEfSe
+    + For RIGHT LUNG samples only including SRU group, then excluding SRU group
+        + NMDS plot
+        + LEfSe
+    + For RIGHT LUNG samples only excluding SRU group
+        + NMDS plot
+        + LEfSe
+
+# NOT DONE YET -------------------------------------------------------------------
+
+## Part 2
+* Samples
+    + WRU1 through 12 (whole gastric fluid, cohort #1)
+    + WRU13 through 24 (whole gastric fluid, cohort #2)
+* Analysis
+    + NMDS plot
+    + LEfSe 
+
+## Part 3
+* Samples
+    + SLU1 through 11 (control)
+    + SRU1 through 11
+    + WLU13 through 24 (whole gastric fluid, cohort #2)
+    + WRU13 through 24
+    + ASWLU1 through 12 (whole gastric fluid plus antibiotics)
+    + ASWRU1 through 12
+* Analysis
+    + For each right and left lung PAIR (e.g. SLU1 and SRU1)
+        + NMDS plot
+        + LEfSe
+    + For RIGHT LUNG samples only, SRU and WRU groups
+        + NMDS plot
+        + LEfSe
+    + For RIGHT LUNG samples only, WRU and ASWRU groups
+        + NMDS plot
+        + LEfSe
+        
+        
+# Appendix
+
+
+### Test ShowFigure
+```{r, echo=FALSE, include=FALSE, results = 'asis'}
+ShowFigure(file.path(lefse_outdir,"no_dummy.png"))
+
+# ShowFigure(file.path(lefse_outdir,"dummy_file.png"),dummy_figure=TRUE)
+```
