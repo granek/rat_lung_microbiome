@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-RMARKDOWN_FILE="aspiration_analysis.Rmd"
+RMARKDOWN_FILE="aspiration_analysis_left_lung_only.Rmd"
 LEFSE_DIR="workspace/lefse_aspiration"
 
 Rscript preprocess_phyloseq.R
