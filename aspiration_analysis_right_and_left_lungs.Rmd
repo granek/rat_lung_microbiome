@@ -14,6 +14,29 @@ output:
 
 
 
+```{r load_libraries, echo=FALSE, results='hide'}
+
+source("analysis_functions.R")
+
+## Load Libraries
+suppressPackageStartupMessages(library("phyloseq"))
+# suppressPackageStartupMessages(library("ggplot2"))
+# suppressPackageStartupMessages(library("dplyr"))
+# suppressPackageStartupMessages(library("vegan"))
+# suppressPackageStartupMessages(library("stringr"))
+# suppressPackageStartupMessages(library("tidyr"))
+# suppressPackageStartupMessages(library("tibble"))
+# suppressPackageStartupMessages(library("magrittr"))
+# suppressPackageStartupMessages(library("stringr"))
+# suppressPackageStartupMessages(library("tools"))
+
+## Load Data
+bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
+
+## Setup Output
+lefse_outdir = file.path("workspace","lefse_aspiration_left_right")
+dir.create(lefse_outdir, showWarnings = FALSE)
+```
 
 
 
@@ -38,6 +61,92 @@ output:
     + For RIGHT LUNG samples only excluding SRU group
         + NMDS plot
         + LEfSe
+
+### Right vs Left Lung
+#### SLU vs SRU
+```{r, echo=FALSE, results = 'asis'}
+
+right_left1_SLU_SRU.ps = subset_samples(bacteria.ps,
+                               (group %in% c("SLU","SRU")))
+
+right_left1_SLU_SRU.pruned.ps = PruneTaxa(right_left1_SLU_SRU.ps)
+```
+
+
+
+#### NMDS
+```{r, echo=FALSE, results='hide', eval=FALSE}
+## Check if any rows are all zero, because transform_sample_counts will generate NaNs from these
+## which (apply(otu_table(left_lung3_SLU_WLU.pruned.ps), 1, function(row) all(row ==0 )))
+## Transform to even sampling depth.
+left_lung3_SLU_WLU.even.ps = 
+  transform_sample_counts(left_lung3_SLU_WLU.pruned.ps, function(x) 1E6 * x/sum(x))
+
+## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
+left_lung3_SLU_WLU.even.ps =
+  prune_samples(complete.cases(otu_table(left_lung3_SLU_WLU.even.ps)),
+                left_lung3_SLU_WLU.even.ps)
+
+set.seed(1)
+left_lung3_SLU_WLU.even.nmds <- ordinate(left_lung3_SLU_WLU.even.ps, "NMDS", "bray")
+left_lung3_SLU_WLU.even.nmds.plot = plot_ordination(left_lung3_SLU_WLU.even.ps, left_lung3_SLU_WLU.even.nmds, type="samples")
+ggplot(left_lung3_SLU_WLU.even.nmds.plot$data, aes(NMDS1, NMDS2)) +
+  theme_classic() +
+  geom_point(aes(color = sample_aspiration)) +
+  annotate("text",x=-Inf,y=-Inf,hjust=0,vjust=0,
+           label= paste("Stress:", left_lung3_SLU_WLU.even.nmds$stress, 
+                        "\nConverged:", left_lung3_SLU_WLU.even.nmds$converged))
+```
+
+- **Stress:** `r # left_lung3_SLU_WLU.even.nmds$stress`
+- **Converged:** `r # left_lung3_SLU_WLU.even.nmds$converged`
+
+#### Permanova
+The ordination plot, suggest that aspiration treatment effects microbial community. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE, eval=FALSE}
+left_lung3_SLU_WLU.even.otus <- otu_table(left_lung3_SLU_WLU.even.ps)
+left_lung3_SLU_WLU.even.bray <- vegdist(left_lung3_SLU_WLU.even.otus, method="bray")
+left_lung3_SLU_WLU.adonis = adonis(left_lung3_SLU_WLU.even.bray ~ sample_data(left_lung3_SLU_WLU.even.ps)$sample_aspiration)
+print(left_lung3_SLU_WLU.adonis)
+```
+The permanova comparing aspiration with saline compared to Whole Gastric fluid finds a significant difference with a p-value of `r # left_lung3_SLU_WLU.adonis$aov.tab$"Pr(>F)"[1]`. However, the permanova test is sensitive to differences in dispersion between the two groups, so we need to test for homogeneity of dispersion to examine whether differences in dispersion could lead us to falsely conclude that aspriation treatment results in a signifcant differences between the groups. 
+
+```{r, echo=FALSE, eval=FALSE}
+left_lung3_SLU_WLU.beta <- betadisper(left_lung3_SLU_WLU.even.bray, sample_data(left_lung3_SLU_WLU.even.ps)$sample_aspiration)
+left_lung3_SLU_WLU.beta.permute = permutest(left_lung3_SLU_WLU.beta)
+print(left_lung3_SLU_WLU.beta.permute)
+```
+
+The test for test for homogeneity of dispersions yields an insignificant p-value of
+`r # left_lung3_SLU_WLU.beta.permute$tab$"Pr(>F)"[1]`, giving us some confidence that the significant result of the permanova is due to true differences induced by antibiotics, and cannot be explained by differences in dispersion. 
+
+
+#### LefSE: saline vs gastric
+```{r left_lung3_SLU_WLU_generate_lefse, echo=FALSE, results='hide', eval=FALSE}
+left_lung3_SLU_WLU_lefse.file = file.path(lefse_outdir,"left_lung3_SLU_WLU.tsv")
+GenerateLefseOutput(left_lung3_SLU_WLU.pruned.ps, 
+                    output_columns = c("sample_aspiration"),
+                    outfile = left_lung3_SLU_WLU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = left_lung3_SLU_WLU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide', eval=FALSE}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
+ShowFigure(paste0(file_path_sans_ext(left_lung3_SLU_WLU_lefse.file), ".png"))
+```
+
+
+
+## Part 1: Aspiration with Saline,Gastric Fluid, and Irradiated Gastric Fluid
+
 
 # NOT DONE YET -------------------------------------------------------------------
 
