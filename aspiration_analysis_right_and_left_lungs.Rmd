@@ -20,7 +20,7 @@ source("analysis_functions.R")
 
 ## Load Libraries
 suppressPackageStartupMessages(library("phyloseq"))
-# suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("ggplot2"))
 suppressPackageStartupMessages(library("dplyr"))
 # suppressPackageStartupMessages(library("vegan"))
 # suppressPackageStartupMessages(library("stringr"))
@@ -279,11 +279,106 @@ Despite a significant permanova, LefSE does not find any taxa that are significa
 
 
 # HERE HERE HERE
+### IRU
+```{r, echo=FALSE, results = 'asis'}
+IRU.ps = subset_samples(bacteria.ps,
+                                    (group %in% c("IRU")) 
+                                    & (animal <= 12))
+
+IRU.pruned.ps = PruneTaxa(IRU.ps)
+
+## Transform to even sampling depth.
+IRU.even.ps = TransformCounts(IRU.pruned.ps)
+group_var = "group"
+```
+
+
+```{r, echo=FALSE, results='hide'}
+IRU.ps.rel  = transform_sample_counts(IRU.ps, function(x) x / sum(x) )
+IRU.ps.rel.filt = filter_taxa(IRU.ps.rel, function(x) var(x) > 1e-5, TRUE)
+
+IRU.rel.plot = ggplot(psmelt(IRU.ps.rel.filt), 
+           aes_string(x = "animal", y = "Abundance", fill = "Genus")) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_grid(~group) + 
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_text(angle = -90, hjust = 0)) +
+  theme(legend.key.size = unit(0.5, "cm"))
+  # guides(fill=guide_legend(ncol=2))
+print(IRU.rel.plot)
+```
+
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+IRU.nmds.plot = NMDSPlot(IRU.even.ps, grouping = group_var)
+print(IRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
+```
+
 ### Right Lung Only, with Saline
 ```{r, echo=FALSE, results = 'asis'}
 right1_with_SRU.ps = subset_samples(bacteria.ps,
-                               (lung == "right")
-                               & (animal <= 12))
+                                    (group %in% c("SRU", "WRU", "IRU")) 
+                                    & (animal <= 12))
+
+right1_with_SRU.pruned.ps = PruneTaxa(right1_with_SRU.ps)
+
+## Transform to even sampling depth.
+right1_with_SRU.even.ps = TransformCounts(right1_with_SRU.pruned.ps)
+group_var = "group"
+```
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+right1_with_SRU.nmds.plot = NMDSPlot(right1_with_SRU.even.ps, grouping = group_var)
+print(right1_with_SRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
+```
+IRU #8 appears to be an outlier, lets check it out!
+
+
+```{r, echo=FALSE, results='hide'}
+right1_with_SRU.ps.rel  = transform_sample_counts(right1_with_SRU.ps, function(x) x / sum(x) )
+right1_with_SRU.ps.rel.filt = filter_taxa(right1_with_SRU.ps.rel, function(x) var(x) > 1e-4, TRUE)
+
+right1_with_SRU.rel.plot = ggplot(psmelt(right1_with_SRU.ps.rel.filt), 
+           aes_string(x = "animal", y = "Abundance", fill = "Genus")) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_grid(~group) + 
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_text(angle = -90, hjust = 0)) +
+  theme(legend.key.size = unit(0.5, "cm")) +
+  ylab("Relative Abundance")
+  # guides(fill=guide_legend(ncol=2))
+print(right1_with_SRU.rel.plot)
+```
+IRU #8 looks like an outlier by relative abundance.
+
+
+
+```{r, echo=FALSE, results='hide'}
+
+right1_with_SRU.plot = ggplot(psmelt(right1_with_SRU.ps), 
+           aes_string(x = "animal", y = "Abundance", fill = "Genus")) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_grid(~group) + 
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_text(angle = -90, hjust = 0)) +
+  theme(legend.key.size = unit(0.5, "cm")) + 
+  guides(fill=FALSE) + 
+  ylab("Raw Bacterial Counts")
+  # guides(fill=guide_legend(ncol=2))
+print(right1_with_SRU.plot )
+```
+Interestingly, IRU #8 also looks like an outlier by total counts - more than any of the other right lung samples.  It's not clear what is going on with IRU #8, so the simplest thing to do is exclude it and move on . . .
+
+### Right Lung, no Antibiotics, with Saline, excluding IRU #8 (SRU, WRU, IRU)
+
+```{r, echo=FALSE, results = 'asis'}
+right1_with_SRU.ps = subset_samples(bacteria.ps,
+                                    ((group %in% c("SRU", "WRU")) 
+                                    & (animal <= 12)) |
+                                     (group == "IRU" & (animal <= 12) & (animal != 8)) )
 
 right1_with_SRU.pruned.ps = PruneTaxa(right1_with_SRU.ps)
 
