@@ -51,7 +51,7 @@ sample_data(bacteria.ps) %>%
   filter(lung=="right")
 ```
 
-# RIGHT lung PAIRED with LEFT lung from same animal (e.g. SLU1 paired with SRU1) 
+# RIGHT lung Analyses
 ## Part 1
 * Samples
     + SLU1 through 11 (control)
@@ -397,7 +397,83 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ShowFigure(paste0(file_path_sans_ext(right1_with_SRU_lefse.file), ".png"))
 ```
 
+### Right Lung, no Antibiotics, no Saline, excluding IRU #8 (WRU, IRU)
+
+```{r, echo=FALSE, results = 'asis'}
+right1_noSRU.ps = subset_samples(bacteria.ps,
+                                    ((group %in% c("WRU")) 
+                                    & (animal <= 12)) |
+                                     (group == "IRU" & (animal <= 12) & (animal != 8)) )
+
+right1_noSRU.pruned.ps = PruneTaxa(right1_noSRU.ps)
+
+## Transform to even sampling depth.
+right1_noSRU.even.ps = TransformCounts(right1_noSRU.pruned.ps)
+group_var = "group"
+```
+
+```{r, echo=FALSE, results='hide'}
+sample_data(right1_noSRU.ps)
+```
+
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+right1_noSRU.nmds.plot = NMDSPlot(right1_noSRU.even.ps, grouping = group_var)
+print(right1_noSRU.nmds.plot)
+```
+
+#### Permanova
+The ordination plot does not seem to show any treatment differences, but we will check with a permanova analysis. 
+
+```{r, echo=FALSE}
+right1_noSRU.perm = RunPermanova(right1_noSRU.even.ps, group_var)
+right1_noSRU.adonis = right1_noSRU.perm$adonis
+print(right1_noSRU.adonis)
+
+right1_noSRU.beta.permute = right1_noSRU.perm$beta
+print(right1_noSRU.beta.permute)
+```
+
+The permanova comparing right lung samples by aspiration does not have a significant difference (p-value of `r right1_noSRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is also insignificant (p-value of
+`r right1_noSRU.beta.permute$tab$"Pr(>F)"[1]`).
+
+#### LefSE
+```{r right1_noSRU_generate_lefse, echo=FALSE, results='hide'}
+right1_noSRU_lefse.file = file.path(lefse_outdir,"right1_noSRU.tsv")
+GenerateLefseOutput(right1_noSRU.pruned.ps, 
+                    output_columns = c(group_var),
+                    outfile = right1_noSRU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = right1_noSRU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(paste0(file_path_sans_ext(right1_noSRU_lefse.file), ".png"))
+```
+
+Despite the lack of significance from the permanova, LefSE does find once significant taxa.  This should be regarded with skepticism!
+
 # HERE HERE HERE
+
+
+## Part 2
+* Samples
+    + WRU1 through 12 (whole gastric fluid, cohort #1)
+    + WRU13 through 24 (whole gastric fluid, cohort #2)
+* Analysis
+    + NMDS plot
+    + LEfSe 
+    
+
+
 
 ## Part 1: Aspiration with Saline,Gastric Fluid, and Irradiated Gastric Fluid
 
