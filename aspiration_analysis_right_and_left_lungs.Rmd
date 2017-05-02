@@ -279,7 +279,65 @@ Despite a significant permanova, LefSE does not find any taxa that are significa
 
 
 # HERE HERE HERE
+### Right Lung Only, with Saline
+```{r, echo=FALSE, results = 'asis'}
+right1_with_SRU.ps = subset_samples(bacteria.ps,
+                               (lung == "right")
+                               & (animal <= 12))
 
+right1_with_SRU.pruned.ps = PruneTaxa(right1_with_SRU.ps)
+
+## Transform to even sampling depth.
+right1_with_SRU.even.ps = TransformCounts(right1_with_SRU.pruned.ps)
+group_var = "group"
+```
+
+```{r, echo=FALSE, results='hide'}
+sample_data(right1_with_SRU.ps)
+```
+
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+right1_with_SRU.nmds.plot = NMDSPlot(right1_with_SRU.even.ps, grouping = group_var)
+print(right1_with_SRU.nmds.plot)
+```
+
+#### Permanova
+The ordination plot, suggest that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+right1_with_SRU.perm = RunPermanova(right1_with_SRU.even.ps, group_var)
+right1_with_SRU.adonis = right1_with_SRU.perm$adonis
+print(right1_with_SRU.adonis)
+
+right1_with_SRU.beta.permute = right1_with_SRU.perm$beta
+print(right1_with_SRU.beta.permute)
+```
+
+The permanova comparing left lung aspirated with whole gastric fluid to unaspirated right lung from the same animal yields a significant difference (p-value of `r right1_with_SRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is insignificant (p-value of
+`r right1_with_SRU.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
+
+#### LefSE
+```{r right1_with_SRU_generate_lefse, echo=FALSE, results='hide'}
+right1_with_SRU_lefse.file = file.path(lefse_outdir,"right1_with_SRU.tsv")
+GenerateLefseOutput(right1_with_SRU.pruned.ps, 
+                    output_columns = c(group_var),
+                    outfile = right1_with_SRU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = right1_with_SRU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(paste0(file_path_sans_ext(right1_with_SRU_lefse.file), ".png"))
+```
 
 ## Part 1: Aspiration with Saline,Gastric Fluid, and Irradiated Gastric Fluid
 
