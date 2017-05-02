@@ -43,6 +43,12 @@ dir.create(lefse_outdir, showWarnings = FALSE)
 sample_data(bacteria.ps) %>% colnames() %>% paste(collapse = ",")
 
 sample_data(bacteria.ps) %>% select(group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,lung,treated_lung,antibiotic_bool,aspiration_bool) %>% unique
+
+sample_data(bacteria.ps) %>% 
+  select(group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,
+         lung,treated_lung,antibiotic_bool,aspiration_bool) %>% 
+  unique %>%
+  filter(lung=="right")
 ```
 
 # RIGHT lung PAIRED with LEFT lung from same animal (e.g. SLU1 paired with SRU1) 
@@ -151,6 +157,62 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ```{r, echo=FALSE, results = 'asis'}
 ShowFigure(paste0(file_path_sans_ext(right_left1_WLU_WRU_lefse.file), ".png"))
 ```
+
+#### ILU vs IRU
+```{r, echo=FALSE, results = 'asis'}
+right_left1_ILU_IRU.ps = subset_samples(bacteria.ps,
+                               (group %in% c("ILU","IRU")))
+right_left1_ILU_IRU.pruned.ps = PruneTaxa(right_left1_ILU_IRU.ps)
+
+## Transform to even sampling depth.
+right_left1_ILU_IRU.even.ps = TransformCounts(right_left1_ILU_IRU.pruned.ps)
+```
+
+```{r, echo=FALSE, results='hide'}
+right_left1_ILU_IRU.nmds.plot = NMDSPlot(right_left1_ILU_IRU.even.ps, grouping = "lung")
+print(right_left1_ILU_IRU.nmds.plot)
+```
+
+
+##### Permanova
+The ordination plot suggest that aspiration with irradiated whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+right_left1_ILU_IRU.perm = RunPermanova(right_left1_ILU_IRU.even.ps, "lung")
+right_left1_ILU_IRU.adonis = right_left1_ILU_IRU.perm$adonis
+print(right_left1_ILU_IRU.adonis)
+
+right_left1_ILU_IRU.beta.permute = right_left1_ILU_IRU.perm$beta
+print(right_left1_ILU_IRU.beta.permute)
+```
+
+The permanova comparing left lung aspirated with irradiated whole gastric fluid to unaspirated right lung from the same animal yields a significant difference (p-value of `r right_left1_ILU_IRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is insignificant (p-value of
+`r right_left1_ILU_IRU.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
+
+##### LefSE
+```{r right_left1_ILU_IRU_generate_lefse, echo=FALSE, results='hide'}
+right_left1_ILU_IRU_lefse.file = file.path(lefse_outdir,"right_left1_ILU_IRU.tsv")
+GenerateLefseOutput(right_left1_ILU_IRU.pruned.ps, 
+                    output_columns = c("lung"),
+                    outfile = right_left1_ILU_IRU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = right_left1_ILU_IRU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
+ShowFigure(paste0(file_path_sans_ext(right_left1_ILU_IRU_lefse.file), ".png"))
+```
+Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with irradiated whole gastric fluid and the unaspirated right lung.
+
+#### ASWLU vs ASWRU
 
 # HERE HERE HERE
 
