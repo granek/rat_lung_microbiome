@@ -213,6 +213,59 @@ ShowFigure(paste0(file_path_sans_ext(right_left1_ILU_IRU_lefse.file), ".png"))
 Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with irradiated whole gastric fluid and the unaspirated right lung.
 
 #### ASWLU vs ASWRU
+```{r, echo=FALSE, results = 'asis'}
+right_left1_ASWLU_ASWRU.ps = subset_samples(bacteria.ps,
+                               (group %in% c("ASWLU","ASWRU")))
+right_left1_ASWLU_ASWRU.pruned.ps = PruneTaxa(right_left1_ASWLU_ASWRU.ps)
+
+## Transform to even sampling depth.
+right_left1_ASWLU_ASWRU.even.ps = TransformCounts(right_left1_ASWLU_ASWRU.pruned.ps)
+```
+
+```{r, echo=FALSE, results='hide'}
+right_left1_ASWLU_ASWRU.nmds.plot = NMDSPlot(right_left1_ASWLU_ASWRU.even.ps, grouping = "lung")
+print(right_left1_ASWLU_ASWRU.nmds.plot)
+```
+
+
+##### Permanova
+The ordination plot suggest that aspiration with irradiated whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+right_left1_ASWLU_ASWRU.perm = RunPermanova(right_left1_ASWLU_ASWRU.even.ps, "lung")
+right_left1_ASWLU_ASWRU.adonis = right_left1_ASWLU_ASWRU.perm$adonis
+print(right_left1_ASWLU_ASWRU.adonis)
+
+right_left1_ASWLU_ASWRU.beta.permute = right_left1_ASWLU_ASWRU.perm$beta
+print(right_left1_ASWLU_ASWRU.beta.permute)
+```
+
+The permanova comparing left lung aspirated with irradiated whole gastric fluid to unaspirated right lung from the same animal yields a significant difference (p-value of `r right_left1_ASWLU_ASWRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is insignificant (p-value of
+`r right_left1_ASWLU_ASWRU.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
+
+##### LefSE
+```{r right_left1_ASWLU_ASWRU_generate_lefse, echo=FALSE, results='hide', eval=FALSE}
+right_left1_ASWLU_ASWRU_lefse.file = file.path(lefse_outdir,"right_left1_ASWLU_ASWRU.tsv")
+GenerateLefseOutput(right_left1_ASWLU_ASWRU.pruned.ps, 
+                    output_columns = c("lung"),
+                    outfile = right_left1_ASWLU_ASWRU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = right_left1_ASWLU_ASWRU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide', eval=FALSE}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
+ShowFigure(paste0(file_path_sans_ext(right_left1_ASWLU_ASWRU_lefse.file), ".png"))
+```
+Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with  whole gastric fluid and the unaspirated right lung in antibiotic treated animals
+
 
 # HERE HERE HERE
 
