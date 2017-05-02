@@ -26,7 +26,7 @@ suppressPackageStartupMessages(library("dplyr"))
 # suppressPackageStartupMessages(library("stringr"))
 # suppressPackageStartupMessages(library("tidyr"))
 # suppressPackageStartupMessages(library("tibble"))
-# suppressPackageStartupMessages(library("magrittr"))
+suppressPackageStartupMessages(library("magrittr"))
 # suppressPackageStartupMessages(library("stringr"))
 suppressPackageStartupMessages(library("tools"))
 
@@ -464,7 +464,7 @@ Despite the lack of significance from the permanova, LefSE does find once signif
 # HERE HERE HERE
 
 
-## Part 2
+## Part 2: Compare Whole Gastric Fluid Cohorts, Right Lung
 * Samples
     + WRU1 through 12 (whole gastric fluid, cohort #1)
     + WRU13 through 24 (whole gastric fluid, cohort #2)
@@ -472,8 +472,70 @@ Despite the lack of significance from the permanova, LefSE does find once signif
     + NMDS plot
     + LEfSe 
     
+```{r, echo=FALSE, results = 'asis'}
+# subset data
+right_lung2_WRU.ps = subset_samples(bacteria.ps, group == "WRU")
 
+# Create cohort variable
+sample_data(right_lung2_WRU.ps)$cohort = get_variable(right_lung2_WRU.ps, "animal") %>%
+  divide_by_int(13) %>%
+  add(1) %>% 
+  factor
 
+right_lung2_WRU.pruned.ps = PruneTaxa(right_lung2_WRU.ps)
+
+## Transform to even sampling depth.
+right_lung2_WRU.even.ps = TransformCounts(right_lung2_WRU.pruned.ps)
+group_var = "cohort"
+```
+```{r, echo=FALSE, results='hide'}
+sample_data(right_lung2_WRU.ps)
+```
+
+### NMDS
+
+```{r, echo=FALSE, results='hide'}
+right_lung2_WRU.nmds.plot = NMDSPlot(right_lung2_WRU.even.ps, grouping = group_var)
+print(right_lung2_WRU.nmds.plot)
+```
+
+### Permanova
+The ordination plot, suggest some differences between the two cohorts of the whole gastric fluid aspiration treatment. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+right_lung2_WRU.perm = RunPermanova(right_lung2_WRU.even.ps, group_var)
+right_lung2_WRU.adonis = right_lung2_WRU.perm$adonis
+print(right_lung2_WRU.adonis)
+
+right_lung2_WRU.beta.permute = right_lung2_WRU.perm$beta
+print(right_lung2_WRU.beta.permute)
+```
+
+The permanova comparing the right lungs of the two cohorts for the whole gastric fluid aspiration treatment yields a significant difference (p-value of `r right_lung2_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is insignificant (p-value of
+`r right_lung2_WRU.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the cohorts have different microbial communities.
+
+### LefSE
+```{r right_lung2_WRU_generate_lefse, echo=FALSE, results='hide'}
+right_lung2_WRU_lefse.file = file.path(lefse_outdir,"right_lung2_WRU.tsv")
+GenerateLefseOutput(right_lung2_WRU.pruned.ps, 
+                    output_columns = c(group_var),
+                    outfile = right_lung2_WRU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = right_lung2_WRU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
+ShowFigure(paste0(file_path_sans_ext(right_lung2_WRU_lefse.file), ".png"))
+```
+Despite a significant permanova, LefSE does not find any taxa that are significantly differentially abundant between the two whole gastric fluid cohorts in the right lung.
 
 ## Part 1: Aspiration with Saline,Gastric Fluid, and Irradiated Gastric Fluid
 
