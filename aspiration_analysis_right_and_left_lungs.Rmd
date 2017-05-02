@@ -86,7 +86,7 @@ print(right_left1_SLU_SRU.nmds.plot)
 The ordination plot, suggest that aspiration treatment effects microbial community. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
-right_left1_SLU_SRU.perm = RunPermanova(right_left1_SLU_SRU.even.ps)
+right_left1_SLU_SRU.perm = RunPermanova(right_left1_SLU_SRU.even.ps, "lung")
 right_left1_SLU_SRU.adonis = right_left1_SLU_SRU.perm$adonis
 print(right_left1_SLU_SRU.adonis)
 

@@ -101,12 +101,12 @@ NMDSPlot <- function(ps,grouping="aspiration", nmds_seed=1) {
   return(nmds.ggplot)
 }
 
-RunPermanova <- function(even.ps) {
+RunPermanova <- function(even.ps, samvar) {
   even.otus <- otu_table(even.ps)
   even.bray <- vegdist(even.otus, method="bray")
-  even.adonis = adonis(even.bray ~ sample_data(even.ps)$sample_aspiration)
+  even.adonis = adonis(even.bray ~ sample_data(even.ps)[[samvar]])
   
-  even.beta <- betadisper(even.bray, sample_data(even.ps)$sample_aspiration)
+  even.beta <- betadisper(even.bray, sample_data(even.ps)[[samvar]])
   even.beta.permute = permutest(even.beta)
   
   return(list(adonis=even.adonis, beta=even.beta.permute))
