@@ -71,6 +71,8 @@ sample_data(bacteria.ps) %>%
         + NMDS plot
         + LEfSe
 
+> Why are we excluding cohort #2 of WLU and WRU here?
+
 ### Right vs Left Lung
 #### SLU vs SRU
 ```{r, echo=FALSE, results = 'asis'}
@@ -105,10 +107,12 @@ The test for homogeneity of dispersions is also insignificant (p-value of
 `r right_left1_SLU_SRU.beta.permute$tab$"Pr(>F)"[1]`). 
 
 
-#### WLU vs WRU
+#### WLU vs WRU, group1
 ```{r, echo=FALSE, results = 'asis'}
 right_left1_WLU_WRU.ps = subset_samples(bacteria.ps,
-                               (group %in% c("WLU","WRU")))
+                               (group %in% c("WLU","WRU"))
+                               & (animal <= 12))
+
 right_left1_WLU_WRU.pruned.ps = PruneTaxa(right_left1_WLU_WRU.ps)
 
 ## Transform to even sampling depth.
