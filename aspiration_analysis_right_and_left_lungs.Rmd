@@ -21,7 +21,7 @@ source("analysis_functions.R")
 ## Load Libraries
 suppressPackageStartupMessages(library("phyloseq"))
 # suppressPackageStartupMessages(library("ggplot2"))
-# suppressPackageStartupMessages(library("dplyr"))
+suppressPackageStartupMessages(library("dplyr"))
 # suppressPackageStartupMessages(library("vegan"))
 # suppressPackageStartupMessages(library("stringr"))
 # suppressPackageStartupMessages(library("tidyr"))
@@ -36,6 +36,13 @@ bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
 ## Setup Output
 lefse_outdir = file.path("workspace","lefse_aspiration_left_right")
 dir.create(lefse_outdir, showWarnings = FALSE)
+```
+
+```{r check_metadata, echo=FALSE, results='hide'}
+# Figure out how to label plot
+sample_data(bacteria.ps) %>% colnames() %>% paste(collapse = ",")
+
+sample_data(bacteria.ps) %>% select(group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,lung,treated_lung,antibiotic_bool,aspiration_bool) %>% unique
 ```
 
 # RIGHT lung PAIRED with LEFT lung from same animal (e.g. SLU1 paired with SRU1) 
