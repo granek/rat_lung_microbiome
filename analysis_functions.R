@@ -1,6 +1,9 @@
 suppressPackageStartupMessages(library("phyloseq"))
 suppressPackageStartupMessages(library("ggplot2"))
 suppressPackageStartupMessages(library("vegan"))
+suppressPackageStartupMessages(library("stringr"))
+suppressPackageStartupMessages(library("tidyr"))
+suppressPackageStartupMessages(library("tibble"))
 
 ShowFigure = function(plotfile, dummy_figure=FALSE){
   if (file.exists(plotfile)){
