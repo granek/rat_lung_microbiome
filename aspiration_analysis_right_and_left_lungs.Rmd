@@ -76,8 +76,9 @@ right_left1_SLU_SRU.pruned.ps = PruneTaxa(right_left1_SLU_SRU.ps)
 right_left1_SLU_SRU.even.ps = TransformCounts(right_left1_SLU_SRU.pruned.ps)
 ```
 
+##### NMDS
 ```{r, echo=FALSE, results='hide'}
-right_left1_SLU_SRU.nmds.plot = NMDSPlot(right_left1_SLU_SRU.even.ps)
+right_left1_SLU_SRU.nmds.plot = NMDSPlot(right_left1_SLU_SRU.even.ps, grouping = "lung")
 print(right_left1_SLU_SRU.nmds.plot)
 ```
 

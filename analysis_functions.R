@@ -85,13 +85,13 @@ TransformCounts <- function(ps) {
 }
 
 
-NMDSPlot <- function(ps,nmds_seed=1) {
+NMDSPlot <- function(ps,grouping="aspiration", nmds_seed=1) {
   set.seed(nmds_seed)
   ps.nmds <- ordinate(ps, "NMDS", "bray")
   ps.nmds.plot = plot_ordination(ps, ps.nmds, type="samples")
   nmds.ggplot = ggplot(ps.nmds.plot$data, aes(NMDS1, NMDS2)) +
     theme_classic() +
-    geom_point(aes(color = sample_aspiration)) +
+    geom_point(aes_string(color = grouping)) +
     annotate("text",x=-Inf,y=-Inf,hjust=0,vjust=0,
              label= paste("Stress:", ps.nmds$stress, 
                           "\nConverged:", ps.nmds$converged))
