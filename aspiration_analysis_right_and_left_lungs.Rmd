@@ -83,7 +83,7 @@ print(right_left1_SLU_SRU.nmds.plot)
 ```
 
 ##### Permanova
-The ordination plot, suggest that aspiration treatment effects microbial community. A permanova analysis allows us to quantify this. 
+The ordination plot, suggest that aspiration with saline in the left lung does not significantly effect the microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
 right_left1_SLU_SRU.perm = RunPermanova(right_left1_SLU_SRU.even.ps, "lung")
