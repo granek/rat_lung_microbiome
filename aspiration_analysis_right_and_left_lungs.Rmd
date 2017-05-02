@@ -82,11 +82,12 @@ right_left1_SLU_SRU.pruned.ps = PruneTaxa(right_left1_SLU_SRU.ps)
 
 ## Transform to even sampling depth.
 right_left1_SLU_SRU.even.ps = TransformCounts(right_left1_SLU_SRU.pruned.ps)
+group_var = "group"
 ```
 
 ##### NMDS
 ```{r, echo=FALSE, results='hide'}
-right_left1_SLU_SRU.nmds.plot = NMDSPlot(right_left1_SLU_SRU.even.ps, grouping = "lung")
+right_left1_SLU_SRU.nmds.plot = NMDSPlot(right_left1_SLU_SRU.even.ps, grouping = group_var)
 print(right_left1_SLU_SRU.nmds.plot)
 ```
 
@@ -94,7 +95,7 @@ print(right_left1_SLU_SRU.nmds.plot)
 The ordination plot, suggest that aspiration with saline in the left lung does not significantly effect the microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
-right_left1_SLU_SRU.perm = RunPermanova(right_left1_SLU_SRU.even.ps, "lung")
+right_left1_SLU_SRU.perm = RunPermanova(right_left1_SLU_SRU.even.ps, group_var)
 right_left1_SLU_SRU.adonis = right_left1_SLU_SRU.perm$adonis
 print(right_left1_SLU_SRU.adonis)
 
@@ -117,10 +118,14 @@ right_left1_WLU_WRU.pruned.ps = PruneTaxa(right_left1_WLU_WRU.ps)
 
 ## Transform to even sampling depth.
 right_left1_WLU_WRU.even.ps = TransformCounts(right_left1_WLU_WRU.pruned.ps)
+group_var = "group"
+```
+```{r, echo=FALSE, results='hide'}
+sample_data(right_left1_WLU_WRU.ps)
 ```
 
 ```{r, echo=FALSE, results='hide'}
-right_left1_WLU_WRU.nmds.plot = NMDSPlot(right_left1_WLU_WRU.even.ps, grouping = "lung")
+right_left1_WLU_WRU.nmds.plot = NMDSPlot(right_left1_WLU_WRU.even.ps, grouping = group_var)
 print(right_left1_WLU_WRU.nmds.plot)
 ```
 
@@ -129,7 +134,7 @@ print(right_left1_WLU_WRU.nmds.plot)
 The ordination plot, suggest that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
-right_left1_WLU_WRU.perm = RunPermanova(right_left1_WLU_WRU.even.ps, "lung")
+right_left1_WLU_WRU.perm = RunPermanova(right_left1_WLU_WRU.even.ps, group_var)
 right_left1_WLU_WRU.adonis = right_left1_WLU_WRU.perm$adonis
 print(right_left1_WLU_WRU.adonis)
 
@@ -145,7 +150,7 @@ The test for homogeneity of dispersions is insignificant (p-value of
 ```{r right_left1_WLU_WRU_generate_lefse, echo=FALSE, results='hide'}
 right_left1_WLU_WRU_lefse.file = file.path(lefse_outdir,"right_left1_WLU_WRU.tsv")
 GenerateLefseOutput(right_left1_WLU_WRU.pruned.ps, 
-                    output_columns = c("lung"),
+                    output_columns = c(group_var),
                     outfile = right_left1_WLU_WRU_lefse.file)
 
 Sys.setenv(LEFSE_INPUT_FILE = right_left1_WLU_WRU_lefse.file)
@@ -170,10 +175,11 @@ right_left1_ILU_IRU.pruned.ps = PruneTaxa(right_left1_ILU_IRU.ps)
 
 ## Transform to even sampling depth.
 right_left1_ILU_IRU.even.ps = TransformCounts(right_left1_ILU_IRU.pruned.ps)
+group_var = "group"
 ```
 
 ```{r, echo=FALSE, results='hide'}
-right_left1_ILU_IRU.nmds.plot = NMDSPlot(right_left1_ILU_IRU.even.ps, grouping = "lung")
+right_left1_ILU_IRU.nmds.plot = NMDSPlot(right_left1_ILU_IRU.even.ps, grouping = group_var)
 print(right_left1_ILU_IRU.nmds.plot)
 ```
 
@@ -182,7 +188,7 @@ print(right_left1_ILU_IRU.nmds.plot)
 The ordination plot suggest that aspiration with irradiated whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
-right_left1_ILU_IRU.perm = RunPermanova(right_left1_ILU_IRU.even.ps, "lung")
+right_left1_ILU_IRU.perm = RunPermanova(right_left1_ILU_IRU.even.ps, group_var)
 right_left1_ILU_IRU.adonis = right_left1_ILU_IRU.perm$adonis
 print(right_left1_ILU_IRU.adonis)
 
@@ -198,7 +204,7 @@ The test for homogeneity of dispersions is insignificant (p-value of
 ```{r right_left1_ILU_IRU_generate_lefse, echo=FALSE, results='hide'}
 right_left1_ILU_IRU_lefse.file = file.path(lefse_outdir,"right_left1_ILU_IRU.tsv")
 GenerateLefseOutput(right_left1_ILU_IRU.pruned.ps, 
-                    output_columns = c("lung"),
+                    output_columns = c(group_var),
                     outfile = right_left1_ILU_IRU_lefse.file)
 
 Sys.setenv(LEFSE_INPUT_FILE = right_left1_ILU_IRU_lefse.file)
@@ -224,10 +230,11 @@ right_left1_ASWLU_ASWRU.pruned.ps = PruneTaxa(right_left1_ASWLU_ASWRU.ps)
 
 ## Transform to even sampling depth.
 right_left1_ASWLU_ASWRU.even.ps = TransformCounts(right_left1_ASWLU_ASWRU.pruned.ps)
+group_var = "group"
 ```
 
 ```{r, echo=FALSE, results='hide'}
-right_left1_ASWLU_ASWRU.nmds.plot = NMDSPlot(right_left1_ASWLU_ASWRU.even.ps, grouping = "lung")
+right_left1_ASWLU_ASWRU.nmds.plot = NMDSPlot(right_left1_ASWLU_ASWRU.even.ps, grouping = group_var)
 print(right_left1_ASWLU_ASWRU.nmds.plot)
 ```
 
@@ -236,7 +243,7 @@ print(right_left1_ASWLU_ASWRU.nmds.plot)
 The ordination plot suggest that aspiration with irradiated whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
-right_left1_ASWLU_ASWRU.perm = RunPermanova(right_left1_ASWLU_ASWRU.even.ps, "lung")
+right_left1_ASWLU_ASWRU.perm = RunPermanova(right_left1_ASWLU_ASWRU.even.ps, group_var)
 right_left1_ASWLU_ASWRU.adonis = right_left1_ASWLU_ASWRU.perm$adonis
 print(right_left1_ASWLU_ASWRU.adonis)
 
@@ -252,7 +259,7 @@ The test for homogeneity of dispersions is insignificant (p-value of
 ```{r right_left1_ASWLU_ASWRU_generate_lefse, echo=FALSE, results='hide', eval=FALSE}
 right_left1_ASWLU_ASWRU_lefse.file = file.path(lefse_outdir,"right_left1_ASWLU_ASWRU.tsv")
 GenerateLefseOutput(right_left1_ASWLU_ASWRU.pruned.ps, 
-                    output_columns = c("lung"),
+                    output_columns = c(group_var),
                     outfile = right_left1_ASWLU_ASWRU_lefse.file)
 
 Sys.setenv(LEFSE_INPUT_FILE = right_left1_ASWLU_ASWRU_lefse.file)
