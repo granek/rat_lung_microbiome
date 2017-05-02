@@ -1,3 +1,7 @@
+suppressPackageStartupMessages(library("phyloseq"))
+suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("vegan"))
+
 ShowFigure = function(plotfile, dummy_figure=FALSE){
   if (file.exists(plotfile)){
     fig_markdown = paste0("![](", plotfile, ")")
@@ -70,4 +74,41 @@ PruneTaxa <- function(ps, min_counts = 2, sample_proportion = 0.01) {
   return(ps)
 }
 
+
+TransformCounts <- function(ps) {
+  ## Transform to even sampling depth.
+  even.ps = transform_sample_counts(ps, function(x) 1E6 * x/sum(x))
+  
+  ## Remove samples with NaN (samples with all zero rows generate NaN when transformed above because of division by zero)
+  even.ps = prune_samples(complete.cases(otu_table(even.ps)), even.ps)
+  return(even.ps)
+}
+
+
+NMDSPlot <- function(ps,nmds_seed=1) {
+  set.seed(nmds_seed)
+  ps.nmds <- ordinate(ps, "NMDS", "bray")
+  ps.nmds.plot = plot_ordination(ps, ps.nmds, type="samples")
+  nmds.ggplot = ggplot(ps.nmds.plot$data, aes(NMDS1, NMDS2)) +
+    theme_classic() +
+    geom_point(aes(color = sample_aspiration)) +
+    annotate("text",x=-Inf,y=-Inf,hjust=0,vjust=0,
+             label= paste("Stress:", ps.nmds$stress, 
+                          "\nConverged:", ps.nmds$converged))
+  
+  cat(paste(c("- **Stress:**", ps.nmds$stress, 
+              "\n**Converged:**",  ps.nmds$converged)))
+  return(nmds.ggplot)
+}
+
+RunPermanova <- function(even.ps) {
+  even.otus <- otu_table(even.ps)
+  even.bray <- vegdist(even.otus, method="bray")
+  even.adonis = adonis(even.bray ~ sample_data(even.ps)$sample_aspiration)
+  
+  even.beta <- betadisper(even.bray, sample_data(even.ps)$sample_aspiration)
+  even.beta.permute = permutest(even.beta)
+  
+  return(list(adonis=even.adonis, beta=even.beta.permute))
+}
 
