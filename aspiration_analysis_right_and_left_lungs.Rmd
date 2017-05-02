@@ -28,7 +28,7 @@ suppressPackageStartupMessages(library("dplyr"))
 # suppressPackageStartupMessages(library("tibble"))
 # suppressPackageStartupMessages(library("magrittr"))
 # suppressPackageStartupMessages(library("stringr"))
-# suppressPackageStartupMessages(library("tools"))
+suppressPackageStartupMessages(library("tools"))
 
 ## Load Data
 bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
@@ -131,28 +131,28 @@ The permanova comparing left lung aspirated with whole gastric fluid to unaspira
 The test for homogeneity of dispersions is insignificant (p-value of
 `r right_left1_WLU_WRU.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
 
-# HERE HERE HERE
-#### LefSE: saline vs gastric
-```{r left_lung3_SLU_WLU_generate_lefse, echo=FALSE, results='hide', eval=FALSE}
-left_lung3_SLU_WLU_lefse.file = file.path(lefse_outdir,"left_lung3_SLU_WLU.tsv")
-GenerateLefseOutput(left_lung3_SLU_WLU.pruned.ps, 
-                    output_columns = c("sample_aspiration"),
-                    outfile = left_lung3_SLU_WLU_lefse.file)
+##### LefSE
+```{r right_left1_WLU_WRU_generate_lefse, echo=FALSE, results='hide'}
+right_left1_WLU_WRU_lefse.file = file.path(lefse_outdir,"right_left1_WLU_WRU.tsv")
+GenerateLefseOutput(right_left1_WLU_WRU.pruned.ps, 
+                    output_columns = c("lung"),
+                    outfile = right_left1_WLU_WRU_lefse.file)
 
-Sys.setenv(LEFSE_INPUT_FILE = left_lung3_SLU_WLU_lefse.file)
+Sys.setenv(LEFSE_INPUT_FILE = right_left1_WLU_WRU_lefse.file)
 ```
 
-```{bash, echo=FALSE, results='hide', eval=FALSE}
+```{bash, echo=FALSE, results='hide'}
 source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis', eval=FALSE}
-ShowFigure(paste0(file_path_sans_ext(left_lung3_SLU_WLU_lefse.file), ".png"))
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(paste0(file_path_sans_ext(right_left1_WLU_WRU_lefse.file), ".png"))
 ```
 
+# HERE HERE HERE
 
 
 ## Part 1: Aspiration with Saline,Gastric Fluid, and Irradiated Gastric Fluid
@@ -190,6 +190,15 @@ ShowFigure(paste0(file_path_sans_ext(left_lung3_SLU_WLU_lefse.file), ".png"))
         
 # Appendix
 
+## All Lefse Plots
+LefSE has the capacity to generate a lot of plots.  I have incorporated the ones that I think are most relevant above, but am including the full set here to give a different perspective on the data, and in case you want more information about any of them.
+```{r show_all_pngs, echo=FALSE, results = 'asis'}
+
+for (cur_png in list.files(lefse_outdir, pattern = ".png$",recursive = TRUE,full.names = TRUE)){
+  cat(paste0(cur_png,"\n\n\n"))
+  ShowFigure(cur_png)
+}
+```
 
 ### Test ShowFigure
 ```{r, echo=FALSE, include=FALSE, results = 'asis'}
