@@ -82,7 +82,7 @@ right_left1_SLU_SRU.nmds.plot = NMDSPlot(right_left1_SLU_SRU.even.ps, grouping =
 print(right_left1_SLU_SRU.nmds.plot)
 ```
 
-#### Permanova
+##### Permanova
 The ordination plot, suggest that aspiration treatment effects microbial community. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
