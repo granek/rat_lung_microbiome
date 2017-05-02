@@ -98,6 +98,39 @@ The permanova comparing left lung aspirated with saline to paired, unaspirated r
 The test for homogeneity of dispersions is also insignificant (p-value of
 `r right_left1_SLU_SRU.beta.permute$tab$"Pr(>F)"[1]`). 
 
+
+#### WLU vs WRU
+```{r, echo=FALSE, results = 'asis'}
+right_left1_WLU_WRU.ps = subset_samples(bacteria.ps,
+                               (group %in% c("WLU","WRU")))
+right_left1_WLU_WRU.pruned.ps = PruneTaxa(right_left1_WLU_WRU.ps)
+
+## Transform to even sampling depth.
+right_left1_WLU_WRU.even.ps = TransformCounts(right_left1_WLU_WRU.pruned.ps)
+```
+
+```{r, echo=FALSE, results='hide'}
+right_left1_WLU_WRU.nmds.plot = NMDSPlot(right_left1_WLU_WRU.even.ps, grouping = "lung")
+print(right_left1_WLU_WRU.nmds.plot)
+```
+
+
+##### Permanova
+The ordination plot, suggest that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+right_left1_WLU_WRU.perm = RunPermanova(right_left1_WLU_WRU.even.ps, "lung")
+right_left1_WLU_WRU.adonis = right_left1_WLU_WRU.perm$adonis
+print(right_left1_WLU_WRU.adonis)
+
+right_left1_WLU_WRU.beta.permute = right_left1_WLU_WRU.perm$beta
+print(right_left1_WLU_WRU.beta.permute)
+```
+
+The permanova comparing left lung aspirated with whole gastric fluid to unaspirated right lung from the same animal yields a significant difference (p-value of `r right_left1_WLU_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is insignificant (p-value of
+`r right_left1_WLU_WRU.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
+
 # HERE HERE HERE
 #### LefSE: saline vs gastric
 ```{r left_lung3_SLU_WLU_generate_lefse, echo=FALSE, results='hide', eval=FALSE}
