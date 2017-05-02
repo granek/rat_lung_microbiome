@@ -278,44 +278,7 @@ ShowFigure(paste0(file_path_sans_ext(right_left1_ASWLU_ASWRU_lefse.file), ".png"
 Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with  whole gastric fluid and the unaspirated right lung in antibiotic treated animals
 
 
-# HERE HERE HERE
-### IRU
-```{r, echo=FALSE, results = 'asis'}
-IRU.ps = subset_samples(bacteria.ps,
-                                    (group %in% c("IRU")) 
-                                    & (animal <= 12))
-
-IRU.pruned.ps = PruneTaxa(IRU.ps)
-
-## Transform to even sampling depth.
-IRU.even.ps = TransformCounts(IRU.pruned.ps)
-group_var = "group"
-```
-
-
-```{r, echo=FALSE, results='hide'}
-IRU.ps.rel  = transform_sample_counts(IRU.ps, function(x) x / sum(x) )
-IRU.ps.rel.filt = filter_taxa(IRU.ps.rel, function(x) var(x) > 1e-5, TRUE)
-
-IRU.rel.plot = ggplot(psmelt(IRU.ps.rel.filt), 
-           aes_string(x = "animal", y = "Abundance", fill = "Genus")) +
-  geom_bar(stat = "identity", position = "stack") +
-  facet_grid(~group) + 
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_text(angle = -90, hjust = 0)) +
-  theme(legend.key.size = unit(0.5, "cm"))
-  # guides(fill=guide_legend(ncol=2))
-print(IRU.rel.plot)
-```
-
-#### NMDS
-```{r, echo=FALSE, results='hide'}
-IRU.nmds.plot = NMDSPlot(IRU.even.ps, grouping = group_var)
-print(IRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
-```
-
-### Right Lung Only, with Saline
+### Right Lung, no Antibiotics, with Saline (SRU, WRU, IRU)
 ```{r, echo=FALSE, results = 'asis'}
 right1_with_SRU.ps = subset_samples(bacteria.ps,
                                     (group %in% c("SRU", "WRU", "IRU")) 
@@ -332,6 +295,7 @@ group_var = "group"
 right1_with_SRU.nmds.plot = NMDSPlot(right1_with_SRU.even.ps, grouping = group_var)
 print(right1_with_SRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
 ```
+
 IRU #8 appears to be an outlier, lets check it out!
 
 
@@ -351,9 +315,8 @@ right1_with_SRU.rel.plot = ggplot(psmelt(right1_with_SRU.ps.rel.filt),
   # guides(fill=guide_legend(ncol=2))
 print(right1_with_SRU.rel.plot)
 ```
-IRU #8 looks like an outlier by relative abundance.
 
-
+IRU #8 looks like an outlier by relative abundance too.
 
 ```{r, echo=FALSE, results='hide'}
 
@@ -370,7 +333,7 @@ right1_with_SRU.plot = ggplot(psmelt(right1_with_SRU.ps),
   # guides(fill=guide_legend(ncol=2))
 print(right1_with_SRU.plot )
 ```
-Interestingly, IRU #8 also looks like an outlier by total counts - more than any of the other right lung samples.  It's not clear what is going on with IRU #8, so the simplest thing to do is exclude it and move on . . .
+IRU #8 also looks like an outlier by total counts, but interestingly it has **more counts** than any of the other right lung samples.  It's not clear what is going on with IRU #8, so the simplest thing to do is exclude it and move on . . .
 
 ### Right Lung, no Antibiotics, with Saline, excluding IRU #8 (SRU, WRU, IRU)
 
@@ -398,7 +361,7 @@ print(right1_with_SRU.nmds.plot)
 ```
 
 #### Permanova
-The ordination plot, suggest that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
+There does seem to be some weak clustering of samples in the ordination plot. A permanova analysis will allows us to quantify this. 
 
 ```{r, echo=FALSE}
 right1_with_SRU.perm = RunPermanova(right1_with_SRU.even.ps, group_var)
@@ -409,12 +372,12 @@ right1_with_SRU.beta.permute = right1_with_SRU.perm$beta
 print(right1_with_SRU.beta.permute)
 ```
 
-The permanova comparing left lung aspirated with whole gastric fluid to unaspirated right lung from the same animal yields a significant difference (p-value of `r right1_with_SRU.adonis$aov.tab$"Pr(>F)"[1]`). 
-The test for homogeneity of dispersions is insignificant (p-value of
-`r right1_with_SRU.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
+The permanova comparing right lung samples by aspiration does not have a significant difference (p-value of `r right1_with_SRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is also insignificant (p-value of
+`r right1_with_SRU.beta.permute$tab$"Pr(>F)"[1]`).
 
 #### LefSE
-```{r right1_with_SRU_generate_lefse, echo=FALSE, results='hide'}
+```{r right1_with_SRU_generate_lefse, echo=FALSE, results='hide', eval=FALSE}
 right1_with_SRU_lefse.file = file.path(lefse_outdir,"right1_with_SRU.tsv")
 GenerateLefseOutput(right1_with_SRU.pruned.ps, 
                     output_columns = c(group_var),
@@ -423,16 +386,18 @@ GenerateLefseOutput(right1_with_SRU.pruned.ps,
 Sys.setenv(LEFSE_INPUT_FILE = right1_with_SRU_lefse.file)
 ```
 
-```{bash, echo=FALSE, results='hide'}
+```{bash, echo=FALSE, results='hide', eval=FALSE}
 source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(right1_with_SRU_lefse.file), ".png"))
 ```
+
+# HERE HERE HERE
 
 ## Part 1: Aspiration with Saline,Gastric Fluid, and Irradiated Gastric Fluid
 
