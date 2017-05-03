@@ -449,12 +449,50 @@ sample_data(right_lung2_WRU.ps)
 
 ```{r, echo=FALSE, results='hide'}
 right_lung2_WRU.nmds.plot = NMDSPlot(right_lung2_WRU.even.ps, grouping = group_var)
-print(right_lung2_WRU.nmds.plot)
+print(right_lung2_WRU.nmds.plot + geom_text(aes(label=animal),hjust=0, vjust=0))
 ```
 
-### Permanova
-The ordination plot, suggest some differences between the two cohorts of the whole gastric fluid aspiration treatment. A permanova analysis allows us to quantify this. 
+It is somewhat difficult to interpret the NMDS comparing the two WRU cohorts. Most of the samples from both groups of animals cluster together pretty well.  However there are a number of cohort #2 samples that do not.  It seems that these may be  aberant samples, although they could indicate larger dispersion in cohort #2.
 
+#### Examine possible outliers
+
+```{r, echo=FALSE, results='hide'}
+right_lung2_WRU.ps.rel  = transform_sample_counts(right_lung2_WRU.ps, function(x) x / sum(x) )
+right_lung2_WRU.ps.rel.filt = filter_taxa(right_lung2_WRU.ps.rel, function(x) var(x) > 1e-4, TRUE)
+
+right_lung2_WRU.rel.plot = ggplot(psmelt(right_lung2_WRU.ps.rel.filt), 
+           aes_string(x = "animal", y = "Abundance", fill = "Genus")) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_grid(~group) + 
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_text(angle = -90, hjust = 0)) +
+  theme(legend.key.size = unit(0.5, "cm")) +
+  ylab("Relative Abundance")
+  # guides(fill=guide_legend(ncol=2))
+print(right_lung2_WRU.rel.plot)
+```
+
+
+```{r, echo=FALSE, results='hide'}
+
+right_lung2_WRU.plot = ggplot(psmelt(right_lung2_WRU.ps), 
+           aes_string(x = "animal", y = "Abundance", fill = "Genus")) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_grid(~group) + 
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_text(angle = -90, hjust = 0)) +
+  theme(legend.key.size = unit(0.5, "cm")) + 
+  guides(fill=FALSE) + 
+  ylab("Raw Bacterial Counts")
+  # guides(fill=guide_legend(ncol=2))
+print(right_lung2_WRU.plot )
+```
+
+WRU #14, #15, #18, and #19 look like a little different, but do not seem to be extreme outliers.  There does not seem to be a strong justification for excluding them.
+
+### Permanova
 ```{r, echo=FALSE}
 right_lung2_WRU.perm = RunPermanova(right_lung2_WRU.even.ps, group_var)
 right_lung2_WRU.adonis = right_lung2_WRU.perm$adonis
@@ -696,21 +734,15 @@ BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -s3 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(right_left3_WLU_WRU_all_lefse.file), ".png"))
 ```
 
+As with the separated cohorts, combining them finds a significant difference between between lungs aspirated with whole gastric fluid and the untreated right lung from the same animal.  However, the lefse analysis fails to find taxa with significantly different abundance.
 
-
-
-As with cohort #1, WLU vs WRU, cohort #2 also finds a significant difference between lungs aspirated with whole gastric fluid and the untreated right lung from the same animal.  However, the taxa identified as significant are different.  For cohort #2 the significant taxon is an indeterminate genus from the family `r  str_split(sig.taxon, "\\.")[[1]][5]`
-
-
-> Fix text
-
-> Check that cohort subclass is working
-
-
+<!---
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/right_left3_WLU_WRU_all.res
+-->
 
 #### ASWLU vs ASWRU
 ```{r, echo=FALSE, results = 'asis'}
@@ -790,7 +822,7 @@ right3_SRU_WRU.nmds.plot = NMDSPlot(right3_SRU_WRU.even.ps, grouping = group_var
 print(right3_SRU_WRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
 ```
 
-It is difficult to interpret the NMDS comparing the untreated right lungs from animals aspirated with saline vs those aspirated with whole gastric fluid. Most of the samples from both groups of animals cluster together.  However there are a number of right lung samples from the whole gastric aspirated animals that do not.  It is unclear whether these are aberant samples, or simply indicative of larger dispersion in the whole gastric animals. The permanova and beta-dispersion analysis may shed some light on the issue. 
+It is difficult to interpret the NMDS comparing the untreated right lungs from animals aspirated with saline vs those aspirated with whole gastric fluid.  We see the same pattern as above comparing the two different WRU cohorts.  Most of the samples from both groups of animals cluster together.  However there are a number of right lung samples from the whole gastric aspirated animals that do not.  It is unclear whether these are aberant samples, or simply indicative of larger dispersion in the whole gastric animals. The permanova and beta-dispersion analysis may shed some light on the issue. 
 
 #### Permanova
 
@@ -805,9 +837,7 @@ print(right3_SRU_WRU.beta.permute)
 
 The permanova comparing right lung samples by left-lung aspiration does show a significant difference (p-value of `r right3_SRU_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
 The test for homogeneity of dispersions is insignificant (p-value of
-`r right3_SRU_WRU.beta.permute$tab$"Pr(>F)"[1]`).
-
-> Check.  More description?
+`r right3_SRU_WRU.beta.permute$tab$"Pr(>F)"[1]`).  In light of the outliers in WRU cohort #2, it is difficult to interpret this.
 
 #### LefSE
 ```{r, echo=FALSE, results='hide'}
@@ -859,7 +889,7 @@ print(right3_ASWRU_WRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
 
 ```
 
-Here we see the same pattern as above with SRU vs WRU (cohort #2).  Most of the samples from both groups of animals cluster together.  However there are a number of right lung samples from the whole gastric aspirated animals that do not; these are the same four aparent outliers as above.  It is still unclear whether these are aberant samples, or simply indicative of larger dispersion in the whole gastric animals, however the fact that they appear to be outliers compared to two groups give greater credence to the possibility that they are aberant samples.
+Here we see the same pattern as above comparing the two different WRU cohorts, and comparing SRU with WRU cohort #2.  Most of the samples from both groups of animals cluster together.  However there are a number of right lung samples from the whole gastric aspirated animals that do not; these are the same four aparent outliers as above.  It is still unclear whether these are aberant samples, or simply indicative of larger dispersion in the whole gastric animals, however the fact that they appear to be outliers compared to two groups give greater credence to the possibility that they are aberant samples.
 
 #### Permanova
 ```{r, echo=FALSE}
@@ -896,7 +926,7 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ShowFigure(paste0(file_path_sans_ext(right3_ASWRU_WRU_lefse.file), ".png"))
 ```
 
-> check that lefse has no results
+Despite the lack of significance in the permanova, LefSE finds a significant difference in abundance between antibiotic treated and untreated animals in the (unaspirated) right lungs of animals whose left lungs were aspirated with whole gastric fluid.  This difference is in the phylum Bacteroidetes.
 
 # Appendix
 ## All Lefse Plots
