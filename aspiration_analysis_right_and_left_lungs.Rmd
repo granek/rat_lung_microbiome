@@ -223,7 +223,10 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ShowFigure(paste0(file_path_sans_ext(right_left1_ILU_IRU_lefse.file), ".png"))
 ```
 Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with irradiated whole gastric fluid and the unaspirated right lung.
-> CHECK
+<!---
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/right_left1_ILU_IRU.res
+-->
+
 
 ### Right Lung, no Antibiotics, with Saline (SRU, WRU, IRU)
 ```{r, echo=FALSE, results = 'asis'}
@@ -239,7 +242,6 @@ group_var = "group"
 ```
 
 #### NMDS
-> CHECK NMDS header formatting
 ```{r, echo=FALSE, results='hide'}
 right1_with_SRU.nmds.plot = NMDSPlot(right1_with_SRU.even.ps, grouping = group_var)
 print(right1_with_SRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
@@ -283,7 +285,6 @@ print(right1_with_SRU.plot )
 ```
 
 IRU #8 also looks like an outlier by total counts, but interestingly it has _more counts_ than any of the other right lung samples.  It's not clear what is going on with IRU #8, so the simplest thing to do is exclude it and move on . . .
-> CHECK
 
 ### Right Lung, no Antibiotics, with Saline (SRU, WRU, IRU), excluding IRU #8 
 
@@ -343,11 +344,14 @@ BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, results = 'asis',eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(right1_with_SRU_lefse.file), ".png"))
 ```
+As expect for a non-significant permanova, LefSE does not find any taxa that show significantly different abundance.
 
-> CHECK Lefse, then set to "eval=FALSE"
+<!---
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/right1_with_SRU.res
+-->
 
 ### Right Lung, no Antibiotics, no Saline (WRU, IRU), excluding IRU #8
 
@@ -375,7 +379,7 @@ print(right1_noSRU.nmds.plot)
 ```
 
 #### Permanova
-The ordination plot does not seem to show any treatment differences, but we will check with a permanova analysis. 
+The ordination plot does not seem to show any treatment differences, but we will test with a permanova analysis. 
 
 ```{r, echo=FALSE}
 right1_noSRU.perm = RunPermanova(right1_noSRU.even.ps, group_var)
@@ -486,7 +490,13 @@ ShowFigure(paste0(file_path_sans_ext(right_lung2_WRU_lefse.file), ".png"))
 ```
 Despite a significant permanova, LefSE does not find any taxa that are significantly differentially abundant between the two whole gastric fluid cohorts in the right lung.
 
-> CHECK that Lefse is negative
+
+As expected for a non-significant permanova, LefSE does not find any taxa that show significantly different abundance.
+
+<!---
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/right_lung2_WRU.res
+-->
+
 
 ## Part 3
 * Samples
@@ -755,9 +765,11 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ```{r, echo=FALSE, results = 'asis'}
 ShowFigure(paste0(file_path_sans_ext(right_left1_ASWLU_ASWRU_lefse.file), ".png"))
 ```
-Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with  whole gastric fluid and the unaspirated right lung in antibiotic treated animals
+Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with whole gastric fluid and the unaspirated right lung in antibiotic treated animals
 
-> Check that lefse doesn't find anything
+<!---
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/right_left1_ASWLU_ASWRU.res
+-->
 
 ### Right Lung, Saline vs Whole Gastric cohort #2 (SRU vs WRU 13-24)
 ```{r, echo=FALSE, results = 'asis'}
@@ -814,12 +826,13 @@ BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(right3_SRU_WRU_lefse.file), ".png"))
 ```
 
-> Check for no lefse
-
+<!---
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/right3_SRU_WRU.res
+-->
 
 ### Right Lung, Whole Gastric with and without (cohort #2) Antibiotics (WRU 13-24 vs ASWRU)
 
@@ -897,7 +910,14 @@ for (cur_png in list.files(lefse_outdir, pattern = ".png$",recursive = TRUE,full
 ```
 
 
+<!---
+COMMENT!
+-->
+
+
+<!---
 ### Test ShowFigure
+-->
 ```{r, echo=FALSE, include=FALSE, results = 'asis'}
 ShowFigure(file.path(lefse_outdir,"no_dummy.png"))
 
