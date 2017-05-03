@@ -926,6 +926,288 @@ ShowFigure(paste0(file_path_sans_ext(right3_ASWRU_WRU_lefse.file), ".png"))
 
 Despite the lack of significance in the permanova, LefSE finds a significant difference in abundance between antibiotic treated and untreated animals in the (unaspirated) right lungs of animals whose left lungs were aspirated with whole gastric fluid.  This difference is in the phylum Bacteroidetes.
 
+
+## Try dropping WRU cohort #2 outliers
+### WLU vs WRU, cohort #2, drop outliers
+```{r, echo=FALSE, results = 'asis'}
+nooutliers_WLU_WRU_cohort2.ps = subset_samples(bacteria.ps,
+                               (((group == "WLU") & (animal >= 13)) |
+                               ((group == "WRU") & 
+                                  (animal %in% setdiff(seq(13,24), c(14, 15, 18, 19))))))
+
+nooutliers_WLU_WRU_cohort2.pruned.ps = PruneTaxa(nooutliers_WLU_WRU_cohort2.ps)
+
+## Transform to even sampling depth.
+nooutliers_WLU_WRU_cohort2.even.ps = TransformCounts(nooutliers_WLU_WRU_cohort2.pruned.ps)
+group_var = "group"
+```
+```{r, echo=FALSE, results='hide'}
+sample_data(nooutliers_WLU_WRU_cohort2.ps)
+```
+
+##### NMDS
+```{r, echo=FALSE, results='hide'}
+nooutliers_WLU_WRU_cohort2.nmds.plot = NMDSPlot(nooutliers_WLU_WRU_cohort2.even.ps, grouping = group_var)
+print(nooutliers_WLU_WRU_cohort2.nmds.plot)
+```
+
+##### Permanova
+The ordination plot, suggest that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+nooutliers_WLU_WRU_cohort2.perm = RunPermanova(nooutliers_WLU_WRU_cohort2.even.ps, group_var)
+nooutliers_WLU_WRU_cohort2.adonis = nooutliers_WLU_WRU_cohort2.perm$adonis
+print(nooutliers_WLU_WRU_cohort2.adonis)
+
+nooutliers_WLU_WRU_cohort2.beta.permute = nooutliers_WLU_WRU_cohort2.perm$beta
+print(nooutliers_WLU_WRU_cohort2.beta.permute)
+```
+
+The permanova comparing left lung aspirated with whole gastric fluid to unaspirated right lung from the same animal yields a significant difference (p-value of `r nooutliers_WLU_WRU_cohort2.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is insignificant (p-value of
+`r nooutliers_WLU_WRU_cohort2.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
+
+##### LefSE
+```{r nooutliers_WLU_WRU_cohort2_generate_lefse, echo=FALSE, results='hide'}
+nooutliers_WLU_WRU_cohort2_lefse.file = file.path(lefse_outdir,"nooutliers_WLU_WRU_cohort2.tsv")
+GenerateLefseOutput(nooutliers_WLU_WRU_cohort2.pruned.ps, 
+                    output_columns = c(group_var),
+                    outfile = nooutliers_WLU_WRU_cohort2_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = nooutliers_WLU_WRU_cohort2_lefse.file)
+```
+
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(paste0(file_path_sans_ext(nooutliers_WLU_WRU_cohort2_lefse.file), ".png"))
+```
+
+
+```{r nooutliers_WLU_WRU_cohort2_process_lefse, echo=FALSE, eval=FALSE}
+# list.files(paste0(file_path_sans_ext(nooutliers_WLU_WRU_cohort2_lefse.file), ".res"))
+# list.files(basename(nooutliers_WLU_WRU_cohort2_lefse.file))
+# 
+# list.files(dirname(nooutliers_WLU_WRU_cohort2_lefse.file))
+# list.files(nooutliers_WLU_WRU_cohort2_lefse.file)
+# read.delim(nooutliers_WLU_WRU_cohort2_lefse.file) %>% head
+# 
+res.df = paste0(file_path_sans_ext(nooutliers_WLU_WRU_cohort2_lefse.file), ".res") %>%
+  read.delim(header=FALSE, stringsAsFactors = FALSE,
+             col.names= c("taxon","lda_score","class","maybe_lda_threshold", 
+                         "maybe_wilcoxon"))
+sig.taxon = res.df %>% filter(class != "") %>% select(taxon) %>% as.character 
+```
+
+
+
+
+
+### WLU vs WRU, all, drop outliers
+```{r, echo=FALSE, results = 'asis'}
+nooutliers_WLU_WRU_all.ps = subset_samples(bacteria.ps,
+                               ((group == "WLU") |
+                               ((group == "WRU") & 
+                                  !(animal %in% c(14, 15, 18, 19)))))
+
+sample_data(nooutliers_WLU_WRU_all.ps)$cohort = get_variable(nooutliers_WLU_WRU_all.ps, "animal") %>%
+  divide_by_int(13) %>%
+  add(1) %>% 
+  factor
+
+nooutliers_WLU_WRU_all.pruned.ps = PruneTaxa(nooutliers_WLU_WRU_all.ps)
+
+## Transform to even sampling depth.
+nooutliers_WLU_WRU_all.even.ps = TransformCounts(nooutliers_WLU_WRU_all.pruned.ps)
+group_var = "group"
+```
+```{r, echo=FALSE, results='hide'}
+sample_data(nooutliers_WLU_WRU_all.ps)
+```
+
+##### NMDS
+```{r, echo=FALSE, results='hide'}
+nooutliers_WLU_WRU_all.nmds.plot = NMDSPlot(nooutliers_WLU_WRU_all.even.ps, grouping = group_var)
+print(nooutliers_WLU_WRU_all.nmds.plot + aes(shape=cohort))
+```
+
+##### Permanova
+The ordination plot, suggest that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+nooutliers_WLU_WRU_all.perm = RunPermanova(nooutliers_WLU_WRU_all.even.ps, group_var)
+nooutliers_WLU_WRU_all.adonis = nooutliers_WLU_WRU_all.perm$adonis
+print(nooutliers_WLU_WRU_all.adonis)
+
+nooutliers_WLU_WRU_all.beta.permute = nooutliers_WLU_WRU_all.perm$beta
+print(nooutliers_WLU_WRU_all.beta.permute)
+```
+
+The permanova comparing left lung aspirated with whole gastric fluid to unaspirated right lung from the same animal yields a significant difference (p-value of `r nooutliers_WLU_WRU_all.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is insignificant (p-value of
+`r nooutliers_WLU_WRU_all.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
+
+##### LefSE
+```{r nooutliers_WLU_WRU_all_generate_lefse, echo=FALSE, results='hide'}
+nooutliers_WLU_WRU_all_lefse.file = file.path(lefse_outdir,"nooutliers_WLU_WRU_all.tsv")
+GenerateLefseOutput(nooutliers_WLU_WRU_all.pruned.ps, 
+                    output_columns = c(group_var,"cohort"),
+                    outfile = nooutliers_WLU_WRU_all_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = nooutliers_WLU_WRU_all_lefse.file)
+```
+
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -s3 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(paste0(file_path_sans_ext(nooutliers_WLU_WRU_all_lefse.file), ".png"))
+```
+
+As with the separated cohorts, combining them finds a significant difference between between lungs aspirated with whole gastric fluid and the untreated right lung from the same animal.  However, the lefse analysis fails to find taxa with significantly different abundance.
+
+<!---
+
+-->
+
+### Right Lung, Saline vs Whole Gastric cohort #2 (SRU vs WRU 13-24), drop outliers
+```{r, echo=FALSE, results = 'asis'}
+nooutliers_SRU_WRU.ps = subset_samples(bacteria.ps, 
+                                    ((group == "SRU") |
+                                       ((group == "WRU") & 
+                                          (animal %in% setdiff(seq(13,24), c(14, 15, 18, 19))))))
+
+nooutliers_SRU_WRU.pruned.ps = PruneTaxa(nooutliers_SRU_WRU.ps)
+
+## Transform to even sampling depth.
+nooutliers_SRU_WRU.even.ps = TransformCounts(nooutliers_SRU_WRU.pruned.ps)
+group_var = "group"
+```
+
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+nooutliers_SRU_WRU.nmds.plot = NMDSPlot(nooutliers_SRU_WRU.even.ps, grouping = group_var)
+print(nooutliers_SRU_WRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
+```
+
+It is difficult to interpret the NMDS comparing the untreated right lungs from animals aspirated with saline vs those aspirated with whole gastric fluid.  We see the same pattern as above comparing the two different WRU cohorts.  Most of the samples from both groups of animals cluster together.  However there are a number of right lung samples from the whole gastric aspirated animals that do not.  It is unclear whether these are aberant samples, or simply indicative of larger dispersion in the whole gastric animals. The permanova and beta-dispersion analysis may shed some light on the issue. 
+
+#### Permanova
+
+```{r, echo=FALSE}
+nooutliers_SRU_WRU.perm = RunPermanova(nooutliers_SRU_WRU.even.ps, group_var)
+nooutliers_SRU_WRU.adonis = nooutliers_SRU_WRU.perm$adonis
+print(nooutliers_SRU_WRU.adonis)
+
+nooutliers_SRU_WRU.beta.permute = nooutliers_SRU_WRU.perm$beta
+print(nooutliers_SRU_WRU.beta.permute)
+```
+
+The permanova comparing right lung samples by left-lung aspiration does show a significant difference (p-value of `r nooutliers_SRU_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is insignificant (p-value of
+`r nooutliers_SRU_WRU.beta.permute$tab$"Pr(>F)"[1]`).  In light of the outliers in WRU cohort #2, it is difficult to interpret this.
+
+#### LefSE
+```{r, echo=FALSE, results='hide'}
+nooutliers_SRU_WRU_lefse.file = file.path(lefse_outdir,"nooutliers_SRU_WRU.tsv")
+GenerateLefseOutput(nooutliers_SRU_WRU.pruned.ps, 
+                    output_columns = c(group_var),
+                    outfile = nooutliers_SRU_WRU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = nooutliers_SRU_WRU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(paste0(file_path_sans_ext(nooutliers_SRU_WRU_lefse.file), ".png"))
+```
+
+<!---
+-->
+
+### Right Lung, Whole Gastric with and without (cohort #2) Antibiotics (WRU 13-24 vs ASWRU), drop outliers
+
+```{r, echo=FALSE, results = 'asis'}
+nooutliers_ASWRU_WRU.ps = subset_samples(bacteria.ps,
+                                    ((group == "ASWRU") |
+                                       ((group == "WRU") & 
+                                          (animal %in% setdiff(seq(13,24), c(14, 15, 18, 19))))))
+
+nooutliers_ASWRU_WRU.pruned.ps = PruneTaxa(nooutliers_ASWRU_WRU.ps)
+
+## Transform to even sampling depth.
+nooutliers_ASWRU_WRU.even.ps = TransformCounts(nooutliers_ASWRU_WRU.pruned.ps)
+group_var = "group"
+```
+
+```{r, echo=FALSE, results='hide'}
+sample_data(nooutliers_ASWRU_WRU.ps)
+```
+
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+nooutliers_ASWRU_WRU.nmds.plot = NMDSPlot(nooutliers_ASWRU_WRU.even.ps, grouping = group_var)
+print(nooutliers_ASWRU_WRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
+
+```
+
+Here we see the same pattern as above comparing the two different WRU cohorts, and comparing SRU with WRU cohort #2.  Most of the samples from both groups of animals cluster together.  However there are a number of right lung samples from the whole gastric aspirated animals that do not; these are the same four aparent outliers as above.  It is still unclear whether these are aberant samples, or simply indicative of larger dispersion in the whole gastric animals, however the fact that they appear to be outliers compared to two groups give greater credence to the possibility that they are aberant samples.
+
+#### Permanova
+```{r, echo=FALSE}
+nooutliers_ASWRU_WRU.perm = RunPermanova(nooutliers_ASWRU_WRU.even.ps, group_var)
+nooutliers_ASWRU_WRU.adonis = nooutliers_ASWRU_WRU.perm$adonis
+print(nooutliers_ASWRU_WRU.adonis)
+
+nooutliers_ASWRU_WRU.beta.permute = nooutliers_ASWRU_WRU.perm$beta
+print(nooutliers_ASWRU_WRU.beta.permute)
+```
+
+The permanova comparing right lung samples by aspiration does not have a significant difference (p-value of `r nooutliers_ASWRU_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is also insignificant (p-value of
+`r nooutliers_ASWRU_WRU.beta.permute$tab$"Pr(>F)"[1]`).
+
+#### LefSE
+```{r, echo=FALSE, results='hide'}
+nooutliers_ASWRU_WRU_lefse.file = file.path(lefse_outdir,"nooutliers_ASWRU_WRU.tsv")
+GenerateLefseOutput(nooutliers_ASWRU_WRU.pruned.ps, 
+                    output_columns = c(group_var),
+                    outfile = nooutliers_ASWRU_WRU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = nooutliers_ASWRU_WRU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(paste0(file_path_sans_ext(nooutliers_ASWRU_WRU_lefse.file), ".png"))
+```
+
+Despite the lack of significance in the permanova, LefSE finds a significant difference in abundance between antibiotic treated and untreated animals in the (unaspirated) right lungs of animals whose left lungs were aspirated with whole gastric fluid.  This difference is in the phylum Bacteroidetes.
+
+
 # Appendix
 ## All Lefse Plots
 LefSE has the capacity to generate a lot of plots.  I have incorporated the ones that I think are most relevant above, but am including the full set here to give a different perspective on the data, and in case you want more information about any of them.
