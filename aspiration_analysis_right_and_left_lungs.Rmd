@@ -647,6 +647,63 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ShowFigure(paste0(file_path_sans_ext(right_left1_ASWLU_ASWRU_lefse.file), ".png"))
 ```
 Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with  whole gastric fluid and the unaspirated right lung in antibiotic treated animals
+
+
+### Right Lung, Saline vs Whole Gastric cohort #2 (SRU vs WRU 13-24)
+```{r, echo=FALSE, results = 'asis'}
+right3_SRU_WRU.ps = subset_samples(bacteria.ps, 
+                                    ((group == "SRU") |
+                                       ((group == "WRU") & (animal >= 13))))
+
+right3_SRU_WRU.pruned.ps = PruneTaxa(right3_SRU_WRU.ps)
+
+## Transform to even sampling depth.
+right3_SRU_WRU.even.ps = TransformCounts(right3_SRU_WRU.pruned.ps)
+group_var = "group"
+```
+
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+right3_SRU_WRU.nmds.plot = NMDSPlot(right3_SRU_WRU.even.ps, grouping = group_var)
+print(right3_SRU_WRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
+```
+
+#### Permanova
+There does seem to be some weak clustering of samples in the ordination plot. A permanova analysis will allows us to quantify this. 
+
+```{r, echo=FALSE}
+right3_SRU_WRU.perm = RunPermanova(right3_SRU_WRU.even.ps, group_var)
+right3_SRU_WRU.adonis = right3_SRU_WRU.perm$adonis
+print(right3_SRU_WRU.adonis)
+
+right3_SRU_WRU.beta.permute = right3_SRU_WRU.perm$beta
+print(right3_SRU_WRU.beta.permute)
+```
+
+The permanova comparing right lung samples by aspiration does not have a significant difference (p-value of `r right3_SRU_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+The test for homogeneity of dispersions is also insignificant (p-value of
+`r right3_SRU_WRU.beta.permute$tab$"Pr(>F)"[1]`).
+
+#### LefSE
+```{r, echo=FALSE, results='hide'}
+right3_SRU_WRU_lefse.file = file.path(lefse_outdir,"right3_SRU_WRU.tsv")
+GenerateLefseOutput(right3_SRU_WRU.pruned.ps, 
+                    output_columns = c(group_var),
+                    outfile = right3_SRU_WRU_lefse.file)
+
+Sys.setenv(LEFSE_INPUT_FILE = right3_SRU_WRU_lefse.file)
+```
+
+```{bash, echo=FALSE, results='hide'}
+source /opt/conda/bin/activate qiime1
+
+BASENAME="${LEFSE_INPUT_FILE%.*}"
+lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+```
+
+```{r, echo=FALSE, results = 'asis'}
+ShowFigure(paste0(file_path_sans_ext(right3_SRU_WRU_lefse.file), ".png"))
+```
 ## All Lefse Plots
 LefSE has the capacity to generate a lot of plots.  I have incorporated the ones that I think are most relevant above, but am including the full set here to give a different perspective on the data, and in case you want more information about any of them.
 ```{r show_all_pngs, echo=FALSE, results = 'asis'}
