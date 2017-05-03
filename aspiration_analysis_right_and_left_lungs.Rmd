@@ -108,7 +108,7 @@ The test for homogeneity of dispersions is also insignificant (p-value of
 `r right_left1_SLU_SRU.beta.permute$tab$"Pr(>F)"[1]`). 
 
 
-#### WLU vs WRU, group1
+#### WLU vs WRU, cohort #1
 ```{r, echo=FALSE, results = 'asis'}
 right_left1_WLU_WRU.ps = subset_samples(bacteria.ps,
                                (group %in% c("WLU","WRU"))
@@ -591,54 +591,52 @@ The permanova comparing left lung aspirated with saline to paired, unaspirated r
 The test for homogeneity of dispersions is also insignificant (p-value of
 `r right_left1_SLU_SRU.beta.permute$tab$"Pr(>F)"[1]`). 
 
-#### WLU vs WRU, group2
+#### WLU vs WRU, cohort #2
 ```{r, echo=FALSE, results = 'asis'}
-right_left3_WLU_WRU_group2.ps = subset_samples(bacteria.ps,
+right_left3_WLU_WRU_cohort2.ps = subset_samples(bacteria.ps,
                                (group %in% c("WLU","WRU"))
                                & (animal >= 13))
 
-right_left3_WLU_WRU_group2.pruned.ps = PruneTaxa(right_left3_WLU_WRU_group2.ps)
+right_left3_WLU_WRU_cohort2.pruned.ps = PruneTaxa(right_left3_WLU_WRU_cohort2.ps)
 
 ## Transform to even sampling depth.
-right_left3_WLU_WRU_group2.even.ps = TransformCounts(right_left3_WLU_WRU_group2.pruned.ps)
+right_left3_WLU_WRU_cohort2.even.ps = TransformCounts(right_left3_WLU_WRU_cohort2.pruned.ps)
 group_var = "group"
 ```
 ```{r, echo=FALSE, results='hide'}
-sample_data(right_left3_WLU_WRU_group2.ps)
+sample_data(right_left3_WLU_WRU_cohort2.ps)
 ```
-
-#### I am Here Now
 
 ##### NMDS
 ```{r, echo=FALSE, results='hide'}
-right_left3_WLU_WRU_group2.nmds.plot = NMDSPlot(right_left3_WLU_WRU_group2.even.ps, grouping = group_var)
-print(right_left3_WLU_WRU_group2.nmds.plot)
+right_left3_WLU_WRU_cohort2.nmds.plot = NMDSPlot(right_left3_WLU_WRU_cohort2.even.ps, grouping = group_var)
+print(right_left3_WLU_WRU_cohort2.nmds.plot)
 ```
 
 ##### Permanova
 The ordination plot, suggest that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
-right_left3_WLU_WRU_group2.perm = RunPermanova(right_left3_WLU_WRU_group2.even.ps, group_var)
-right_left3_WLU_WRU_group2.adonis = right_left3_WLU_WRU_group2.perm$adonis
-print(right_left3_WLU_WRU_group2.adonis)
+right_left3_WLU_WRU_cohort2.perm = RunPermanova(right_left3_WLU_WRU_cohort2.even.ps, group_var)
+right_left3_WLU_WRU_cohort2.adonis = right_left3_WLU_WRU_cohort2.perm$adonis
+print(right_left3_WLU_WRU_cohort2.adonis)
 
-right_left3_WLU_WRU_group2.beta.permute = right_left3_WLU_WRU_group2.perm$beta
-print(right_left3_WLU_WRU_group2.beta.permute)
+right_left3_WLU_WRU_cohort2.beta.permute = right_left3_WLU_WRU_cohort2.perm$beta
+print(right_left3_WLU_WRU_cohort2.beta.permute)
 ```
 
-The permanova comparing left lung aspirated with whole gastric fluid to unaspirated right lung from the same animal yields a significant difference (p-value of `r right_left3_WLU_WRU_group2.adonis$aov.tab$"Pr(>F)"[1]`). 
+The permanova comparing left lung aspirated with whole gastric fluid to unaspirated right lung from the same animal yields a significant difference (p-value of `r right_left3_WLU_WRU_cohort2.adonis$aov.tab$"Pr(>F)"[1]`). 
 The test for homogeneity of dispersions is insignificant (p-value of
-`r right_left3_WLU_WRU_group2.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
+`r right_left3_WLU_WRU_cohort2.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
 
 ##### LefSE
-```{r right_left3_WLU_WRU_group2_generate_lefse, echo=FALSE, results='hide'}
-right_left3_WLU_WRU_group2_lefse.file = file.path(lefse_outdir,"right_left3_WLU_WRU_group2.tsv")
-GenerateLefseOutput(right_left3_WLU_WRU_group2.pruned.ps, 
+```{r right_left3_WLU_WRU_cohort2_generate_lefse, echo=FALSE, results='hide'}
+right_left3_WLU_WRU_cohort2_lefse.file = file.path(lefse_outdir,"right_left3_WLU_WRU_cohort2.tsv")
+GenerateLefseOutput(right_left3_WLU_WRU_cohort2.pruned.ps, 
                     output_columns = c(group_var),
-                    outfile = right_left3_WLU_WRU_group2_lefse.file)
+                    outfile = right_left3_WLU_WRU_cohort2_lefse.file)
 
-Sys.setenv(LEFSE_INPUT_FILE = right_left3_WLU_WRU_group2_lefse.file)
+Sys.setenv(LEFSE_INPUT_FILE = right_left3_WLU_WRU_cohort2_lefse.file)
 ```
 
 
@@ -650,19 +648,19 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ```
 
 ```{r, echo=FALSE, results = 'asis'}
-ShowFigure(paste0(file_path_sans_ext(right_left3_WLU_WRU_group2_lefse.file), ".png"))
+ShowFigure(paste0(file_path_sans_ext(right_left3_WLU_WRU_cohort2_lefse.file), ".png"))
 ```
 
 
-```{r right_left3_WLU_WRU_group2_process_lefse, echo=FALSE}
-# list.files(paste0(file_path_sans_ext(right_left3_WLU_WRU_group2_lefse.file), ".res"))
-# list.files(basename(right_left3_WLU_WRU_group2_lefse.file))
+```{r right_left3_WLU_WRU_cohort2_process_lefse, echo=FALSE}
+# list.files(paste0(file_path_sans_ext(right_left3_WLU_WRU_cohort2_lefse.file), ".res"))
+# list.files(basename(right_left3_WLU_WRU_cohort2_lefse.file))
 # 
-# list.files(dirname(right_left3_WLU_WRU_group2_lefse.file))
-# list.files(right_left3_WLU_WRU_group2_lefse.file)
-# read.delim(right_left3_WLU_WRU_group2_lefse.file) %>% head
+# list.files(dirname(right_left3_WLU_WRU_cohort2_lefse.file))
+# list.files(right_left3_WLU_WRU_cohort2_lefse.file)
+# read.delim(right_left3_WLU_WRU_cohort2_lefse.file) %>% head
 # 
-res.df = paste0(file_path_sans_ext(right_left3_WLU_WRU_group2_lefse.file), ".res") %>%
+res.df = paste0(file_path_sans_ext(right_left3_WLU_WRU_cohort2_lefse.file), ".res") %>%
   read.delim(header=FALSE, stringsAsFactors = FALSE,
              col.names= c("taxon","lda_score","class","maybe_lda_threshold", 
                          "maybe_wilcoxon"))
