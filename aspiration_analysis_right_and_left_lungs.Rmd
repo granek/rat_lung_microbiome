@@ -161,6 +161,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis'}
@@ -217,6 +219,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
@@ -342,6 +346,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis',eval=FALSE}
@@ -523,6 +529,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
@@ -644,6 +652,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis'}
@@ -726,6 +736,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -s3 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
@@ -787,6 +799,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
@@ -849,6 +863,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
@@ -916,6 +932,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis'}
@@ -981,6 +999,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
@@ -1052,6 +1072,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -s3 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
@@ -1115,6 +1137,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
@@ -1184,6 +1208,8 @@ source /opt/conda/bin/activate qiime1
 
 BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+bash run_lefse.sh ${BASENAME}.in
 ```
 
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
