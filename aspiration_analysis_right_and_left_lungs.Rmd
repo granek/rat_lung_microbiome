@@ -71,7 +71,7 @@ sample_data(bacteria.ps) %>%
         + NMDS plot
         + LEfSe
 
-> Why are we excluding cohort #2 of WLU and WRU here?
+> Why are we excluding cohort #2 of WLU and WRU here? Were the cohorts run in separate batches?
 
 ### Right vs Left Lung
 #### SLU vs SRU
@@ -347,7 +347,7 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ```{r, echo=FALSE, results = 'asis',eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(right1_with_SRU_lefse.file), ".png"))
 ```
-As expect for a non-significant permanova, LefSE does not find any taxa that show significantly different abundance.
+As expected for a non-significant permanova, LefSE does not find any taxa that show significantly different abundance.
 
 <!---
 Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/right1_with_SRU.res
@@ -528,9 +528,6 @@ ShowFigure(paste0(file_path_sans_ext(right_lung2_WRU_lefse.file), ".png"))
 ```
 Despite a significant permanova, LefSE does not find any taxa that are significantly differentially abundant between the two whole gastric fluid cohorts in the right lung.
 
-
-As expected for a non-significant permanova, LefSE does not find any taxa that show significantly different abundance.
-
 <!---
 Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/right_lung2_WRU.res
 -->
@@ -668,7 +665,7 @@ if(file.exists(right_left3_WLU_WRU_cohort2_lefse.res)){
 }
 ```
 
-As with cohort #1, WLU vs WRU, cohort #2 also finds a significant difference between lungs aspirated with whole gastric fluid and the untreated right lung from the same animal.  However, the taxa identified as significant are different.  For cohort #2 the significant taxon is an indeterminate genus from the family `r  sig.genus`
+As with cohort #1, WLU vs WRU, cohort #2 also finds a significant difference between lungs aspirated with whole gastric fluid and the untreated right lung from the same animal.  However, the taxa identified as significant are different.  For cohort #2 the significant taxon is an indeterminate (thus the "NA" in the plot) genus from the family `r  sig.genus`
 
 #### WLU vs WRU, all
 ```{r, echo=FALSE, results = 'asis'}
@@ -695,10 +692,9 @@ sample_data(right_left3_WLU_WRU_all.ps)
 right_left3_WLU_WRU_all.nmds.plot = NMDSPlot(right_left3_WLU_WRU_all.even.ps, grouping = group_var)
 print(right_left3_WLU_WRU_all.nmds.plot + aes(shape=cohort))
 ```
-
-##### Permanova
 The ordination plot, suggest that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
 
+##### Permanova
 ```{r, echo=FALSE}
 right_left3_WLU_WRU_all.perm = RunPermanova(right_left3_WLU_WRU_all.even.ps, group_var)
 right_left3_WLU_WRU_all.adonis = right_left3_WLU_WRU_all.perm$adonis
@@ -757,8 +753,9 @@ right_left1_ASWLU_ASWRU.nmds.plot = NMDSPlot(right_left1_ASWLU_ASWRU.even.ps, gr
 print(right_left1_ASWLU_ASWRU.nmds.plot)
 ```
 
-##### Permanova
 The ordination plot suggest that, in antibiotic treated animals, aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
+
+##### Permanova
 
 ```{r, echo=FALSE}
 right_left1_ASWLU_ASWRU.perm = RunPermanova(right_left1_ASWLU_ASWRU.even.ps, group_var)
@@ -790,7 +787,7 @@ BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(right_left1_ASWLU_ASWRU_lefse.file), ".png"))
 ```
 Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with whole gastric fluid and the unaspirated right lung in antibiotic treated animals
@@ -855,6 +852,7 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ```{r, echo=FALSE, results = 'asis', eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(right3_SRU_WRU_lefse.file), ".png"))
 ```
+Despite a significant permanova, LefSE does not find any taxa that are significantly different between the left lung aspirated with whole gastric fluid and the unaspirated right lung in antibiotic treated animals
 
 <!---
 Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/right3_SRU_WRU.res
@@ -949,9 +947,9 @@ nooutliers_WLU_WRU_cohort2.nmds.plot = NMDSPlot(nooutliers_WLU_WRU_cohort2.even.
 print(nooutliers_WLU_WRU_cohort2.nmds.plot)
 ```
 
-##### Permanova
 The ordination plot, suggest that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the untreated right lung. A permanova analysis allows us to quantify this. 
 
+##### Permanova
 ```{r, echo=FALSE}
 nooutliers_WLU_WRU_cohort2.perm = RunPermanova(nooutliers_WLU_WRU_cohort2.even.ps, group_var)
 nooutliers_WLU_WRU_cohort2.adonis = nooutliers_WLU_WRU_cohort2.perm$adonis
@@ -983,7 +981,7 @@ BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(nooutliers_WLU_WRU_cohort2_lefse.file), ".png"))
 ```
 Despite a significant permanova, LefSE does not find any taxa with significantly differential abundance.  Note that this is a different result than with the outliers included - in that case the permanova is also significant, but LefSE finds a differentially abundant taxon. This result with outliers excluded calls that result into question.
