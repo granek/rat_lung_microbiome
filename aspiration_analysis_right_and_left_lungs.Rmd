@@ -12,7 +12,10 @@ output:
     highlight: tango  # specifies the syntax highlighting style
 ---
 
-
+<!---
+From commandline run with the following:
+Rscript -e "library(knitr); rmarkdown::render('aspiration_analysis_right_and_left_lungs.Rmd')"
+-->
 
 ```{r load_libraries, echo=FALSE, results='hide'}
 
@@ -31,7 +34,11 @@ suppressPackageStartupMessages(library("magrittr"))
 suppressPackageStartupMessages(library("tools"))
 
 ## Load Data
-bacteria.ps = readRDS(file.path("workspace", "bacteria_ps.rds"))
+bacteria_ps.rds = file.path("workspace", "bacteria_ps.rds")
+if (!file.exists(bacteria_ps.rds)){
+  source("preprocess_phyloseq.R")
+}
+bacteria.ps = readRDS(bacteria_ps.rds)
 
 ## Setup Output
 lefse_outdir = file.path("workspace","lefse_aspiration_left_right")
