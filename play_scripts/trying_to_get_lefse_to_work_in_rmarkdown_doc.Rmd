@@ -7,6 +7,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+
+# This WORKS!!!
+```{bash}
+source /opt/conda/bin/activate qiime1
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+
+Rscript -e "R.home()"
+run_lefse.py -h
+```
+
 ## R Markdown
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
@@ -80,7 +91,6 @@ run_lefse.py -h
 source /opt/conda/bin/activate qiime1
 printenv > rstudio_conda_printenv.txt
 ```
-
 
 
 ```{bash}
