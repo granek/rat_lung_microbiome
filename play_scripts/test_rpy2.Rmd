@@ -1,0 +1,54 @@
+
+# conda create -n my_rpy python=2.7 rpy2 -c r  && conda clean -tipsy
+
+```{bash, eval=FALSE}
+source /opt/conda/bin/activate my_rpy
+# python -c "import rpy2.robjects as robjects; print(robjects.r['R.home']()[0])"
+
+# python test_rpy2.py
+```
+
+
+```{bash, eval=FALSE}
+source /opt/conda/bin/activate my_rpy
+# python -c "import rpy2.robjects as robjects; print(robjects.r['R.home']()[0])"
+R_HOME="/opt/conda/envs/my_rpy/lib/R"
+
+python test_rpy2.py
+```
+
+
+```{bash, eval=FALSE}
+source /opt/conda/bin/activate lefse
+# python -c "import rpy2.robjects as robjects; print(robjects.r['R.home']()[0])"
+python -c "import rpy2.robjects as robjects"
+
+# python test_rpy2.py
+```
+
+
+```{bash, eval=FALSE}
+source /opt/conda/bin/activate lefse
+# python -c "import rpy2.robjects as robjects; print(robjects.r['R.home']()[0])"
+R_HOME="/opt/conda/envs/lefse/lib/R"
+python -c "import rpy2.robjects as robjects"
+
+# python test_rpy2.py
+```
+
+```{bash}
+source /opt/conda/bin/activate lefse
+# R_HOME="/opt/conda/envs/lefse/lib/R"
+
+python -m rpy2.tests
+```
+
+
+```{bash, eval=FALSE}
+source /opt/conda/bin/activate lefse
+# python -c "import rpy2.robjects as robjects; print(robjects.r['R.home']()[0])"
+R_HOME="/opt/conda/envs/lefse/lib/R"
+python -c "import rpy2.robjects as robjects"
+
+# python test_rpy2.py
+```

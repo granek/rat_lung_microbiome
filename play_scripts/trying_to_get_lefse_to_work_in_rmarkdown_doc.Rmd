@@ -15,8 +15,37 @@ source /opt/conda/bin/activate qiime1
 R_HOME="/opt/conda/envs/qiime1/lib64/R"
 
 Rscript -e "R.home()"
+echo "blah"
+```
+
+
+```{bash}
+source /opt/conda/bin/activate qiime1
+# R_HOME="/opt/conda/envs/qiime1/lib64/R"
+
+Rscript -e "R.home()"
 run_lefse.py -h
 ```
+
+
+```{bash}
+source /opt/conda/bin/activate qiime1
+R_HOME="/opt/conda/envs/qiime1/lib64/R"
+
+Rscript -e "R.home()"
+run_lefse.py -h
+```
+
+
+```{bash}
+echo "blah"
+source /opt/conda/bin/activate qiime1
+python -c "import rpy2.robjects as robjects; print(robjects.r['R.home']()[0])"
+# R_HOME="/opt/conda/envs/my_rpy/lib/R"
+
+# python test_rpy2.py
+```
+
 
 ## R Markdown
 
