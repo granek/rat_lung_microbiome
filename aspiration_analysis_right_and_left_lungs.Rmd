@@ -927,7 +927,7 @@ ShowFigure(paste0(file_path_sans_ext(right3_ASWRU_WRU_lefse.file), ".png"))
 Despite the lack of significance in the permanova, LefSE finds a significant difference in abundance between antibiotic treated and untreated animals in the (unaspirated) right lungs of animals whose left lungs were aspirated with whole gastric fluid.  This difference is in the phylum Bacteroidetes.
 
 
-## Try dropping WRU cohort #2 outliers
+## Drop Outliers from WRU cohort #2 
 ### WLU vs WRU, cohort #2, drop outliers
 ```{r, echo=FALSE, results = 'asis'}
 nooutliers_WLU_WRU_cohort2.ps = subset_samples(bacteria.ps,
@@ -988,26 +988,11 @@ lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000
 ```{r, echo=FALSE, results = 'asis'}
 ShowFigure(paste0(file_path_sans_ext(nooutliers_WLU_WRU_cohort2_lefse.file), ".png"))
 ```
+Despite a significant permanova, LefSE does not find any taxa with significantly differential abundance.  Note that this is a different result than with the outliers included - in that case the permanova is also significant, but LefSE finds a differentially abundant taxon. This result with outliers excluded calls that result into question.
 
-
-```{r nooutliers_WLU_WRU_cohort2_process_lefse, echo=FALSE, eval=FALSE}
-# list.files(paste0(file_path_sans_ext(nooutliers_WLU_WRU_cohort2_lefse.file), ".res"))
-# list.files(basename(nooutliers_WLU_WRU_cohort2_lefse.file))
-# 
-# list.files(dirname(nooutliers_WLU_WRU_cohort2_lefse.file))
-# list.files(nooutliers_WLU_WRU_cohort2_lefse.file)
-# read.delim(nooutliers_WLU_WRU_cohort2_lefse.file) %>% head
-# 
-res.df = paste0(file_path_sans_ext(nooutliers_WLU_WRU_cohort2_lefse.file), ".res") %>%
-  read.delim(header=FALSE, stringsAsFactors = FALSE,
-             col.names= c("taxon","lda_score","class","maybe_lda_threshold", 
-                         "maybe_wilcoxon"))
-sig.taxon = res.df %>% filter(class != "") %>% select(taxon) %>% as.character 
-```
-
-
-
-
+<!---
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/nooutliers_WLU_WRU_cohort2.res
+-->
 
 ### WLU vs WRU, all, drop outliers
 ```{r, echo=FALSE, results = 'asis'}
@@ -1071,14 +1056,14 @@ BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -s3 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(nooutliers_WLU_WRU_all_lefse.file), ".png"))
 ```
 
 As with the separated cohorts, combining them finds a significant difference between between lungs aspirated with whole gastric fluid and the untreated right lung from the same animal.  However, the lefse analysis fails to find taxa with significantly different abundance.
 
 <!---
-
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/nooutliers_WLU_WRU_all.res
 -->
 
 ### Right Lung, Saline vs Whole Gastric cohort #2 (SRU vs WRU 13-24), drop outliers
@@ -1101,10 +1086,9 @@ nooutliers_SRU_WRU.nmds.plot = NMDSPlot(nooutliers_SRU_WRU.even.ps, grouping = g
 print(nooutliers_SRU_WRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust=0))
 ```
 
-It is difficult to interpret the NMDS comparing the untreated right lungs from animals aspirated with saline vs those aspirated with whole gastric fluid.  We see the same pattern as above comparing the two different WRU cohorts.  Most of the samples from both groups of animals cluster together.  However there are a number of right lung samples from the whole gastric aspirated animals that do not.  It is unclear whether these are aberant samples, or simply indicative of larger dispersion in the whole gastric animals. The permanova and beta-dispersion analysis may shed some light on the issue. 
+Without the outliers from WRU cohort #2, the NMDS plot shows a clear separation betweeen the untreated right lungs from animals aspirated with saline vs those aspirated with whole gastric fluid.
 
 #### Permanova
-
 ```{r, echo=FALSE}
 nooutliers_SRU_WRU.perm = RunPermanova(nooutliers_SRU_WRU.even.ps, group_var)
 nooutliers_SRU_WRU.adonis = nooutliers_SRU_WRU.perm$adonis
@@ -1116,7 +1100,7 @@ print(nooutliers_SRU_WRU.beta.permute)
 
 The permanova comparing right lung samples by left-lung aspiration does show a significant difference (p-value of `r nooutliers_SRU_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
 The test for homogeneity of dispersions is insignificant (p-value of
-`r nooutliers_SRU_WRU.beta.permute$tab$"Pr(>F)"[1]`).  In light of the outliers in WRU cohort #2, it is difficult to interpret this.
+`r nooutliers_SRU_WRU.beta.permute$tab$"Pr(>F)"[1]`).
 
 #### LefSE
 ```{r, echo=FALSE, results='hide'}
@@ -1135,11 +1119,14 @@ BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(nooutliers_SRU_WRU_lefse.file), ".png"))
 ```
 
+Despite a significant permanova, LefSE does not find any taxa with significantly differential abundance.  This is the same as with the outliers included.
+
 <!---
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/nooutliers_SRU_WRU.res
 -->
 
 ### Right Lung, Whole Gastric with and without (cohort #2) Antibiotics (WRU 13-24 vs ASWRU), drop outliers
@@ -1168,7 +1155,7 @@ print(nooutliers_ASWRU_WRU.nmds.plot +geom_text(aes(label=animal),hjust=0, vjust
 
 ```
 
-Here we see the same pattern as above comparing the two different WRU cohorts, and comparing SRU with WRU cohort #2.  Most of the samples from both groups of animals cluster together.  However there are a number of right lung samples from the whole gastric aspirated animals that do not; these are the same four aparent outliers as above.  It is still unclear whether these are aberant samples, or simply indicative of larger dispersion in the whole gastric animals, however the fact that they appear to be outliers compared to two groups give greater credence to the possibility that they are aberant samples.
+Dropping the outliers from WRU allows us to better visualize the remaining samples, the NMDS seems to indicate no clear difference between WRU and ASWRU, indicating that antibiotic treatment doesn't have a major effect on non-aspirated lungs.
 
 #### Permanova
 ```{r, echo=FALSE}
@@ -1201,12 +1188,15 @@ BASENAME="${LEFSE_INPUT_FILE%.*}"
 lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
 ```
 
-```{r, echo=FALSE, results = 'asis'}
+```{r, echo=FALSE, results = 'asis', eval=FALSE}
 ShowFigure(paste0(file_path_sans_ext(nooutliers_ASWRU_WRU_lefse.file), ".png"))
 ```
 
-Despite the lack of significance in the permanova, LefSE finds a significant difference in abundance between antibiotic treated and untreated animals in the (unaspirated) right lungs of animals whose left lungs were aspirated with whole gastric fluid.  This difference is in the phylum Bacteroidetes.
+As expected, due to the lack of significance in the permanova, LefSE does not find a significant difference in abundance between antibiotic treated and untreated animals in the (unaspirated) right lungs of animals whose left lungs were aspirated with whole gastric fluid.  **Note** that this is a different result than with the outliers included - in that case the permanova is still non-significant, but LefSE finds a differentially abundant taxon.  This result with outliers excluded calls that result into question.
 
+<!---
+Confirmed: No differentially abundant features found in workspace/lefse_aspiration_left_right/nooutliers_ASWRU_WRU.res
+-->
 
 # Appendix
 ## All Lefse Plots
