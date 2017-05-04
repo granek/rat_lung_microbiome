@@ -653,24 +653,22 @@ ShowFigure(paste0(file_path_sans_ext(right_left3_WLU_WRU_cohort2_lefse.file), ".
 
 
 ```{r right_left3_WLU_WRU_cohort2_process_lefse, echo=FALSE}
-# list.files(paste0(file_path_sans_ext(right_left3_WLU_WRU_cohort2_lefse.file), ".res"))
-# list.files(basename(right_left3_WLU_WRU_cohort2_lefse.file))
-# 
-# list.files(dirname(right_left3_WLU_WRU_cohort2_lefse.file))
-# list.files(right_left3_WLU_WRU_cohort2_lefse.file)
-# read.delim(right_left3_WLU_WRU_cohort2_lefse.file) %>% head
-# 
-res.df = paste0(file_path_sans_ext(right_left3_WLU_WRU_cohort2_lefse.file), ".res") %>%
+right_left3_WLU_WRU_cohort2_lefse.res = paste0(
+  file_path_sans_ext(right_left3_WLU_WRU_cohort2_lefse.file), ".res")
+
+if(file.exists(right_left3_WLU_WRU_cohort2_lefse.res)){
+  res.df = paste0(file_path_sans_ext(right_left3_WLU_WRU_cohort2_lefse.file), ".res") %>%
   read.delim(header=FALSE, stringsAsFactors = FALSE,
              col.names= c("taxon","lda_score","class","maybe_lda_threshold", 
                          "maybe_wilcoxon"))
-sig.taxon = res.df %>% filter(class != "") %>% select(taxon) %>% as.character 
+  sig.taxon = res.df %>% filter(class != "") %>% select(taxon) %>% as.character
+  sig.genus = str_split(sig.taxon, "\\.")[[1]][5]
+} else {
+  sig.genus = "Need to run LefSE"
+}
 ```
 
-As with cohort #1, WLU vs WRU, cohort #2 also finds a significant difference between lungs aspirated with whole gastric fluid and the untreated right lung from the same animal.  However, the taxa identified as significant are different.  For cohort #2 the significant taxon is an indeterminate genus from the family `r  str_split(sig.taxon, "\\.")[[1]][5]`
-
-
-
+As with cohort #1, WLU vs WRU, cohort #2 also finds a significant difference between lungs aspirated with whole gastric fluid and the untreated right lung from the same animal.  However, the taxa identified as significant are different.  For cohort #2 the significant taxon is an indeterminate genus from the family `r  sig.genus`
 
 #### WLU vs WRU, all
 ```{r, echo=FALSE, results = 'asis'}
