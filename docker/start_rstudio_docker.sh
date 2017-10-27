@@ -35,7 +35,7 @@ fi
 if [ "$1" == "shell" ]; then
     DOCKER_COMMAND="/bin/bash"
     CONTAINER_NAME="rstudio_shell_${DOCKER_IMAGE_TAG}"
-    DOCKER_ARGS="--rm --interactive --tty -u $UID -v /etc/passwd:/etc/passwd:ro"
+    DOCKER_ARGS="--rm --interactive --tty -u $UID
     echo "------------------------------"
     echo "In docker run the following:"
     echo "cd $DOCKER_MNTPOINT"
@@ -49,7 +49,17 @@ elif [ "$1" == "root" ]; then
 elif [ "$1" == "rstudio" ]; then
     DOCKER_COMMAND=""
     CONTAINER_NAME="rstudio_web_${DOCKER_IMAGE_TAG}"
-    DOCKER_ARGS="--detach --publish $PORT_NUMBER:8787 -e PASSWORD=$PASS"
+    DOCKER_ARGS="--detach --publish $PORT_NUMBER:8787 -e PASSWORD=$PASS -e USER=$USER -e USERID=$UID"
+    printf "\n=======================================================================================\n"
+    echo "RStudio Information"
+    echo "-------------------"
+    echo "RStudio URL is:" > $TMP_RSTUDIO_INFO
+    echo "http://`hostname -A`:${PORT_NUMBER}/" | tr -d '[:space:]' >> $TMP_RSTUDIO_INFO
+    printf "\n\nRStudio Username is:\n$USER\n" >> $TMP_RSTUDIO_INFO
+    printf "\nRStudio Password is:\n" >> $TMP_RSTUDIO_INFO
+    printf "${PASS}\n" >> $TMP_RSTUDIO_INFO
+    cat $TMP_RSTUDIO_INFO
+    printf "=======================================================================================\n\n"
 else
    echo "Must supply command line argument! Should be run as one of the following commands:"
    echo "'$0 [shell|root|rstudio] (CONTAINER_NAME|default) (PORT_NUMBER)'"
@@ -80,10 +90,9 @@ fi
 
 docker run $DOCKER_ARGS $TIME_ZONE \
        --name $CONTAINER_NAME \
-       -e USERID=$UID \
-       -v $HOST_BASE:$DOCKER_MNTPOINT \
-       -v $WORKSPACE:$WORKSPACE_MNTPOINT \
-       -v $RAW_DATA:$DATA_MNTPOINT \
+       --volume $HOST_BASE:$DOCKER_MNTPOINT \
+       --volume $WORKSPACE:$WORKSPACE_MNTPOINT \
+       --volume $RAW_DATA:$DATA_MNTPOINT \
        $DOCKER_IMAGE \
        $DOCKER_COMMAND
 
