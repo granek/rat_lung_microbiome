@@ -10,7 +10,7 @@ DEFINITION_FILE="${DIR}/docker_setup.sh"
 PASS_FILE="${DIR}/local_docker_setup.sh"
 echo $DEFINITION_FILE
 echo $PASS_FILE
-
+TMP_RSTUDIO_INFO="${DIR}/TMP_RSTUDIO_INFO.txt"
 source $DEFINITION_FILE
 
 if [ -e  $PASS_FILE ] ; then
