@@ -2,7 +2,7 @@
 
 # Distributed under the terms of the Modified BSD License.
 
-FROM rocker/rstudio:3.3.2
+FROM rocker/tidyverse:3.4.2
 
 MAINTAINER Josh Granek
 
@@ -35,7 +35,7 @@ ENV RSTUDIO_USER rstudio
 RUN mkdir -p $CONDA_DIR && \
     chown $RSTUDIO_USER $CONDA_DIR
 
-RUN Rscript -e "install.packages(pkgs = c('ggplot2','dplyr','argparse','phangorn','tidyr','formatR'), \
+RUN Rscript -e "install.packages(pkgs = c('argparse','phangorn'), \
     repos='https://cran.revolutionanalytics.com/', \
     dependencies=TRUE)" && \
     Rscript -e "source('https://bioconductor.org/biocLite.R'); \
