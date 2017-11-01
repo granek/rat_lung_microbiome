@@ -56,9 +56,10 @@ MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
   total_counts = as.data.frame(rowSums(otu_table(ps)))
   colnames(total_counts) = "totals"
   
-  group_table = sample_data(ps) %>% select(group,Description) %>% unique
+  group_table = sample_data(ps) %>% select(group,Description) %>% unique %>% as.data.frame
   
-  min_max_counts = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
+  min_max_counts = left_join(rownames_to_column(as_tibble(sample_data(ps))), 
+                             rownames_to_column(total_counts)) %>% 
     select(rowname, Description, group, totals) %>%
     group_by(Description) %>% 
     summarise(min=min(totals),max=max(totals)) %>% 
