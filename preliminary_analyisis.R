@@ -621,6 +621,159 @@ rlog.nmds.p2 <- plot_ordination(bacteria.rlog, rlog.nmds, "samples", color="grou
 grid.arrange(rel.nmds.p1, rlog.nmds.p2, ncol=2)
 
 #'******************************************************************************
+#' # Host vs Bacterial Reads
+#' Are there systematic differences in ratio of Bacterial vs Host reads in 
+#' different treatment groups (e.g. control vs aspirated)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# 
+# bacteria.ps = subset_taxa(full_ps,Kingdom=="Bacteria")
+# eukaryota.ps = subset_taxa(full_ps,Kingdom=="Eukaryota")
+
+all_counts.df = full_ps %>%
+  otu_table %>%
+  rowSums %>%
+  as.data.frame %>%
+  rownames_to_column()
+colnames(all_counts.df) = c("SampleID", "all_counts")
+
+bacterial_counts.df = full_ps %>%
+  subset_taxa(Kingdom=="Bacteria") %>%
+  otu_table %>%
+  rowSums %>%
+  as.data.frame %>%
+  rownames_to_column()
+colnames(bacterial_counts.df) = c("SampleID", "bacterial_counts")
+
+euk_counts.df = full_ps %>%
+  subset_taxa(Kingdom=="Eukaryota") %>%
+  otu_table %>%
+  rowSums %>%
+  as.data.frame %>%
+  rownames_to_column()
+colnames(euk_counts.df) = c("SampleID", "eukaryota_counts")
+
+
+count.df = sample_data(full_ps) %>%
+  left_join(all_counts.df) %>%
+  left_join(bacterial_counts.df) %>%
+  left_join(euk_counts.df)
+
+ 
+count.p = ggplot(count.df, aes(all_counts, bacterial_counts))
+count.p = count.p + geom_point(aes(colour = group))
+count.p + scale_y_log10() # + scale_x_log10()
+  
+#-------------------------------
+not_bacterial.ps = full_ps %>%
+  subset_taxa(Kingdom!="Bacteria")
+
+euk.ps = full_ps %>%
+  subset_taxa(Kingdom=="Eukaryota")
+
+
+tax_table(euk.ps)
+x = tax_table(euk.ps)
+
+opi.ps = full_ps %>%
+  subset_taxa(Phylum=="Opisthokonta")
+
+x = full_ps %>%
+  subset_taxa(Kingdom=="Eukaryota") %>%
+  otu_table
+
+
+apply(a, 1, which.max) 
+
+library(Biostrings)
+x = full_ps %>%
+  subset_taxa(Kingdom=="Eukaryota") %>%
+  otu_table %>%
+  colSums %>%
+  sort %>%
+  tail
+
+top_euks = names(x)
+names(top_euks) = x
+DNAStringSet(top_euks) %>% writeXStringSet("tmp.fasta")
+
+
+
+%>% 
+  as.data.frame %>% 
+  rownames_to_column
+
+row.names(x) = x$.
+
+
+
+
+
+  names %>%
+   %>%
+
+    
+left_counts.df = filter(count.df, lung=="left")
+  
+  
+
+count.p = ggplot(count.df, aes(eukaryota_counts, bacterial_counts))
+count.p = count.p + geom_point(aes(colour = group))
+count.p  + facet_grid(aspiration_bool ~ antibiotic_bool)
+
+
+count.df %>% 
+  ggplot(aes(eukaryota_counts, bacterial_counts)) +
+  geom_point(aes(colour = group)) +
+  facet_grid(aspiration_bool ~ antibiotic_bool)
+
+
+filter(count.df, lung=="left") %>% 
+  ggplot(aes(eukaryota_counts, bacterial_counts)) +
+  geom_point(aes(colour = group)) +
+  facet_grid(aspiration_bool ~ antibiotic_bool)
+
+filter(count.df, lung=="right") %>% 
+  ggplot(aes(eukaryota_counts, bacterial_counts)) +
+  geom_point(aes(colour = group)) +
+  facet_grid(aspiration_bool ~ antibiotic_bool)
+
+
+#   as.data.frame(rowSums(otu_table(full_ps)))
+# 
+# 
+# as.data.frame(rowSums(otu_table(bacteria.ps)))
+# 
+# MinMaxFloatingBarplot = function(ps,plot_file,plot_title=""){
+#   total_counts = as.data.frame(rowSums(otu_table(ps)))
+#   colnames(total_counts) = "totals"
+#   
+#   group_table = sample_data(ps) %>% select(group,Description) %>% unique
+#   
+#   min_max_counts = left_join(add_rownames(sample_data(ps)), add_rownames(total_counts)) %>% 
+#     select(rowname, Description, group, totals) %>%
+#     group_by(Description) %>% 
+#     summarise(min=min(totals),max=max(totals)) %>% 
+#     left_join(group_table)
+#   
+#   max_min_plot = ggplot(min_max_counts, 
+#                         aes(x=Description,ymin = `min`, ymax = `max`,color=group)) + 
+#     geom_linerange(stat = 'identity') + 
+#     xlab('Sample') + 
+#     ylab('Counts') + 
+#     theme(axis.ticks.x=element_blank(),           
+#           axis.text.x=element_blank(),           
+#           panel.background = element_blank()) + 
+#     ggtitle(plot_title)
+#   ggsave(file=plot_file, max_min_plot)
+#   
+#   print(paste("Lowest Maximum Value:", min(min_max_counts$max)))
+#   return(max_min_plot)
+# }
+
+
+
+#'******************************************************************************
 #' # Further Analyses
 #+ Todo List, include=FALSE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
