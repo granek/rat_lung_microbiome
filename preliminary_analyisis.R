@@ -652,9 +652,10 @@ euk_counts.df = full_ps %>%
 colnames(euk_counts.df) = c("SampleID", "eukaryota_counts")
 
 count.df = sample_data(full_ps) %>%
-  left_join(all_counts.df) %>%
-  left_join(bacterial_counts.df) %>%
-  left_join(euk_counts.df)
+  left_join(all_counts.df, by = "SampleID") %>%
+  left_join(bacterial_counts.df, by = "SampleID") %>%
+  left_join(euk_counts.df, by = "SampleID") %>%
+  mutate(bac_euk_ratio = bacterial_counts/eukaryota_counts)
 
 #'******************************************************************************
 #' ## Total Reads vs Bacterial reads, colored by treatment group
@@ -670,7 +671,7 @@ count.df %>%
 count.df %>% 
   ggplot(aes(eukaryota_counts, bacterial_counts)) +
   geom_point(aes(colour = group)) +
-  facet_grid(aspiration_bool ~ antibiotic_bool)
+  facet_grid(aspiration_bool ~ antibiotic_bool, labeller = "label_both")
 
 #'******************************************************************************
 #' ## LEFT LUNGS ONLY of Eukaryote Reads vs Bacterial reads, faceted by antibiotic_bool and aspiration_bool
@@ -678,7 +679,7 @@ count.df %>%
 filter(count.df, lung=="left") %>% 
   ggplot(aes(eukaryota_counts, bacterial_counts)) +
   geom_point(aes(colour = group)) +
-  facet_grid(aspiration_bool ~ antibiotic_bool)
+  facet_grid(aspiration_bool ~ antibiotic_bool, labeller = "label_both")
 
 #'******************************************************************************
 #' ## RIGHT LUNGS ONLY of Eukaryote Reads vs Bacterial reads, faceted by antibiotic_bool and aspiration_bool
@@ -686,8 +687,29 @@ filter(count.df, lung=="left") %>%
 filter(count.df, lung=="right") %>% 
   ggplot(aes(eukaryota_counts, bacterial_counts)) +
   geom_point(aes(colour = group)) +
-  facet_grid(aspiration_bool ~ antibiotic_bool)
+  facet_grid(aspiration_bool ~ antibiotic_bool, labeller = "label_both")
 
+
+#'******************************************************************************
+#' ## Eukaryote Reads vs Bacterial reads ratio
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+filter(count.df, lung=="left") %>% 
+  ggplot(aes(antibiotic_bool, bac_euk_ratio,group=antibiotic_bool)) +
+  geom_boxplot() +
+  facet_grid(~sample_aspiration) 
+
+count.df %>% 
+  ggplot(aes(animal, bac_euk_ratio)) +
+  geom_bar(stat="identity") + 
+  facet_wrap(~group)
+
+
+p <- ggplot(mtcars, aes(factor(cyl), mpg))
+p + geom_boxplot()
+Not plotting outliers:
+  
+p + geom_boxplot(outlier.shape=NA)
+#Warning message:
 
 
 
@@ -705,8 +727,15 @@ names(top_euks_names) = top_eukaryote_otus
 top_eukaryote_otus = top_euks_names
 DNAStringSet(top_eukaryote_otus) %>% writeXStringSet("tmp.fasta")
 
-
-
+#'******************************************************************************
+#' # Notes on Ratios
+#+ ratio notes, include=FALSE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' https://en.wikipedia.org/wiki/Ratio_distribution
+#' https://en.wikipedia.org/wiki/Ratio_estimator
+#' https://en.wikipedia.org/wiki/Lexis_ratio
+#' https://en.wikipedia.org/wiki/Likelihood-ratio_test
+#' http://www.emersonstatistics.com/GeneralMaterials/Ratios%20and%20Logarithms.pdf
 
 #'******************************************************************************
 #' # Further Analyses
