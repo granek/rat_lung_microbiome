@@ -58,7 +58,7 @@ sample_data(bacteria.ps) %>%
   filter(lung=="right")
 ```
 
-# No treatment comparisons lung Analyses
+# No treatment comparisons
 * Samples
     + NLU
     + SRU
@@ -70,6 +70,7 @@ sample_data(bacteria.ps) %>%
     + NLU vs WLU 1-11
         + NMDS plot
         + LEfSe
+    + NLU vs (SRU and WRU)
 
 ## Untreated Left vs Saline Right (untreated side)
 ### NLU vs SRU
@@ -147,54 +148,39 @@ The permanova comparing left lung aspirated with whole gastric fluid to unaspira
 The test for homogeneity of dispersions is insignificant (p-value of
 `r right_left1_NLU_WLU.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
 
-#### LefSE
-```{r right_left1_NLU_WLU_generate_lefse, echo=FALSE, results='hide'}
-right_left1_NLU_WLU_lefse.file = file.path(lefse_outdir,"right_left1_NLU_WLU.tsv")
-GenerateLefseOutput(right_left1_NLU_WLU.pruned.ps, 
-                    output_columns = c(group_var),
-                    outfile = right_left1_NLU_WLU_lefse.file)
 
-Sys.setenv(LEFSE_INPUT_FILE = right_left1_NLU_WLU_lefse.file)
-```
-
-```{bash, echo=FALSE, results='hide'}
-source /opt/conda/bin/activate qiime1
-
-BASENAME="${LEFSE_INPUT_FILE%.*}"
-lefse-format_input.py $LEFSE_INPUT_FILE  "${BASENAME}.in" -f c -u 1 -c 2 -o 1000000  --output_table ${BASENAME}.tab
-R_HOME="/opt/conda/envs/qiime1/lib64/R"
-bash run_lefse.sh ${BASENAME}.in
-```
-
+## Untreated Left vs Saline and Gastric Right (untreated side)
+### NLU vs (SRU and WRU)
 ```{r, echo=FALSE, results = 'asis'}
-ShowFigure(paste0(file_path_sans_ext(right_left1_NLU_WLU_lefse.file), ".png"))
+right_left1_NLU_SRU_WRU.ps = subset_samples(bacteria.ps,
+                               (group %in% c("NLU","SRU","WRU")) &
+                                 (animal <= 12))
+
+right_left1_NLU_SRU_WRU.pruned.ps = PruneTaxa(right_left1_NLU_SRU_WRU.ps)
+
+## Transform to even sampling depth.
+right_left1_NLU_SRU_WRU.even.ps = TransformCounts(right_left1_NLU_SRU_WRU.pruned.ps)
+group_var = "lung"
 ```
 
-LefSE identifies a few taxa with significantly differential abundance between left lung aspirated with whole gastric fluid to unaspirated right lung from the same animal.
-
-
-# Appendix
-## All Lefse Plots
-LefSE has the capacity to generate a lot of plots.  I have incorporated the ones that I think are most relevant above, but am including the full set here to give a different perspective on the data, and in case you want more information about any of them.
-```{r show_all_pngs, echo=FALSE, results = 'asis'}
-
-for (cur_png in list.files(lefse_outdir, pattern = ".png$",recursive = TRUE,full.names = TRUE)){
-  cat(paste0(cur_png,"\n\n\n"))
-  ShowFigure(cur_png)
-}
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+right_left1_NLU_SRU_WRU.nmds.plot = NMDSPlot(right_left1_NLU_SRU_WRU.even.ps, grouping = group_var)
+print(right_left1_NLU_SRU_WRU.nmds.plot)
 ```
 
+#### Permanova
+The ordination plot suggest that the unaspirated (control) left lung does not have a significantly different microbial community relative to the unaspirated right lung from a saline aspirated animal. A permanova analysis allows us to quantify this. 
 
-<!---
-COMMENT!
--->
+```{r, echo=FALSE}
+right_left1_NLU_SRU_WRU.perm = RunPermanova(right_left1_NLU_SRU_WRU.even.ps, group_var)
+right_left1_NLU_SRU_WRU.adonis = right_left1_NLU_SRU_WRU.perm$adonis
+print(right_left1_NLU_SRU_WRU.adonis)
 
-
-<!---
-### Test ShowFigure
--->
-```{r eval=FALSE, include=FALSE, results=}
-ShowFigure(file.path(lefse_outdir,"no_dummy.png"))
-
-# ShowFigure(file.path(lefse_outdir,"dummy_file.png"),dummy_figure=TRUE)
+right_left1_NLU_SRU_WRU.beta.permute = right_left1_NLU_SRU_WRU.perm$beta
+print(right_left1_NLU_SRU_WRU.beta.permute)
 ```
+
+The permanova comparing unaspirated (control) left lung to unaspirated right lung from saline aspirated animal does find a *significant* difference (p-value of `r right_left1_NLU_SRU_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+However, the test for homogeneity of dispersions is also *significant* (p-value of
+`r right_left1_NLU_SRU_WRU.beta.permute$tab$"Pr(>F)"[1]`), so the permanova results could be due to differences in dispersion.
