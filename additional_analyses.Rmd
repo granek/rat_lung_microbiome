@@ -62,92 +62,11 @@ sample_data(bacteria.ps) %>%
 * Samples
     + NLU
     + SRU
-    + WLU (animals 1 to 11)
+    + WRU (animals 1 to 12)
 * Analysis
-    + NLU vs SRU
-        + NMDS plot
-        + LEfSe
-    + NLU vs WLU 1-11
-        + NMDS plot
-        + LEfSe
     + NLU vs (SRU and WRU)
-
-## Untreated Left vs Saline Right (untreated side)
-### NLU vs SRU
-```{r, echo=FALSE, results = 'asis'}
-right_left1_NLU_SRU.ps = subset_samples(bacteria.ps,
-                               (group %in% c("NLU","SRU")))
-right_left1_NLU_SRU.pruned.ps = PruneTaxa(right_left1_NLU_SRU.ps)
-
-## Transform to even sampling depth.
-right_left1_NLU_SRU.even.ps = TransformCounts(right_left1_NLU_SRU.pruned.ps)
-group_var = "group"
-```
-
-#### NMDS
-```{r, echo=FALSE, results='hide'}
-right_left1_NLU_SRU.nmds.plot = NMDSPlot(right_left1_NLU_SRU.even.ps, grouping = group_var)
-print(right_left1_NLU_SRU.nmds.plot)
-```
-
-#### Permanova
-The ordination plot suggest that the unaspirated (control) left lung does not have a significantly different microbial community relative to the unaspirated right lung from a saline aspirated animal. A permanova analysis allows us to quantify this. 
-
-```{r, echo=FALSE}
-right_left1_NLU_SRU.perm = RunPermanova(right_left1_NLU_SRU.even.ps, group_var)
-right_left1_NLU_SRU.adonis = right_left1_NLU_SRU.perm$adonis
-print(right_left1_NLU_SRU.adonis)
-
-right_left1_NLU_SRU.beta.permute = right_left1_NLU_SRU.perm$beta
-print(right_left1_NLU_SRU.beta.permute)
-```
-
-The permanova comparing unaspirated (control) left lung to unaspirated right lung from saline aspirated animal does find a *significant* difference (p-value of `r right_left1_NLU_SRU.adonis$aov.tab$"Pr(>F)"[1]`). 
-However, the test for homogeneity of dispersions is also *significant* (p-value of
-`r right_left1_NLU_SRU.beta.permute$tab$"Pr(>F)"[1]`), so the permanova results could be due to differences in dispersion.
-
-### NLU vs WLU, cohort #1
-```{r, echo=FALSE, results = 'asis'}
-right_left1_NLU_WLU.ps = subset_samples(bacteria.ps,
-                                        ((group == "WLU") & (animal <= 12)) |
-                                          (group == "NLU"))
-
-right_left1_NLU_WLU.pruned.ps = PruneTaxa(right_left1_NLU_WLU.ps)
-
-## Transform to even sampling depth.
-right_left1_NLU_WLU.even.ps = TransformCounts(right_left1_NLU_WLU.pruned.ps)
-group_var = "group"
-```
-```{r, echo=FALSE, results='hide'}
-sample_data(right_left1_NLU_WLU.ps)
-```
-
-```{r, echo=FALSE, results='hide'}
-right_left1_NLU_WLU.nmds.plot = NMDSPlot(right_left1_NLU_WLU.even.ps, grouping = group_var)
-print(right_left1_NLU_WLU.nmds.plot)
-```
-
-
-#### Permanova
-The ordination plot suggest that the unaspirated (control) left lung does not have a significantly different microbial community relative to the unaspirated right lung from a saline aspirated animal. A permanova analysis allows us to quantify this. 
-
-
-
-The ordination plot strongly indicates that aspiration with whole gastric fluid results in a drastic change in microbial community relative to the unaspirated (control) left lung. A permanova analysis allows us to quantify this. 
-
-```{r, echo=FALSE}
-right_left1_NLU_WLU.perm = RunPermanova(right_left1_NLU_WLU.even.ps, group_var)
-right_left1_NLU_WLU.adonis = right_left1_NLU_WLU.perm$adonis
-print(right_left1_NLU_WLU.adonis)
-
-right_left1_NLU_WLU.beta.permute = right_left1_NLU_WLU.perm$beta
-print(right_left1_NLU_WLU.beta.permute)
-```
-
-The permanova comparing left lung aspirated with whole gastric fluid to unaspirated left lungs from control animals yields a significant difference (p-value of `r right_left1_NLU_WLU.adonis$aov.tab$"Pr(>F)"[1]`). 
-The test for homogeneity of dispersions is insignificant (p-value of
-`r right_left1_NLU_WLU.beta.permute$tab$"Pr(>F)"[1]`), providing strong evidence that the aspiration treatment is altering the microbial community.
-
+        + NMDS plot
+        + LEfSe
 
 ## Untreated Left vs Saline and Gastric Right (untreated side)
 ### NLU vs (SRU and WRU)
@@ -170,7 +89,7 @@ print(right_left1_NLU_SRU_WRU.nmds.plot)
 ```
 
 #### Permanova
-The ordination plot suggest that the unaspirated (control) left lung does not have a significantly different microbial community relative to the unaspirated right lung from a saline aspirated animal. A permanova analysis allows us to quantify this. 
+The ordination plot suggest that the unaspirated (control) left lung does not have a significantly different microbial community relative to the unaspirated right lung from animals aspirated with saline or gastric fluid. A permanova analysis allows us to quantify this. 
 
 ```{r, echo=FALSE}
 right_left1_NLU_SRU_WRU.perm = RunPermanova(right_left1_NLU_SRU_WRU.even.ps, group_var)
