@@ -103,3 +103,14 @@ print(right_left1_NLU_SRU_WRU.beta.permute)
 The permanova comparing unaspirated (control) left lung to unaspirated right lung from saline aspirated animal does find a *significant* difference (p-value of `r right_left1_NLU_SRU_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
 However, the test for homogeneity of dispersions is also *significant* (p-value of
 `r right_left1_NLU_SRU_WRU.beta.permute$tab$"Pr(>F)"[1]`), so the permanova results could be due to differences in dispersion.
+
+# Per sample bacterial counts for aspiration
+```{r, echo=FALSE, results = 'asis'}
+aspiration.ps = subset_samples(bacteria.ps, antibiotic == "none")
+# sample_data(aspiration.ps)
+total_counts = as.tibble(rowSums(otu_table(aspiration.ps)))
+summary(total_counts)
+```
+
+
+
