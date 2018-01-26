@@ -111,6 +111,43 @@ aspiration.ps = subset_samples(bacteria.ps, antibiotic == "none")
 total_counts = as.tibble(rowSums(otu_table(aspiration.ps)))
 summary(total_counts)
 ```
+# Mean and median relative abundance of Romboutsia and Turicibacter
+## Romboutsia and Turicibacter
 
+```{r}
+aspiration.ps
+aspiration.ps.rel  = transform_sample_counts(aspiration.ps, function(x) x / sum(x) )
+# as.tibble(rowSums(otu_table(aspiration.ps.rel)))
 
+aspiration.ps.rel.romboutsia = subset_taxa(aspiration.ps.rel,Genus=="Romboutsia")
+print(aspiration.ps.rel.romboutsia)
+plot_bar(aspiration.ps.rel.romboutsia)
+```
+
+```{r}
+as.tibble(rowSums(otu_table(aspiration.ps.rel.romboutsia)))
+plot_bar(aspiration.ps.rel.romboutsia, x="group")
+
+# otu_table(aspiration.ps.rel.romboutsia)
+romb_abund = psmelt(aspiration.ps.rel.romboutsia) %>% 
+  group_by(SampleID,group) %>%
+  summarize(romb_frac = sum(Abundance))
+
+ggplot(romb_abund, aes_string("SampleID", "romb_frac")) +
+  geom_bar(stat = "identity", position = "stack", color = "black")
+```
+
+```{r}
+romb_abund %>% 
+  group_by(group) %>%
+  summarize(romboutsia_frac_mean = mean(romb_frac),
+            romboutsia_frac_median = median(romb_frac))
+```
+
+```{r}
+ggplot(romb_abund, aes(group, romb_frac)) +
+  geom_boxplot() + 
+  geom_jitter(width = 0.1) +
+  labs(y = "Romboutsia Proportional Abundance")
+```
 
