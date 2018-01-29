@@ -39,7 +39,7 @@ bacteria.ps = readRDS(bacteria_ps.rds)
 # Mean and median relative abundance of Romboutsia and Turicibacter
 ## Romboutsia
 
-```{r}
+```{r include=FALSE}
 aspiration.ps = subset_samples(bacteria.ps, antibiotic == "none")
 aspiration.ps.rel  = transform_sample_counts(aspiration.ps, function(x) x / sum(x) )
 # as.tibble(rowSums(otu_table(aspiration.ps.rel)))
@@ -49,7 +49,7 @@ print(aspiration.ps.rel.romboutsia)
 plot_bar(aspiration.ps.rel.romboutsia)
 ```
 
-```{r}
+```{r include=FALSE}
 as.tibble(rowSums(otu_table(aspiration.ps.rel.romboutsia)))
 plot_bar(aspiration.ps.rel.romboutsia, x="group")
 
@@ -62,12 +62,21 @@ ggplot(romb_abund, aes_string("SampleID", "romb_frac")) +
   geom_bar(stat = "identity", position = "stack", color = "black")
 ```
 
-```{r}
-romb_abund %>% 
+```{r include=FALSE}
+romb_abund_summary = romb_abund %>%
   group_by(group) %>%
-  summarize(romboutsia_frac_mean = mean(romb_frac),
-            romboutsia_frac_median = median(romb_frac))
+  summarize(Mean = mean(romb_frac),
+            Median = median(romb_frac))
+print(romb_abund_summary)
 ```
+
+
+```{r echo = FALSE, results = 'asis'}
+library(knitr)
+kable(romb_abund_summary, caption = "Romboutsia Fractional Abundance Summary by Treatment Group")
+```
+
+
 
 ```{r}
 ggplot(romb_abund, aes(group, romb_frac)) +
