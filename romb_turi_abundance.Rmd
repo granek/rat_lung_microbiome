@@ -25,8 +25,7 @@ source("analysis_functions.R")
 suppressPackageStartupMessages(library("phyloseq"))
 suppressPackageStartupMessages(library("ggplot2"))
 suppressPackageStartupMessages(library("dplyr"))
-# suppressPackageStartupMessages(library("magrittr"))
-# suppressPackageStartupMessages(library("tools"))
+suppressPackageStartupMessages(library("knitr"))
 
 ## Load Data
 bacteria_ps.rds = file.path("workspace", "bacteria_ps.rds")
@@ -37,13 +36,13 @@ bacteria.ps = readRDS(bacteria_ps.rds)
 ```
 
 # Mean and median relative abundance of Romboutsia and Turicibacter
-## Romboutsia
-
 ```{r include=FALSE}
 aspiration.ps = subset_samples(bacteria.ps, antibiotic == "none")
 aspiration.ps.rel  = transform_sample_counts(aspiration.ps, function(x) x / sum(x) )
-# as.tibble(rowSums(otu_table(aspiration.ps.rel)))
+```
+## Romboutsia
 
+```{r include=FALSE}
 aspiration.ps.rel.romboutsia = subset_taxa(aspiration.ps.rel,Genus=="Romboutsia")
 print(aspiration.ps.rel.romboutsia)
 plot_bar(aspiration.ps.rel.romboutsia)
@@ -62,23 +61,16 @@ ggplot(romb_abund, aes_string("SampleID", "romb_frac")) +
   geom_bar(stat = "identity", position = "stack", color = "black")
 ```
 
-```{r include=FALSE}
-romb_abund_summary = romb_abund %>%
+```{r echo = FALSE, results = 'asis'}
+romb_abund %>%
   group_by(group) %>%
   summarize(Mean = mean(romb_frac),
-            Median = median(romb_frac))
-print(romb_abund_summary)
+            Median = median(romb_frac)) %>%
+  kable(caption = "Romboutsia Proportional Abundance Summary by Treatment Group")
 ```
 
 
-```{r echo = FALSE, results = 'asis'}
-library(knitr)
-kable(romb_abund_summary, caption = "Romboutsia Fractional Abundance Summary by Treatment Group")
-```
-
-
-
-```{r}
+```{r echo=FALSE}
 ggplot(romb_abund, aes(group, romb_frac)) +
   geom_boxplot() + 
   geom_jitter(width = 0.1) +
@@ -88,13 +80,13 @@ ggplot(romb_abund, aes(group, romb_frac)) +
 
 ## Turicibacter
 
-```{r}
+```{r include=FALSE}
 aspiration.ps.rel.Turicibacter = subset_taxa(aspiration.ps.rel,Genus=="Turicibacter")
 print(aspiration.ps.rel.Turicibacter)
 plot_bar(aspiration.ps.rel.Turicibacter)
 ```
 
-```{r}
+```{r include=FALSE}
 as.tibble(rowSums(otu_table(aspiration.ps.rel.Turicibacter)))
 plot_bar(aspiration.ps.rel.Turicibacter, x="group")
 
@@ -107,14 +99,15 @@ ggplot(turi_abund, aes_string("SampleID", "turi_frac")) +
   geom_bar(stat = "identity", position = "stack", color = "black")
 ```
 
-```{r}
+```{r echo = FALSE, results = 'asis'}
 turi_abund %>% 
   group_by(group) %>%
-  summarize(Turicibacter_frac_mean = mean(turi_frac),
-            Turicibacter_frac_median = median(turi_frac))
+  summarize(Mean = mean(turi_frac),
+            Median = median(turi_frac)) %>%
+  kable(caption = "Turicibacter Proportional Abundance Summary by Treatment Group")
 ```
 
-```{r}
+```{r echo=FALSE}
 ggplot(turi_abund, aes(group, turi_frac)) +
   geom_boxplot() + 
   geom_jitter(width = 0.1) +
