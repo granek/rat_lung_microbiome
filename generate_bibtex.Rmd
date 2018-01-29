@@ -1,0 +1,35 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r eval=FALSE, include=FALSE}
+capture.output(utils:::print.bibentry(citation("ggplot2"), style = "Bibtex"),
+               file = "endnote_import.bib")
+```
+
+```{r}
+output_bibtex = function(package_list, outfile="endnote_import.bib", append=FALSE){
+  if (append==FALSE && file.exists(outfile)){
+    file.remove(outfile)
+  }
+  for (curpack in package_list){
+  capture.output(utils:::print.bibentry(citation(curpack), style = "Bibtex"),
+               file = outfile, append = TRUE)
+  }
+}
+
+
+```
+
+```{r}
+output_bibtex(c("dplyr", "tibble", "stringr", "ggplot2", "magrittr", "tidyr", "DESeq2", "vegan", "gridExtra", "Biostrings"))
+
+
+
+```
+
