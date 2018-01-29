@@ -1,0 +1,189 @@
+---
+title: "Manuscript 2: Gastric aspiration and the lung microbiome, additional analyses"
+output: 
+  html_document:
+    toc: true # table of content 
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+    depth: 3  # upto three depths of headings (specified by #, ## and ###)
+    number_sections: true  ## if you want number sections at each table header
+    theme: united  # many options for theme, this one is my favorite.
+    highlight: tango  # specifies the syntax highlighting style
+---
+
+<!---
+From commandline run with the following:
+Rscript -e "library(knitr); rmarkdown::render('aspiration_analysis_right_and_left_lungs.Rmd')"
+-->
+
+```{r load_libraries, echo=FALSE, results='hide'}
+
+source("analysis_functions.R")
+
+## Load Libraries
+suppressPackageStartupMessages(library("phyloseq"))
+suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("dplyr"))
+# suppressPackageStartupMessages(library("vegan"))
+# suppressPackageStartupMessages(library("stringr"))
+# suppressPackageStartupMessages(library("tidyr"))
+# suppressPackageStartupMessages(library("tibble"))
+suppressPackageStartupMessages(library("magrittr"))
+# suppressPackageStartupMessages(library("stringr"))
+suppressPackageStartupMessages(library("tools"))
+
+## Load Data
+bacteria_ps.rds = file.path("workspace", "bacteria_ps.rds")
+if (!file.exists(bacteria_ps.rds)){
+  source("preprocess_phyloseq.R")
+}
+bacteria.ps = readRDS(bacteria_ps.rds)
+
+## Setup Output
+lefse_outdir = file.path("workspace","lefse_aspiration_left_right")
+dir.create(lefse_outdir, showWarnings = FALSE)
+```
+
+```{r check_metadata, echo=FALSE, results='hide', eval=FALSE}
+# Figure out how to label plot
+sample_data(bacteria.ps) %>% colnames() %>% paste(collapse = ",")
+
+sample_data(bacteria.ps) %>% select(group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,lung,treated_lung,antibiotic_bool,aspiration_bool) %>% unique
+
+sample_data(bacteria.ps) %>% 
+  select(group,antibiotic,left_aspiration,right_aspiration,sample_aspiration,
+         lung,treated_lung,antibiotic_bool,aspiration_bool) %>% 
+  unique %>%
+  filter(lung=="right")
+```
+
+# No treatment comparisons
+* Samples
+    + NLU
+    + SRU
+    + WRU (animals 1 to 12)
+* Analysis
+    + NLU vs (SRU and WRU)
+        + NMDS plot
+        + LEfSe
+
+## Untreated Left vs Saline and Gastric Right (untreated side)
+### NLU vs (SRU and WRU)
+```{r, echo=FALSE, results = 'asis'}
+right_left1_NLU_SRU_WRU.ps = subset_samples(bacteria.ps,
+                               (group %in% c("NLU","SRU","WRU")) &
+                                 (animal <= 12))
+
+right_left1_NLU_SRU_WRU.pruned.ps = PruneTaxa(right_left1_NLU_SRU_WRU.ps)
+
+## Transform to even sampling depth.
+right_left1_NLU_SRU_WRU.even.ps = TransformCounts(right_left1_NLU_SRU_WRU.pruned.ps)
+group_var = "lung"
+```
+
+#### NMDS
+```{r, echo=FALSE, results='hide'}
+right_left1_NLU_SRU_WRU.nmds.plot = NMDSPlot(right_left1_NLU_SRU_WRU.even.ps, grouping = group_var)
+print(right_left1_NLU_SRU_WRU.nmds.plot)
+```
+
+#### Permanova
+The ordination plot suggest that the unaspirated (control) left lung does not have a significantly different microbial community relative to the unaspirated right lung from animals aspirated with saline or gastric fluid. A permanova analysis allows us to quantify this. 
+
+```{r, echo=FALSE}
+right_left1_NLU_SRU_WRU.perm = RunPermanova(right_left1_NLU_SRU_WRU.even.ps, group_var)
+right_left1_NLU_SRU_WRU.adonis = right_left1_NLU_SRU_WRU.perm$adonis
+print(right_left1_NLU_SRU_WRU.adonis)
+
+right_left1_NLU_SRU_WRU.beta.permute = right_left1_NLU_SRU_WRU.perm$beta
+print(right_left1_NLU_SRU_WRU.beta.permute)
+```
+
+The permanova comparing unaspirated (control) left lung to unaspirated right lung from saline aspirated animal does find a *significant* difference (p-value of `r right_left1_NLU_SRU_WRU.adonis$aov.tab$"Pr(>F)"[1]`). 
+However, the test for homogeneity of dispersions is also *significant* (p-value of
+`r right_left1_NLU_SRU_WRU.beta.permute$tab$"Pr(>F)"[1]`), so the permanova results could be due to differences in dispersion.
+
+# Per sample bacterial counts for aspiration
+```{r, echo=FALSE, results = 'asis'}
+aspiration.ps = subset_samples(bacteria.ps, antibiotic == "none")
+# sample_data(aspiration.ps)
+total_counts = as.tibble(rowSums(otu_table(aspiration.ps)))
+summary(total_counts)
+```
+# Mean and median relative abundance of Romboutsia and Turicibacter
+## Romboutsia
+
+```{r}
+aspiration.ps
+aspiration.ps.rel  = transform_sample_counts(aspiration.ps, function(x) x / sum(x) )
+# as.tibble(rowSums(otu_table(aspiration.ps.rel)))
+
+aspiration.ps.rel.romboutsia = subset_taxa(aspiration.ps.rel,Genus=="Romboutsia")
+print(aspiration.ps.rel.romboutsia)
+plot_bar(aspiration.ps.rel.romboutsia)
+```
+
+```{r}
+as.tibble(rowSums(otu_table(aspiration.ps.rel.romboutsia)))
+plot_bar(aspiration.ps.rel.romboutsia, x="group")
+
+# otu_table(aspiration.ps.rel.romboutsia)
+romb_abund = psmelt(aspiration.ps.rel.romboutsia) %>% 
+  group_by(SampleID,group) %>%
+  summarize(romb_frac = sum(Abundance))
+
+ggplot(romb_abund, aes_string("SampleID", "romb_frac")) +
+  geom_bar(stat = "identity", position = "stack", color = "black")
+```
+
+```{r}
+romb_abund %>% 
+  group_by(group) %>%
+  summarize(romboutsia_frac_mean = mean(romb_frac),
+            romboutsia_frac_median = median(romb_frac))
+```
+
+```{r}
+ggplot(romb_abund, aes(group, romb_frac)) +
+  geom_boxplot() + 
+  geom_jitter(width = 0.1) +
+  labs(y = "Romboutsia Proportional Abundance")
+```
+
+
+## Turicibacter
+
+```{r}
+aspiration.ps.rel.Turicibacter = subset_taxa(aspiration.ps.rel,Genus=="Turicibacter")
+print(aspiration.ps.rel.Turicibacter)
+plot_bar(aspiration.ps.rel.Turicibacter)
+```
+
+```{r}
+as.tibble(rowSums(otu_table(aspiration.ps.rel.Turicibacter)))
+plot_bar(aspiration.ps.rel.Turicibacter, x="group")
+
+# otu_table(aspiration.ps.rel.Turicibacter)
+turi_abund = psmelt(aspiration.ps.rel.Turicibacter) %>% 
+  group_by(SampleID,group) %>%
+  summarize(turi_frac = sum(Abundance))
+
+ggplot(turi_abund, aes_string("SampleID", "turi_frac")) +
+  geom_bar(stat = "identity", position = "stack", color = "black")
+```
+
+```{r}
+turi_abund %>% 
+  group_by(group) %>%
+  summarize(Turicibacter_frac_mean = mean(turi_frac),
+            Turicibacter_frac_median = median(turi_frac))
+```
+
+```{r}
+ggplot(turi_abund, aes(group, turi_frac)) +
+  geom_boxplot() + 
+  geom_jitter(width = 0.1) +
+  labs(y = "Turicibacter Proportional Abundance")
+```
+
