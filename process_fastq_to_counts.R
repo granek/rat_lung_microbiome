@@ -17,7 +17,7 @@ args <- parser$parse_args()
 #--------------------------------------------------
 basedir = args$basedir
 
-map_file = file.path(basedir, "notes_and_info/rat_lung_map.tsv")
+map_file = file.path(basedir, "notes_and_info", "rat_lung_map.tsv")
 
 workdir = file.path(basedir, "workspace")
 
@@ -245,6 +245,17 @@ makePhyloseq = function(seqtab,referenceFasta,map_file,random.seed=100){
                                      "factor","factor","factor","factor",
                                      "factor","factor","factor","factor",
                                      "logical","factor","character","character"))
+  #---------------------------------------------
+  map.df$antibiotic = relevel(map.df$antibiotic, "none")
+  #---------------------------------------------
+  aspiration_levels= c("none", "saline", "whole_gastric", "irradiated_gastric")
+  map.df$left_aspiration = factor(map.df$left_aspiration, levels=aspiration_levels)
+  map.df$right_aspiration = factor(map.df$right_aspiration, levels=aspiration_levels)
+  map.df$sample_aspiration = factor(map.df$sample_aspiration, levels=aspiration_levels)
+  #---------------------------------------------
+  map.df$antibiotic_bool = factor(map.df$antibiotic != "none")
+  map.df$aspiration_bool = factor(map.df$sample_aspiration != "none")
+  #--------------------------------------------- 
   samdat = sample_data(map.df)
   rownames(samdat) = samdat$SampleID
   
