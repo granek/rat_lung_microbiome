@@ -9,8 +9,11 @@ dir_guard=@mkdir -p $(@D)
 RAW_DATA_DIR := raw_data/160614_McKenney_fastqs
 WORKSPACE_DIR := workspace
 SPLIT_FASTQ_BASE := $(WORKSPACE_DIR)/split_fastq
+SPLIT_FASTQ_MD5SUM := $(SPLIT_FASTQ_BASE)/split_fastq_md5sum.txt
 TAGGED_FASTQ_DIR := $(WORKSPACE_DIR)/tagged_fastq
 RESULTS_DIR := results
+#--------------------------------------------------
+CONDA_BIN := /opt/conda/bin
 #--------------------------------------------------
 
 
@@ -28,7 +31,7 @@ INDEX_FASTQ := $(FASTQ_PREFIX)_I1_$(FASTQ_SUFFIX)
 
 RAW_FASTQS := $(READ1_FASTQ) $(READ2_FASTQ)
 TAGGED_FASTQS := $(addprefix $(TAGGED_FASTQ_DIR)/, $(notdir $(RAW_FASTQS:.fastq.gz=_tagged.fastq)))
-SPLIT_FASTQS := $(addprefix $(WORKSPACE_DIR)/split_, $(addsuffix /COMPLETION_STAMP, $(notdir $(RAW_FASTQS:.fastq.gz=))))
+SPLIT_FASTQS := $(addprefix $(SPLIT_FASTQ_BASE)/split_, $(addsuffix /COMPLETION_STAMP, $(notdir $(RAW_FASTQS:.fastq.gz=))))
 
 #--------------------------------------------------
 FULL_PHYLOSEQ_RDS := $(RESULTS_DIR)/rat_lung_ps.rds
@@ -37,6 +40,9 @@ FULL_PHYLOSEQ_RDS := $(RESULTS_DIR)/rat_lung_ps.rds
 
 all : $(TAGGED_FASTQS) $(SPLIT_FASTQS) $(FULL_PHYLOSEQ_RDS)
 
+split_fastqs : $(SPLIT_FASTQS)
+
+demux_checksum : $(SPLIT_FASTQ_MD5SUM)
 
 test : 
 	echo $(SPLIT_FASTQS)
@@ -53,9 +59,8 @@ $(QIIME_MAP_FILE) : $(MAP_FILE)
 #--------------------------------------------------
 $(TAGGED_FASTQ_DIR)/%_tagged.fastq : $(RAW_DATA_DIR)/%.fastq.gz $(INDEX_FASTQ) $(QIIME_MAP_FILE)
 	$(dir_guard)
-	source /opt/conda/bin/activate qiime1
 	echo $*
-	split_libraries_fastq.py -r 999 -n 999 -q 0 -p 0.0001 \
+	$(CONDA_BIN)/split_libraries_fastq.py -r 999 -n 999 -q 0 -p 0.0001 \
 		--sequence_read_fps $(word 1,$^) \
 		--output_dir $(@D)/$* \
 		--barcode_read_fps $(word 2,$^) \
@@ -69,12 +74,18 @@ $(TAGGED_FASTQ_DIR)/%_tagged.fastq : $(RAW_DATA_DIR)/%.fastq.gz $(INDEX_FASTQ) $
 	rm -r $(@D)/$*
 #--------------------------------------------------
 $(WORKSPACE_DIR)/split_%/COMPLETION_STAMP : $(TAGGED_FASTQ_DIR)/%_tagged.fastq
-	source /opt/conda/bin/activate qiime1
 	echo $*
-	split_sequence_file_on_sample_ids.py -i $(word 1,$^) \
+	$(CONDA_BIN)/split_sequence_file_on_sample_ids.py -i $(word 1,$^) \
 					 --file_type fastq \
 					 --output_dir $(@D)
+	gzip $(@D)/*.fastq
 	touch $@
+#--------------------------------------------------
+$(SPLIT_FASTQ_MD5SUM) : $(SPLIT_FASTQS)
+	# @echo $(addsuffix *, $(dir $^))
+	@echo $(dir $^)
+	md5sum $(addsuffix *, $(dir $^)) > $@
+
 #--------------------------------------------------
 TAXONOMY_DIR := $(WORKSPACE_DIR)/taxonomy_refs
 SILVA_DB := $(TAXONOMY_DIR)/silva_nr_v123_train_set.fa.gz
