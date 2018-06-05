@@ -7,9 +7,8 @@ packrat/src/
 raw_data/
 workspace/
 test_knitr_spin.R
-
 local_docker_setup.sh
 docker/TMP_RSTUDIO_INFO.txt
-
 *~
-
+*.html
+preliminary_analyisis_files/
