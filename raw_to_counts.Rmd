@@ -19,6 +19,10 @@ Sys.setenv(CONDA_BIN="/opt/conda/bin")
 split_fastq_base = file.path(workspace_dir, "split_fastq")
 Sys.setenv(SPLIT_FASTQ_BASE=split_fastq_base)
 Sys.setenv(SPLIT_FASTQ_MD5SUM=file.path(split_fastq_base, "split_fastq_md5sum.txt"))
+
+combined_read_dir=file.path(split_fastq_base, "combined_reads")
+Sys.setenv(COMBINED_READ_DIR=combined_read_dir)
+Sys.setenv(COMBINED_READ_MD5SUM=file.path(combined_read_dir, "combined_fastq_md5sum.txt"))
 ```
 
 SPLIT_FASTQ_BASE := $(WORKSPACE_DIR)/split_fastq
@@ -111,17 +115,6 @@ for TAGGED_FASTQ in $TAGGED_FASTQ_DIR/*.fastq; do
 done
 ```
 
-#--------------------------------------------------
-$(WORKSPACE_DIR)/split_%/COMPLETION_STAMP : $(TAGGED_FASTQ_DIR)/%_tagged.fastq
-	echo $*
-	$(CONDA_BIN)/split_sequence_file_on_sample_ids.py -i $(word 1,$^) \
-					 --file_type fastq \
-					 --output_dir $(@D)
-	gzip $(@D)/*.fastq
-	touch $@
-#--------------------------------------------------
-$(SPLIT_FASTQ_MD5SUM) : $(SPLIT_FASTQS)
-	echo $^
 
 # Generate MD5SUMs
 ```{bash}
@@ -130,6 +123,30 @@ cd ${SPLIT_FASTQ_BASE}
 md5sum */*.fastq.gz > $(basename $SPLIT_FASTQ_MD5SUM)
 ```
 
+# Prep FASTQs for submission
+## Copy FASTQs for submission
+```{bash}
+set -u
+mkdir -p $COMBINED_READ_DIR
+for READ in R1 R2; do
+  echo $READ
+  CUR_DIR=${SPLIT_FASTQ_BASE}/Undetermined_S0_L001_${READ}_001
+  echo $CUR_DIR
+  for FASTQ in $CUR_DIR/*.fastq.gz; do
+    # echo $FASTQ
+    TARGET_FASTQ=$COMBINED_READ_DIR/$(basename $FASTQ .fastq.gz).${READ}.fastq.gz
+    cp $FASTQ $TARGET_FASTQ
+  done
+done
+```
+
+## Generate MD5SUMs for submission
+```{bash}
+set -u
+
+cd ${COMBINED_READ_DIR}
+md5sum *.fastq.gz > $(basename $COMBINED_READ_MD5SUM)
+```
 
 #--------------------------------------------------
 TAXONOMY_DIR := $(WORKSPACE_DIR)/taxonomy_refs
