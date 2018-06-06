@@ -9,12 +9,16 @@ dir_guard=@mkdir -p $(@D)
 
 ```{r}
 workspace_dir = "workspace"
+Sys.setenv(WORKSPACE_DIR=workspace_dir)
 Sys.setenv(QIIME_MAP_FILE=file.path(workspace_dir, "rat_lung_qiime_map.tsv"))
 Sys.setenv(MAP_FILE=file.path("notes_and_info", "rat_lung_map.tsv"))
 Sys.setenv(RAW_DATA_DIR=file.path("raw_data", "160614_McKenney_fastqs"))
 Sys.setenv(TAGGED_FASTQ_DIR=file.path(workspace_dir, "tagged_fastq"))
 Sys.setenv(CONDA_BIN="/opt/conda/bin")
 
+split_fastq_base = file.path(workspace_dir, "split_fastq")
+Sys.setenv(SPLIT_FASTQ_BASE=split_fastq_base)
+Sys.setenv(SPLIT_FASTQ_MD5SUM=file.path(split_fastq_base, "split_fastq_md5sum.txt"))
 ```
 
 SPLIT_FASTQ_BASE := $(WORKSPACE_DIR)/split_fastq
@@ -87,27 +91,26 @@ done
 ls -ltr $TAGGED_FASTQ_DIR
 date
 ```
+# Split fastqs and gzip
 ```{bash}
+set -u
+for TAGGED_FASTQ in $TAGGED_FASTQ_DIR/*.fastq; do
+  echo $TAGGED_FASTQ
+  FASTQ_BASE=$(basename "$TAGGED_FASTQ" _tagged.fastq)
+  echo $FASTQ_BASE
+  SPLIT_FASTQ_DIR=${SPLIT_FASTQ_BASE}/${FASTQ_BASE}
+  echo $SPLIT_FASTQ_DIR
+  ${CONDA_BIN}/split_sequence_file_on_sample_ids.py -i $TAGGED_FASTQ \
+					 --file_type fastq \
+					 --output_dir $SPLIT_FASTQ_DIR
 
+  for FASTQ in $SPLIT_FASTQ_DIR/*.fastq; do
+    gzip --stdout $FASTQ > ${FASTQ}.gz
+    rm $FASTQ
+  done
+done
 ```
 
-		
-#--------------------------------------------------
-$(TAGGED_FASTQ_DIR)/%_tagged.fastq : $(RAW_DATA_DIR)/%.fastq.gz $(INDEX_FASTQ) $(QIIME_MAP_FILE)
-	$(dir_guard)
-	echo $*
-	$(CONDA_BIN)/split_libraries_fastq.py -r 999 -n 999 -q 0 -p 0.0001 \
-		--sequence_read_fps $(word 1,$^) \
-		--output_dir $(@D)/$* \
-		--barcode_read_fps $(word 2,$^) \
-		--mapping_fps $(word 3,$^) \
-		--barcode_type golay_12 \
-		--rev_comp_mapping_barcodes \
-		--store_demultiplexed_fastq \
-		--retain_unassigned_reads
-	mv $(@D)/$*/seqs.fastq $@
-	mv $(@D)/$*/split_library_log.txt $(@D)/$*_split_library_log.txt
-	rm -r $(@D)/$*
 #--------------------------------------------------
 $(WORKSPACE_DIR)/split_%/COMPLETION_STAMP : $(TAGGED_FASTQ_DIR)/%_tagged.fastq
 	echo $*
