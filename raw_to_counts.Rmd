@@ -123,6 +123,13 @@ $(WORKSPACE_DIR)/split_%/COMPLETION_STAMP : $(TAGGED_FASTQ_DIR)/%_tagged.fastq
 $(SPLIT_FASTQ_MD5SUM) : $(SPLIT_FASTQS)
 	echo $^
 
+# Generate MD5SUMs
+```{bash}
+set -u
+cd ${SPLIT_FASTQ_BASE}
+md5sum */*.fastq.gz > $(basename $SPLIT_FASTQ_MD5SUM)
+```
+
 
 #--------------------------------------------------
 TAXONOMY_DIR := $(WORKSPACE_DIR)/taxonomy_refs
