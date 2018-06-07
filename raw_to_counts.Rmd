@@ -8,6 +8,10 @@ dir_guard=@mkdir -p $(@D)
 # Set Up Paths and Filenames
 
 ```{r}
+library(tidyverse)
+```
+
+```{r}
 workspace_dir = "workspace"
 Sys.setenv(WORKSPACE_DIR=workspace_dir)
 Sys.setenv(QIIME_MAP_FILE=file.path(workspace_dir, "rat_lung_qiime_map.tsv"))
@@ -21,8 +25,11 @@ Sys.setenv(SPLIT_FASTQ_BASE=split_fastq_base)
 Sys.setenv(SPLIT_FASTQ_MD5SUM=file.path(split_fastq_base, "split_fastq_md5sum.txt"))
 
 combined_read_dir=file.path(split_fastq_base, "combined_reads")
+combined_read_md5sum=file.path(combined_read_dir, "combined_fastq_md5sum.txt")
+
 Sys.setenv(COMBINED_READ_DIR=combined_read_dir)
-Sys.setenv(COMBINED_READ_MD5SUM=file.path(combined_read_dir, "combined_fastq_md5sum.txt"))
+Sys.setenv(COMBINED_READ_MD5SUM=combined_read_md5sum)
+experiment_table_file = file.path(combined_read_dir, "experiment_paired_fastq_spreadsheet.tsv")
 ```
 
 SPLIT_FASTQ_BASE := $(WORKSPACE_DIR)/split_fastq
@@ -147,6 +154,40 @@ set -u
 cd ${COMBINED_READ_DIR}
 md5sum *.fastq.gz > $(basename $COMBINED_READ_MD5SUM)
 ```
+
+## Generate Experiment Spreadsheet for submission
+```{r}
+md5_both_reads = read_table(combined_read_md5sum, col_names = c("md5sum","filename")) %>%
+  mutate(sampleid = str_replace(filename, ".R[12].fastq.gz", "")) %>%
+  mutate(read_end = str_extract(filename, "R[12]"))
+
+head(md5_both_reads)
+# forward_file_name	forward_file_md5	reverse_file_name	reverse_file_md5
+md5_forward = md5_both_reads %>%
+  filter(read_end == "R1") %>%
+  select(sample_alias = sampleid, forward_file_name = filename, forward_file_md5 = md5sum )
+
+md5_reverse = md5_both_reads %>%
+  filter(read_end == "R2") %>%
+  select(sample_alias = sampleid, reverse_file_name = filename, reverse_file_md5 = md5sum )
+
+head(md5_forward)
+head(md5_reverse)
+
+full_join(md5_forward, md5_reverse, by="sample_alias") %>%
+  mutate(instrument_model = "Illumina MiSeq", 
+         library_name = "",
+         library_source = "METAGENOMIC",
+         library_selection = "PCR", 
+         library_strategy = "AMPLICON",
+         design_description = "",
+         library_construction_protocol = "16S rRNA v4 region  was amplified using the EMP 515F and 806R primers",
+         insert_size = "253"
+         ) %>%
+  write_tsv(experiment_table_file)
+```
+
+
 
 #--------------------------------------------------
 TAXONOMY_DIR := $(WORKSPACE_DIR)/taxonomy_refs
