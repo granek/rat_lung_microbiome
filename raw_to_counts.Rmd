@@ -1,10 +1,3 @@
-# source /opt/conda/bin/activate qiime1
-# print_qiime_config.py -t
-
-.ONESHELL:
-SHELL = /bin/bash
-dir_guard=@mkdir -p $(@D)
-
 # Set Up Paths and Filenames
 
 ```{r}
@@ -60,13 +53,6 @@ FULL_PHYLOSEQ_RDS := $(RESULTS_DIR)/rat_lung_ps.rds
 
 
 all : $(TAGGED_FASTQS) $(SPLIT_FASTQS) $(FULL_PHYLOSEQ_RDS)
-
-split_fastqs : $(SPLIT_FASTQS)
-
-demux_checksum : $(SPLIT_FASTQ_MD5SUM)
-
-test : 
-	echo $(SPLIT_FASTQS)
 
 # Generate a MAP file that QIIME will accept
 
@@ -161,8 +147,6 @@ md5_both_reads = read_table(combined_read_md5sum, col_names = c("md5sum","filena
   mutate(sampleid = str_replace(filename, ".R[12].fastq.gz", "")) %>%
   mutate(read_end = str_extract(filename, "R[12]"))
 
-head(md5_both_reads)
-# forward_file_name	forward_file_md5	reverse_file_name	reverse_file_md5
 md5_forward = md5_both_reads %>%
   filter(read_end == "R1") %>%
   select(sample_alias = sampleid, forward_file_name = filename, forward_file_md5 = md5sum )
@@ -170,9 +154,6 @@ md5_forward = md5_both_reads %>%
 md5_reverse = md5_both_reads %>%
   filter(read_end == "R2") %>%
   select(sample_alias = sampleid, reverse_file_name = filename, reverse_file_md5 = md5sum )
-
-head(md5_forward)
-head(md5_reverse)
 
 full_join(md5_forward, md5_reverse, by="sample_alias") %>%
   mutate(instrument_model = "Illumina MiSeq", 
@@ -210,35 +191,3 @@ $(SILVA_DB) :
 # mkdir -p $SPLIT_FASTQ_BASE
 
 # validate_mapping_file.py --mapping_fp $QIIME_MAP_FILE --output_dir $WORKSPACE_DIR
-# Split without filtering based on <http://benjjneb.github.io/dada2/faq.html>
-# for READ in R1 R2
-# do
-#     split_libraries_fastq.py -r 999 -n 999 -q 0 -p 0.0001 \
-# 			     --sequence_read_fps ${FASTQ_PREFIX}_${READ}_001.fastq.gz \
-# 			     --output_dir ${LABELED_FASTQ_BASE}_${READ} \
-# 			     --barcode_read_fps ${FASTQ_PREFIX}_I1_001.fastq.gz \
-# 			     --mapping_fps $QIIME_MAP_FILE \
-# 			     --barcode_type golay_12 \
-# 			     --rev_comp_mapping_barcodes \
-# 			     --store_demultiplexed_fastq \
-# 			     --retain_unassigned_reads
-    
-#     split_sequence_file_on_sample_ids.py -i ${LABEL_FASTQ_BASE}_${READ}/seqs.fastq \
-# 					 --file_type fastq \
-# 					 --output_dir ${SPLIT_FASTQ_BASE}_${READ}
-# done
-
-# split_sequence_file_on_sample_ids.py
-# split_sequence_file_on_sample_ids.py -i ~/parker_rat_lung/workspace/split_fastq_R1/seqs.fastq --file_type fastq --output_dir ~/parker_rat_lung/workspace/split_by_id_R1
-#--------------------------------------------------------------------------------
-
-# split_libraries_fastq.py OPTIONS
-#---------------------------------
-# --sample_ids
-#     Comma-separated list of samples ids to be applied to all sequences, must be one per input file path (used when data is not multiplexed) [default: None]
-# --store_demultiplexed_fastq
-#     Write demultiplexed fastq files [default: False]
-# --max_barcode_errors
-#     Maximum number of errors in barcode [default: 1.5]
-# --phred_offset
-#     The ascii offset to use when decoding phred scores (either 33 or 64). Warning: in most cases you don’t need to pass this value [default: determined automatically] 
