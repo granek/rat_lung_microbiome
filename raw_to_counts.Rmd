@@ -184,6 +184,7 @@ full_join(md5_forward, md5_reverse, by="sample_alias") %>%
          library_construction_protocol = "16S rRNA v4 region  was amplified using the EMP 515F and 806R primers",
          insert_size = "253"
          ) %>%
+  filter(sample_alias != "Unassigned") %>%
   write_tsv(experiment_table_file)
 ```
 
