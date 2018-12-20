@@ -21,6 +21,7 @@ file.path()
 suppressPackageStartupMessages(library("phyloseq"))
 suppressPackageStartupMessages(library("ggplot2"))
 suppressPackageStartupMessages(library("vegan"))
+suppressPackageStartupMessages(library("git2r"))
 
 ## Load Antibiotic Data
 antibiotic.rds = "workspace/antibiotic_ps.rds"
@@ -278,5 +279,7 @@ ggplot(antibiotic.even.pcoa_wunifrac.plot$data, aes(Axis.1, Axis.2)) +
 ## Session Info
 ```{r}
 sessionInfo()
+knitr::current_input()
+git2r::last_commit()
 ```
 
