@@ -1,4 +1,4 @@
-DOCKER_IMAGE_TAG="DIv1rc3"
+DOCKER_IMAGE_TAG="antibiotic_manuscript_rc1"
 DOCKER_IMAGE_NAME="granek/parker_rat_lung"
 DOCKER_IMAGE="${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
 

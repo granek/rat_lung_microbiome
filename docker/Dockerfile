@@ -2,7 +2,7 @@
 
 # Distributed under the terms of the Modified BSD License.
 
-FROM rocker/tidyverse:3.4.2
+FROM rocker/tidyverse:3.5.1
 
 MAINTAINER Josh Granek
 
