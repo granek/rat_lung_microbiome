@@ -1,4 +1,4 @@
-DOCKER_IMAGE_TAG="antibiotic_manuscript_rc1"
+DOCKER_IMAGE_TAG="DI_antibiotic_manuscript_rc1"
 DOCKER_IMAGE_NAME="granek/rat_lung_microbiome"
 DOCKER_IMAGE="${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
 
